@@ -1,0 +1,28 @@
+._ajv2 ._ajv1 > span .active {
+  position: relative;
+}
+
+.button-popup {
+  width: 39.99px;
+  height: 39.99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+}
+
+.button-popup > img {
+  width: 23.99px;
+  height: 23.99px;
+  object-fit: contain;
+}
+
+.popup {
+  background-color: #fff;
+  width: 256px;
+  height: 156px;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+}
