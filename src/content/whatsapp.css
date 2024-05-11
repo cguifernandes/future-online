@@ -1,8 +1,10 @@
-._ajv2 ._ajv1 > span .active {
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+.pattern-future-online {
   position: relative;
 }
 
-.button-popup {
+.button-future-online {
   width: 39.99px;
   height: 39.99px;
   display: flex;
@@ -11,18 +13,43 @@
   background-color: white;
 }
 
-.button-popup > img {
+.button-future-online > img {
   width: 23.99px;
   height: 23.99px;
   object-fit: contain;
 }
 
-.popup {
+.popup-future-online {
   background-color: #fff;
-  width: 256px;
-  height: 156px;
+  width: 190px;
+  height: 122px;
   top: 100%;
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 99999;
+}
+
+.button-popup-future-online {
+  font-family: "Poppins", sans-serif !important;
+  @apply bg-gray-800 text-white text-base px-3 py-2 rounded-lg
+}
+
+.close-button-future-online {
+  @apply absolute p-2 h-6 w-6 flex items-center justify-center right-2 top-2 bg-red-600/30 text-white rounded-full
+}
+
+.messages-pattern-future-online {
+  background-color: #202C33;
+  @apply px-4 py-2 flex gap-x-3 relative z-50;
+  height: auto;
+}
+
+.messages-future-online {
+  font-family: "Poppins", sans-serif !important;
+  @apply bg-white px-2 py-1 rounded-lg text-sm text-black
 }

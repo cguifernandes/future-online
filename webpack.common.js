@@ -7,9 +7,10 @@ const autoprefixer = require("autoprefixer");
 
 module.exports = {
 	entry: {
-		popup: path.resolve("src/popup/index.tsx"),
-		dashboard: path.resolve("src/tabs/dashboard/index.tsx"),
-		content: path.resolve("src/content/content.ts"),
+		popup: path.resolve("./src/popup/index.tsx"),
+		dashboard: path.resolve("./src/tabs/dashboard/index.tsx"),
+		content: path.resolve("./src/content/content.ts"),
+		background: path.resolve("./src/background/background.ts"),
 	},
 	module: {
 		rules: [
@@ -29,7 +30,7 @@ module.exports = {
 						},
 					},
 					{
-						loader: "postcss-loader", // postcss loader needed for tailwindcss
+						loader: "postcss-loader",
 						options: {
 							postcssOptions: {
 								ident: "postcss",
