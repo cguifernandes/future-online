@@ -44,6 +44,7 @@ const loadButton = () => {
 
 	let visiblePopup = false;
 	const span = nav.querySelector("div > span");
+	if (!span) return;
 	const button = document.createElement("button");
 	const div = document.createElement("div");
 	const image = document.createElement("img");
@@ -51,7 +52,7 @@ const loadButton = () => {
 	span.appendChild(div);
 	div.appendChild(button);
 	button.appendChild(image);
-	image.src = "https://i.ibb.co/c19SQLQ/icon.png";
+	image.src = "https://i.imgur.com/XGfAVfk.png";
 	button.className = "button-future-online";
 	div.className = "pattern-future-online";
 
@@ -130,7 +131,7 @@ window.onload = async () => {
 			itens: { content: string; title: string }[];
 		};
 
-		if (data.itens.length !== 0) {
+		if (data?.itens?.length !== 0) {
 			waitForElement("div#main", () => {
 				const observer = new MutationObserver((mutations) => {
 					for (const mutation of mutations) {

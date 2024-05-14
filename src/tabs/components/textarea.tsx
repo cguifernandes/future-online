@@ -7,6 +7,7 @@ const textarea = tv({
 	variants: {
 		theme: {
 			purple: "focus:ring-purple-500",
+			green: "focus:ring-green-500",
 		},
 	},
 });

@@ -8,6 +8,8 @@ const button = tv({
 		theme: {
 			"purple-dark": "bg-purple-900/90",
 			"purple-light": "bg-purple-500",
+			"green-dark": "bg-green-800/90",
+			"green-light": "bg-green-500",
 			danger: "bg-red-600 hover:bg-red-700",
 		},
 	},
