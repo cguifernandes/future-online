@@ -42,13 +42,29 @@
   @apply absolute p-2 h-6 w-6 flex items-center justify-center right-2 top-2 bg-red-600/30 text-white rounded-full
 }
 
-.messages-pattern-future-online {
+.item-pattern-future-online {
   background-color: #202C33;
-  @apply px-4 py-2 flex gap-x-3 relative z-50;
-  height: auto;
+  @apply p-4 flex gap-x-3 relative z-50 max-h-40 overflow-y-auto;
 }
 
-.messages-future-online {
+.item-pattern-future-online button {
   font-family: "Poppins", sans-serif !important;
-  @apply bg-white px-2 py-1 rounded-lg text-sm text-black
+  @apply px-2 py-1 rounded-lg text-sm text-white w-fit
+}
+
+.item-message-future-online {
+  @apply flex flex-col gap-y-2 h-full
+}
+
+.item-title-future-online {
+  font-family: "Poppins", sans-serif !important;
+  @apply text-white text-base font-bold
+}
+
+.button-message-future-online {
+  @apply bg-purple-500 hover:bg-purple-600
+}
+
+.button-midias-future-online {
+  @apply bg-green-500 hover:bg-green-600
 }

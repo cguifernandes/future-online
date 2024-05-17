@@ -5,6 +5,7 @@ import Input from "../components/input";
 import Button from "../components/button";
 import File from "../components/file";
 import Textarea from "../components/textarea";
+import { supabase } from "../../lib/supabase";
 
 interface Props {
 	setData: React.Dispatch<
@@ -12,7 +13,7 @@ interface Props {
 			itens: {
 				title: string;
 				image: {
-					file: File | undefined;
+					url: string;
 					subtitle: string;
 				};
 				id: string;
@@ -22,7 +23,7 @@ interface Props {
 	dataItem: {
 		title: string;
 		image: {
-			file: File | undefined;
+			url: string;
 			subtitle: string;
 		};
 	};
@@ -30,7 +31,7 @@ interface Props {
 		React.SetStateAction<{
 			title: string;
 			image: {
-				file: File | undefined;
+				url: string;
 				subtitle: string;
 			};
 		}>
@@ -39,7 +40,7 @@ interface Props {
 		React.SetStateAction<{
 			title: string;
 			image: {
-				file: File | undefined;
+				url: string;
 				subtitle: string;
 			};
 			id: string;
@@ -48,7 +49,7 @@ interface Props {
 	contentItem: {
 		title: string;
 		image: {
-			file: File | undefined;
+			url: string;
 			subtitle: string;
 		};
 		id: string;
@@ -62,28 +63,65 @@ const Form = ({
 	setData,
 	contentItem,
 }: Props) => {
-	const handlerSubmit = (e: FormEvent) => {
+	const handlerSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 
 		const formData = new FormData(e.currentTarget as HTMLFormElement);
 		const title = formData.get("title") as string;
-		const content = formData.get("content") as string;
+		const subtitle = formData.get("subtitle") as string;
+		const file = formData.get("file") as File;
 
-		if (contentItem) {
-			const updatedItem = { ...contentItem, title, content };
+		if (contentItem && file.name !== "") {
+			const fileName = `${new Date().getTime()}${file.name}`;
 
-			chrome.storage.sync.get("messages", (result) => {
-				const messages = result.messages || [];
-				const updatedItems = messages.map((item) =>
-					item.id === contentItem.id ? updatedItem : item,
-				);
+			try {
+				const upload = await supabase.storage
+					.from("future-online")
+					.upload(fileName, file);
+				if (upload.error) {
+					console.log(upload.error);
+				}
 
-				chrome.storage.sync.set({ messages: updatedItems }, () => {
-					setData({ itens: updatedItems });
-					setContentItem(updatedItem);
+				const url = await supabase.storage
+					.from("future-online")
+					.createSignedUrl(upload.data.path, 30 * 24 * 60 * 60);
+
+				const updatedItem = {
+					...contentItem,
+					title,
+					image: { subtitle, url: url.data.signedUrl },
+				};
+
+				chrome.storage.sync.get("midias", (result) => {
+					const updatedItems = result.midias.map((item) =>
+						item.id === contentItem.id ? updatedItem : item,
+					);
+
+					chrome.storage.sync.set({ midias: updatedItems }, () => {
+						setData({ itens: updatedItems });
+						setContentItem(updatedItem);
+					});
 				});
-			});
+			} catch (error) {
+				console.log(error);
+			} finally {
+				console.log("finally");
+			}
 		}
+	};
+
+	const handlerRemoveItem = (id: string) => {
+		chrome.storage.sync.get("midias", (result) => {
+			const updatedItems = result.midias.filter(
+				(item: { title: string; content: string; id: string }) =>
+					item.id !== id,
+			);
+
+			chrome.storage.sync.set({ midias: updatedItems }, () => {
+				setData({ itens: updatedItems });
+				setContentItem(undefined);
+			});
+		});
 	};
 
 	return (
@@ -97,14 +135,14 @@ const Form = ({
 					className="w-full"
 					name="title"
 					value={dataItem.title}
-					onChange={(e) =>
-						setDataItem((prev) => ({ ...prev, title: e.target.value }))
-					}
+					onChange={(e) => {
+						setDataItem((prev) => ({ ...prev, title: e.target.value }));
+					}}
 					theme="green"
 				/>
 				<button
 					type="button"
-					// onClick={() => handlerRemoveItem(contentItem)}
+					onClick={() => handlerRemoveItem(contentItem.id)}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
 					{/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
@@ -128,12 +166,20 @@ const Form = ({
 					</svg>
 				</button>
 			</div>
-			<div className="flex gap-x-3 w-full">
-				<File />
+			<div className="flex gap-x-3 w-full flex-1">
+				<File dataItem={dataItem} setDataItem={setDataItem} />
 				<Textarea
+					name="subtitle"
 					theme="green"
 					className="resize-none"
 					placeholder="Insira uma legenda para a mídia (Opcional)"
+					value={dataItem.image.subtitle}
+					onChange={(e) =>
+						setDataItem((prev) => ({
+							...prev,
+							image: { ...prev.image, subtitle: e.target.value },
+						}))
+					}
 				/>
 			</div>
 			<div className="flex items-center gap-x-3 justify-end w-full">

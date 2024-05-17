@@ -4,6 +4,7 @@ const HtmlPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const tailwindcss = require("tailwindcss");
 const autoprefixer = require("autoprefixer");
+const Dotenv = require("dotenv-webpack");
 
 module.exports = {
 	entry: {
@@ -59,6 +60,7 @@ module.exports = {
 			],
 		}),
 		...getHtmlPlugins(["popup", "dashboard"]),
+		new Dotenv(),
 	],
 	resolve: {
 		extensions: [".tsx", ".js", ".ts"],

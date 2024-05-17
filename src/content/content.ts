@@ -91,62 +91,91 @@ const loadButton = () => {
 	});
 };
 
-const loadMessages = async (data: {
-	itens: { content: string; title: string }[];
-}) => {
-	const main = document.getElementById("main");
-	const footer = main.querySelector("footer");
+const loadItems = (
+	titleText: string,
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	items: any[],
+	pattern: HTMLDivElement,
+	buttonClassName: string,
+) => {
+	const content = document.createElement("div");
+	const title = document.createElement("h1");
+	title.textContent = titleText;
+	title.className = "item-title-future-online";
+	content.appendChild(title);
+	content.className = "item-content-future-online";
 
-	if (!footer.querySelector(".messages-future-online")) {
-		const messages = document.createElement("button");
-		const pattern = document.createElement("div");
-
-		const buttons = data.itens.map((item) => {
-			const button = document.createElement("button");
-			button.textContent = item.title;
-			button.className = "messages-future-online";
-			button.addEventListener("click", () => {
+	for (const item of items) {
+		const button = document.createElement("button");
+		button.textContent = item.title;
+		button.className = buttonClassName;
+		button.addEventListener("click", () => {
+			if (item.content) {
 				sendMessage(item.content);
-			});
-			return button;
+			}
+
+			if (item.image.file) {
+			}
 		});
-
-		for (const button of buttons) {
-			pattern.appendChild(button);
-		}
-
-		pattern.className = "messages-pattern-future-online";
-		footer.appendChild(pattern);
-		pattern.appendChild(messages);
+		content.appendChild(button);
 	}
+
+	content.className = "item-message-future-online";
+	pattern.appendChild(content);
 };
 
 window.onload = async () => {
-	if (window.location.href.includes("web.whatsapp.com")) {
-		waitForElement("span.x1okw0bk", () => {
-			loadButton();
+	if (!window.location.href.includes("web.whatsapp.com")) return;
+	const main = document.querySelector("div#main");
+
+	waitForElement("span.x1okw0bk", () => {
+		loadButton();
+	});
+
+	const data = (await chrome.storage.sync.get()) as {
+		messages: { content: string; title: string }[];
+		midias: { title: string; image: { file: File; subtitle: string } }[];
+	};
+
+	waitForElement("div#main", () => {
+		const observer = new MutationObserver(() => {
+			const main = document.querySelector("div#main");
+			const footer = main.querySelector("footer");
+
+			const existingPattern = footer.querySelector(
+				".item-pattern-future-online",
+			);
+
+			if (existingPattern) return;
+
+			const pattern = document.createElement("div");
+			pattern.className = "item-pattern-future-online";
+			footer.appendChild(pattern);
+
+			if (data.messages.length > 0) {
+				loadItems(
+					"Mensagens",
+					data.messages,
+					pattern,
+					"button-message-future-online",
+				);
+			}
+
+			if (data.midias.length > 0) {
+				loadItems(
+					"Midias",
+					data.messages,
+					pattern,
+					"button-midias-future-online",
+				);
+			}
+
+			return;
 		});
 
-		const data = (await chrome.storage.sync.get()) as {
-			itens: { content: string; title: string }[];
-		};
-
-		if (data?.itens?.length !== 0) {
-			waitForElement("div#main", () => {
-				const observer = new MutationObserver((mutations) => {
-					for (const mutation of mutations) {
-						if (mutation.type === "childList") {
-							loadMessages(data);
-							return;
-						}
-					}
-				});
-
-				observer.observe(document.body, {
-					childList: true,
-					subtree: true,
-				});
-			});
-		}
-	}
+		observer.observe(main, {
+			childList: true,
+			subtree: true,
+		});
+	});
 };

@@ -3,7 +3,7 @@ import React from "react";
 import { type VariantProps, tv } from "tailwind-variants";
 
 const input = tv({
-	base: "text-white bg-black/30 text-base px-4 rounded-lg transition-all ring-transparent py-3 ring-2",
+	base: "text-white bg-black/30 text-sm px-4 rounded-lg transition-all ring-transparent py-3 ring-2",
 	variants: {
 		theme: {
 			purple: "focus:ring-purple-500",

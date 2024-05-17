@@ -1,55 +1,63 @@
-import React, { type FormEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "./button";
 import { v4 as uuidv4 } from "uuid";
-import Input from "./input";
 import clsx from "clsx";
 import Form from "../forms/form-midias";
 
 const Midias = () => {
+	const [isLoading, setIsLoading] = useState(false);
 	const [data, setData] = useState<{
 		itens: {
 			title: string;
-			image: { file: File | undefined; subtitle: string };
+			image: { url: string; subtitle: string };
 			id: string;
 		}[];
 	}>({ itens: [] });
 	const [dataItem, setDataItem] = useState<{
 		title: string;
 		image: {
-			file: File | undefined;
+			url: string;
 			subtitle: string;
 		};
 	}>({
 		title: "",
-		image: { file: undefined, subtitle: "" },
+		image: { url: undefined, subtitle: "" },
 	});
 	const [contentItem, setContentItem] = useState<{
 		title: string;
-		image: { file: File | undefined; subtitle: string };
+		image: { url: string; subtitle: string };
 		id: string;
 	}>();
 
 	useEffect(() => {
 		setDataItem({
 			title: contentItem?.title || "",
-			image: { file: undefined, subtitle: "" },
+			image: {
+				url: contentItem?.image.url || "",
+				subtitle: contentItem?.image.subtitle || "",
+			},
 		});
 	}, [contentItem]);
 
 	useEffect(() => {
-		chrome.storage.sync
-			.get("midias")
-			.then(({ midias }) => {
-				setData({ itens: midias });
-			})
-			.catch((error) => {
-				console.log(error);
-			});
+		try {
+			chrome.storage.sync
+				.get("midias")
+				.then(({ midias }) => {
+					console.log(midias);
+					setData({ itens: midias });
+				})
+				.catch((error) => {
+					console.log(error);
+				});
+		} finally {
+			setIsLoading(false);
+		}
 	}, []);
 
 	const handlerAddItem = (newItem: {
 		title: string;
-		image: { file: File | undefined; subtitle: string };
+		image: { url: string; subtitle: string };
 	}) => {
 		const newItemWithId = { ...newItem, id: uuidv4() };
 		const newItems = [...data.itens, newItemWithId];
@@ -65,7 +73,11 @@ const Midias = () => {
 				<h1 className="text-lg font-semibold text-center text-white p-2 w-full bg-green-500 rounded-tl-lg">
 					Gerenciamento de Mídias
 				</h1>
-				{data.itens.length > 0 ? (
+				{isLoading ? (
+					<span className="text-center text-white text-base">
+						Carrengando...
+					</span>
+				) : data.itens.length > 0 ? (
 					<>
 						<div className="flex flex-col max-h-60 overflow-y-auto">
 							{data.itens.map((item, index) => (
@@ -92,7 +104,7 @@ const Midias = () => {
 								onClick={() =>
 									handlerAddItem({
 										title: "Novo conteúdo",
-										image: { file: undefined, subtitle: "" },
+										image: { url: "", subtitle: "" },
 									})
 								}
 								icon={
@@ -130,7 +142,7 @@ const Midias = () => {
 								onClick={() =>
 									handlerAddItem({
 										title: "Novo conteúdo",
-										image: { file: undefined, subtitle: "" },
+										image: { url: "", subtitle: "" },
 									})
 								}
 								icon={

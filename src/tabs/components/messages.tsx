@@ -5,6 +5,7 @@ import clsx from "clsx";
 import Form from "../forms/form-messages";
 
 const Messages = () => {
+	const [isLoading, setIsLoading] = useState(false);
 	const [data, setData] = useState<{
 		itens: { title: string; content: string; id: string }[];
 	}>({ itens: [] });
@@ -19,14 +20,19 @@ const Messages = () => {
 	}>();
 
 	useEffect(() => {
-		chrome.storage.sync
-			.get("messages")
-			.then(({ messages }) => {
-				setData({ itens: messages });
-			})
-			.catch((error) => {
-				console.log(error);
-			});
+		try {
+			setIsLoading(true);
+			chrome.storage.sync
+				.get("messages")
+				.then(({ messages }) => {
+					setData({ itens: messages });
+				})
+				.catch((error) => {
+					console.log(error);
+				});
+		} finally {
+			setIsLoading(false);
+		}
 	}, []);
 
 	useEffect(() => {
@@ -51,7 +57,11 @@ const Messages = () => {
 				<h1 className="text-lg font-semibold text-center text-white p-2 w-full bg-purple-500 rounded-tl-lg">
 					Gerenciamento de Mensagens
 				</h1>
-				{data.itens.length > 0 ? (
+				{isLoading ? (
+					<span className="text-center text-white text-base">
+						Carrengando...
+					</span>
+				) : data.itens.length > 0 ? (
 					<>
 						<div className="flex flex-col max-h-60 overflow-y-auto">
 							{data.itens.map((item, index) => (
