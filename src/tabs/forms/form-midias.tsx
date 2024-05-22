@@ -59,6 +59,8 @@ interface Props {
 		};
 		id: string;
 	};
+	setError: React.Dispatch<React.SetStateAction<string>>;
+	error: string;
 }
 
 const Form = ({
@@ -67,6 +69,8 @@ const Form = ({
 	setDataItem,
 	setData,
 	contentItem,
+	error,
+	setError,
 }: Props) => {
 	const [isLoading, setIsLoading] = React.useState(false);
 
@@ -223,7 +227,12 @@ const Form = ({
 				</button>
 			</div>
 			<div className="flex gap-x-3 w-full flex-1">
-				<File dataItem={dataItem} setDataItem={setDataItem} />
+				<File
+					error={error}
+					setError={setError}
+					dataItem={dataItem}
+					setDataItem={setDataItem}
+				/>
 				<Textarea
 					name="subtitle"
 					theme="green"

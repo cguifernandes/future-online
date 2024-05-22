@@ -5,6 +5,7 @@ import clsx from "clsx";
 import Form from "../forms/form-midias";
 
 const Midias = () => {
+	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [data, setData] = useState<{
 		itens: {
@@ -89,6 +90,7 @@ const Midias = () => {
 									theme="green-dark"
 									onClick={() => {
 										setContentItem(item);
+										setError(null);
 									}}
 									className={clsx(
 										"text-left !rounded-none hover:bg-green-700",
@@ -175,6 +177,8 @@ const Midias = () => {
 			<div className="bg-black/70 rounded-r-lg border-l-2 border-white w-full h-full">
 				{contentItem ? (
 					<Form
+						error={error}
+						setError={setError}
 						contentItem={contentItem}
 						dataItem={dataItem}
 						setContentItem={setContentItem}

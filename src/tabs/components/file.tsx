@@ -28,10 +28,11 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
 			};
 		}>,
 	) => void;
+	setError: React.Dispatch<React.SetStateAction<string>>;
+	error: string;
 }
 
-const File = ({ dataItem, setDataItem, ...rest }: Props) => {
-	const [error, setError] = useState<string | null>(null);
+const File = ({ dataItem, setDataItem, error, setError, ...rest }: Props) => {
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [isLoadingImage, setIsLoadingImage] = useState(false);
 
