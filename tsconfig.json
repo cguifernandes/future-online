@@ -7,6 +7,12 @@
 		"lib": ["es6", "dom", "es2016"],
 		"esModuleInterop": true
 	},
-	"include": ["src/**/*.ts", "src/**/*.tsx"],
+	"include": [
+		"src/**/*.ts",
+		"src/**/*.tsx",
+		"src/content/wa-js.ts",
+		"src/content/wpp.js",
+		"global.d.ts"
+	],
 	"exclude": ["node_modules"]
 }

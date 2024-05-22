@@ -1,4 +1,3 @@
-// biome-ignore lint/style/useImportType: <explanation>
 import React from "react";
 import type { FormEvent } from "react";
 import Input from "../components/input";
@@ -6,6 +5,7 @@ import Button from "../components/button";
 import File from "../components/file";
 import Textarea from "../components/textarea";
 import { supabase } from "../../lib/supabase";
+import { generateThumbnail } from "../utils/utils";
 
 interface Props {
 	setData: React.Dispatch<
@@ -15,6 +15,7 @@ interface Props {
 				image: {
 					url: string;
 					subtitle: string;
+					preview?: string;
 				};
 				id: string;
 			}[];
@@ -25,6 +26,7 @@ interface Props {
 		image: {
 			url: string;
 			subtitle: string;
+			preview: string;
 		};
 	};
 	setDataItem: React.Dispatch<
@@ -33,6 +35,7 @@ interface Props {
 			image: {
 				url: string;
 				subtitle: string;
+				preview: string;
 			};
 		}>
 	>;
@@ -42,6 +45,7 @@ interface Props {
 			image: {
 				url: string;
 				subtitle: string;
+				preview: string;
 			};
 			id: string;
 		}>
@@ -51,6 +55,7 @@ interface Props {
 		image: {
 			url: string;
 			subtitle: string;
+			preview?: string;
 		};
 		id: string;
 	};
@@ -63,6 +68,8 @@ const Form = ({
 	setData,
 	contentItem,
 }: Props) => {
+	const [isLoading, setIsLoading] = React.useState(false);
+
 	const handlerSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 
@@ -70,26 +77,75 @@ const Form = ({
 		const title = formData.get("title") as string;
 		const subtitle = formData.get("subtitle") as string;
 		const file = formData.get("file") as File;
+		console.log(file);
 
 		if (contentItem && file.name !== "") {
+			setIsLoading(true);
 			const fileName = `${new Date().getTime()}${file.name}`;
 
 			try {
-				const upload = await supabase.storage
-					.from("future-online")
-					.upload(fileName, file);
-				if (upload.error) {
-					console.log(upload.error);
+				let thumbnailUrl: string | undefined;
+
+				const promises = [];
+
+				if (file.type.includes("video")) {
+					promises.push(
+						(async () => {
+							const thumbnailBlob = await generateThumbnail(file);
+
+							const { data, error } = await supabase.storage
+								.from("future-online")
+								.upload(`preview-${fileName}`, thumbnailBlob);
+
+							if (error) {
+								console.log(error);
+								return;
+							}
+
+							const { data: signedData, error: signedError } =
+								await supabase.storage
+									.from("future-online")
+									.createSignedUrl(data.path, 30 * 24 * 60 * 60);
+
+							if (signedError) {
+								console.log(signedError);
+								return;
+							}
+
+							thumbnailUrl = signedData.signedUrl;
+						})(),
+					);
 				}
 
-				const url = await supabase.storage
-					.from("future-online")
-					.createSignedUrl(upload.data.path, 30 * 24 * 60 * 60);
+				promises.push(
+					(async () => {
+						const { data, error } = await supabase.storage
+							.from("future-online")
+							.upload(fileName, file);
+
+						if (error) throw error;
+
+						const { data: signedData, error: signedError } =
+							await supabase.storage
+								.from("future-online")
+								.createSignedUrl(data.path, 30 * 24 * 60 * 60);
+
+						if (signedError) throw signedError;
+
+						return signedData.signedUrl;
+					})(),
+				);
+
+				const [fileUrl] = await Promise.all(promises);
 
 				const updatedItem = {
 					...contentItem,
 					title,
-					image: { subtitle, url: url.data.signedUrl },
+					image: {
+						subtitle,
+						url: fileUrl,
+						preview: thumbnailUrl || fileUrl,
+					},
 				};
 
 				chrome.storage.sync.get("midias", (result) => {
@@ -99,13 +155,14 @@ const Form = ({
 
 					chrome.storage.sync.set({ midias: updatedItems }, () => {
 						setData({ itens: updatedItems });
+						setDataItem(updatedItem);
 						setContentItem(updatedItem);
 					});
 				});
 			} catch (error) {
 				console.log(error);
 			} finally {
-				console.log("finally");
+				setIsLoading(false);
 			}
 		}
 	};
@@ -183,7 +240,11 @@ const Form = ({
 				/>
 			</div>
 			<div className="flex items-center gap-x-3 justify-end w-full">
-				<Button theme="green-light" className="hover:bg-green-600 w-28">
+				<Button
+					isLoading={isLoading}
+					theme="green-light"
+					className="hover:bg-green-600 w-28"
+				>
 					Salvar
 				</Button>
 				<Button

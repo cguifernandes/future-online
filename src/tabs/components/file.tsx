@@ -15,6 +15,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
 		image: {
 			url: string;
 			subtitle: string;
+			preview: string;
 		};
 	};
 	setDataItem: (
@@ -23,6 +24,7 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
 			image: {
 				url: string;
 				subtitle: string;
+				preview: string;
 			};
 		}>,
 	) => void;
@@ -33,37 +35,46 @@ const File = ({ dataItem, setDataItem, ...rest }: Props) => {
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [isLoadingImage, setIsLoadingImage] = useState(false);
 
-	// useEffect(() => {
-	// 	if (!dataItem.image.file) {
-	// 		setImagePreview(null);
-	// 		setError(null);
-	// 		const inputElement = document.getElementById(
-	// 			"input-file",
-	// 		) as HTMLInputElement;
-	// 		if (inputElement) {
-	// 			inputElement.value = "";
-	// 		}
-	// 	}
-	// }, [dataItem.image.file]);
+	useEffect(() => {
+		if (dataItem.image.preview) {
+			setImagePreview(dataItem.image.preview);
+		} else {
+			setImagePreview(null);
+		}
+	}, [dataItem]);
 
-	const handlerChangeValue = (e: ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files[0];
+	const handlerChangeValue = async (e: ChangeEvent<HTMLInputElement>) => {
+		const fileInput = e.target;
+		const file = fileInput.files[0];
+		console.log(file);
 
 		if (file && !FILES_TYPE.includes(file.type)) {
 			setError("Formato de arquivo inválido");
-			e.target.value = "";
+			fileInput.value = undefined;
 			return;
 		}
 
 		if (file) {
 			setError(null);
 			setIsLoadingImage(true);
+			setImagePreview(null);
 
+			let preview = "";
 			if (file.type.includes("video")) {
-				loadingVideo(file, setImagePreview, setIsLoadingImage);
+				preview = await loadingVideo(file, setIsLoadingImage);
 			} else {
-				loadingImage(file, setImagePreview, setIsLoadingImage);
+				preview = await loadingImage(file, setIsLoadingImage);
 			}
+
+			setImagePreview(preview);
+			setDataItem((prev) => ({
+				...prev,
+				image: {
+					...prev.image,
+					url: preview,
+					preview,
+				},
+			}));
 		} else {
 			setImagePreview(null);
 			setError(null);
@@ -113,7 +124,7 @@ const File = ({ dataItem, setDataItem, ...rest }: Props) => {
 						<span className="text-base text-white">Carregando...</span>
 					) : imagePreview ? (
 						<img
-							className="absolute bottom-6 h-32 object-cover w-5/6 left-2/4 -translate-x-2/4"
+							className="absolute bottom-6 h-32 object-contain w-5/6 left-2/4 -translate-x-2/4"
 							src={imagePreview}
 							alt="Imagem"
 						/>

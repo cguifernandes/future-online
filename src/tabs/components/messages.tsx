@@ -61,7 +61,7 @@ const Messages = () => {
 					<span className="text-center text-white text-base">
 						Carrengando...
 					</span>
-				) : data.itens.length > 0 ? (
+				) : data.itens?.length > 0 ? (
 					<>
 						<div className="flex flex-col max-h-60 overflow-y-auto">
 							{data.itens.map((item, index) => (

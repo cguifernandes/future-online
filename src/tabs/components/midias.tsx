@@ -9,7 +9,7 @@ const Midias = () => {
 	const [data, setData] = useState<{
 		itens: {
 			title: string;
-			image: { url: string; subtitle: string };
+			image: { url: string; subtitle: string; preview: string };
 			id: string;
 		}[];
 	}>({ itens: [] });
@@ -18,14 +18,15 @@ const Midias = () => {
 		image: {
 			url: string;
 			subtitle: string;
+			preview: string;
 		};
 	}>({
 		title: "",
-		image: { url: undefined, subtitle: "" },
+		image: { url: undefined, subtitle: "", preview: "" },
 	});
 	const [contentItem, setContentItem] = useState<{
 		title: string;
-		image: { url: string; subtitle: string };
+		image: { url: string; subtitle: string; preview: string };
 		id: string;
 	}>();
 
@@ -35,6 +36,7 @@ const Midias = () => {
 			image: {
 				url: contentItem?.image.url || "",
 				subtitle: contentItem?.image.subtitle || "",
+				preview: contentItem?.image.preview || "",
 			},
 		});
 	}, [contentItem]);
@@ -44,7 +46,6 @@ const Midias = () => {
 			chrome.storage.sync
 				.get("midias")
 				.then(({ midias }) => {
-					console.log(midias);
 					setData({ itens: midias });
 				})
 				.catch((error) => {
@@ -57,7 +58,7 @@ const Midias = () => {
 
 	const handlerAddItem = (newItem: {
 		title: string;
-		image: { url: string; subtitle: string };
+		image: { url: string; subtitle: string; preview: string };
 	}) => {
 		const newItemWithId = { ...newItem, id: uuidv4() };
 		const newItems = [...data.itens, newItemWithId];
@@ -77,7 +78,7 @@ const Midias = () => {
 					<span className="text-center text-white text-base">
 						Carrengando...
 					</span>
-				) : data.itens.length > 0 ? (
+				) : data.itens?.length > 0 ? (
 					<>
 						<div className="flex flex-col max-h-60 overflow-y-auto">
 							{data.itens.map((item, index) => (
@@ -86,7 +87,9 @@ const Midias = () => {
 									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 									key={index}
 									theme="green-dark"
-									onClick={() => setContentItem(item)}
+									onClick={() => {
+										console.log("oi")
+										setContentItem(item)}}
 									className={clsx(
 										"text-left !rounded-none hover:bg-green-700",
 										contentItem && item.id === contentItem.id && "bg-green-700",
@@ -104,7 +107,7 @@ const Midias = () => {
 								onClick={() =>
 									handlerAddItem({
 										title: "Novo conteúdo",
-										image: { url: "", subtitle: "" },
+										image: { url: "", subtitle: "", preview: "" },
 									})
 								}
 								icon={
@@ -142,7 +145,7 @@ const Midias = () => {
 								onClick={() =>
 									handlerAddItem({
 										title: "Novo conteúdo",
-										image: { url: "", subtitle: "" },
+										image: { url: "", subtitle: "", preview: "" },
 									})
 								}
 								icon={

@@ -20,9 +20,17 @@ interface Props
 		VariantProps<typeof button> {
 	children: ReactNode;
 	icon?: ReactNode;
+	isLoading?: boolean;
 }
 
-const Button = ({ children, icon, theme, className, ...rest }: Props) => {
+const Button = ({
+	children,
+	icon,
+	theme,
+	className,
+	isLoading,
+	...rest
+}: Props) => {
 	if (icon) {
 		return (
 			<button
@@ -32,6 +40,7 @@ const Button = ({ children, icon, theme, className, ...rest }: Props) => {
 				})}
 				{...rest}
 			>
+				{isLoading && "Carregando..."}
 				{icon}
 				{children}
 			</button>
@@ -42,11 +51,11 @@ const Button = ({ children, icon, theme, className, ...rest }: Props) => {
 		<button
 			className={button({
 				theme,
-				className,
+				className: `truncate ${className}`,
 			})}
 			{...rest}
 		>
-			{children}
+			{isLoading ? "Carregando..." : children}
 		</button>
 	);
 };

@@ -12,7 +12,7 @@ export const saveFile = async (path: string, fileName: string) => {
 
 		const file = new File([blob], fileName, { type: filetype });
 
-		console.log("Arquivo:", file);
+		return file;
 	} catch (error) {
 		console.error("Erro ao baixar o arquivo:", error);
 	}

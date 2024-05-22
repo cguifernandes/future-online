@@ -1,5 +1,4 @@
 import React, { useState, type ReactNode } from "react";
-import "./dashboard.css";
 import Item from "../components/item";
 import Messages from "../components/messages";
 import Midias from "../components/midias";

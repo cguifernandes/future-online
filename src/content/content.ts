@@ -1,181 +1,155 @@
 import "./whatsapp.css";
 
-const waitForElement = (selector, callback) => {
-	const observer = new MutationObserver((mutations) => {
-		for (const mutation of mutations) {
-			if (document.querySelector(selector)) {
-				observer.disconnect();
-				callback();
-				return;
+// const waitForElement = (selector, callback) => {
+// 	const observer = new MutationObserver(() => {
+// 		if (document.querySelector(selector)) {
+// 			observer.disconnect();
+// 			callback();
+// 			return;
+// 		}
+// 	});
+
+// 	observer.observe(document.documentElement, {
+// 		childList: true,
+// 		subtree: true,
+// 	});
+// };
+
+// const loadButton = () => {
+// 	const nav = document.querySelector("span.x1okw0bk");
+// 	if (!nav) return;
+
+// 	let visiblePopup = false;
+// 	const span = nav.querySelector("div > span");
+// 	if (!span) return;
+// 	const button = document.createElement("button");
+// 	const div = document.createElement("div");
+// 	const image = document.createElement("img");
+
+// 	span.appendChild(div);
+// 	div.appendChild(button);
+// 	button.appendChild(image);
+// 	image.src = "https://i.imgur.com/XGfAVfk.png";
+// 	button.className = "button-future-online";
+// 	div.className = "pattern-future-online";
+
+// 	const popup = document.createElement("div");
+// 	const buttonPopup = document.createElement("button");
+// 	const closeButton = document.createElement("button");
+
+// 	div.appendChild(popup);
+// 	popup.className = "popup-future-online";
+// 	popup.appendChild(buttonPopup);
+// 	popup.appendChild(closeButton);
+// 	buttonPopup.className = "button-popup-future-online";
+// 	buttonPopup.textContent = "Abrir dashboard";
+// 	closeButton.className = "close-button-future-online";
+// 	closeButton.textContent = "X";
+
+// 	popup.style.display = "none";
+
+// 	buttonPopup.addEventListener("click", () => {
+// 		chrome.runtime.sendMessage({ action: "openDashboard" });
+// 	});
+
+// 	closeButton.addEventListener("click", () => {
+// 		popup.style.display = "none";
+// 		visiblePopup = false;
+// 	});
+
+// 	button.addEventListener("click", () => {
+// 		if (visiblePopup) {
+// 			popup.style.display = "none";
+// 		} else {
+// 			popup.style.display = "flex";
+// 		}
+
+// 		visiblePopup = !visiblePopup;
+// 	});
+// };
+
+// const loadItems = (
+// 	titleText: string,
+// 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// 	items: any[],
+// 	pattern: HTMLDivElement,
+// 	buttonClassName: string,
+// ) => {
+// 	const content = document.createElement("div");
+// 	const title = document.createElement("h1");
+// 	title.textContent = titleText;
+// 	title.className = "item-title-future-online";
+// 	content.appendChild(title);
+// 	content.className = "item-content-future-online";
+
+// 	for (const item of items) {
+// 		const button = document.createElement("button");
+// 		button.textContent = item.title;
+// 		button.className = buttonClassName;
+// 		button.addEventListener("click", async () => {});
+// 		content.appendChild(button);
+// 	}
+
+// 	content.className = "item-message-future-online";
+// 	pattern.appendChild(content);
+// };
+
+window.addEventListener("loadWpp", async () => {
+	setTimeout(async () => {
+			try {
+					const data = await chrome.storage.sync.get();
+					console.log(data);
+			} catch (error) {
+					console.error("Error retrieving data:", error);
 			}
-		}
-	});
+	}, 2000);
+});
+	// if (!window.location.href.includes("web.whatsapp.com")) return;
 
-	observer.observe(document.documentElement, {
-		childList: true,
-		subtree: true,
-	});
-};
+	// waitForElement("span.x1okw0bk", () => {
+	// 	loadButton();
+	// });
 
-const sendMessage = (message: string) => {
-	const inputField = document.querySelectorAll("[contenteditable='true']");
 
-	if (inputField[1] instanceof HTMLElement) {
-		inputField[1].focus();
-		document.execCommand("insertText", false, message);
+	// waitForElement("div#main", () => {
+	// 	const observer = new MutationObserver(() => {
+	// 		const main = document.querySelector("div#main");
+	// 		const footer = main.querySelector("footer");
 
-		setTimeout(() => {
-			inputField[1].dispatchEvent(
-				new KeyboardEvent("keydown", {
-					key: "Enter",
-					bubbles: true,
-					cancelable: true,
-					keyCode: 13,
-					code: "Enter",
-				}),
-			);
-		}, 1);
-	}
-};
+	// 		const existingPattern = footer.querySelector(
+	// 			".item-pattern-future-online",
+	// 		);
 
-const loadButton = () => {
-	const nav = document.querySelector("span.x1okw0bk");
-	if (!nav) return;
+	// 		if (existingPattern) return;
 
-	let visiblePopup = false;
-	const span = nav.querySelector("div > span");
-	if (!span) return;
-	const button = document.createElement("button");
-	const div = document.createElement("div");
-	const image = document.createElement("img");
+	// 		const pattern = document.createElement("div");
+	// 		pattern.className = "item-pattern-future-online";
+	// 		footer.appendChild(pattern);
 
-	span.appendChild(div);
-	div.appendChild(button);
-	button.appendChild(image);
-	image.src = "https://i.imgur.com/XGfAVfk.png";
-	button.className = "button-future-online";
-	div.className = "pattern-future-online";
+	// 		if (data.messages?.length > 0) {
+	// 			loadItems(
+	// 				"Mensagens",
+	// 				data.messages,
+	// 				pattern,
+	// 				"button-message-future-online",
+	// 			);
+	// 		}
 
-	const popup = document.createElement("div");
-	const buttonPopup = document.createElement("button");
-	const closeButton = document.createElement("button");
+	// 		if (data.midias?.length > 0) {
+	// 			loadItems(
+	// 				"Midias",
+	// 				data.midias,
+	// 				pattern,
+	// 				"button-midias-future-online",
+	// 			);
+	// 		}
 
-	div.appendChild(popup);
-	popup.className = "popup-future-online";
-	popup.appendChild(buttonPopup);
-	popup.appendChild(closeButton);
-	buttonPopup.className = "button-popup-future-online";
-	buttonPopup.textContent = "Abrir dashboard";
-	closeButton.className = "close-button-future-online";
-	closeButton.textContent = "X";
+	// 		return;
+	// 	});
 
-	popup.style.display = "none";
-
-	buttonPopup.addEventListener("click", () => {
-		chrome.runtime.sendMessage({ action: "openDashboard" });
-	});
-
-	closeButton.addEventListener("click", () => {
-		popup.style.display = "none";
-		visiblePopup = false;
-	});
-
-	button.addEventListener("click", () => {
-		if (visiblePopup) {
-			popup.style.display = "none";
-		} else {
-			popup.style.display = "flex";
-		}
-
-		visiblePopup = !visiblePopup;
-	});
-};
-
-const loadItems = (
-	titleText: string,
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	items: any[],
-	pattern: HTMLDivElement,
-	buttonClassName: string,
-) => {
-	const content = document.createElement("div");
-	const title = document.createElement("h1");
-	title.textContent = titleText;
-	title.className = "item-title-future-online";
-	content.appendChild(title);
-	content.className = "item-content-future-online";
-
-	for (const item of items) {
-		const button = document.createElement("button");
-		button.textContent = item.title;
-		button.className = buttonClassName;
-		button.addEventListener("click", () => {
-			if (item.content) {
-				sendMessage(item.content);
-			}
-
-			if (item.image.file) {
-			}
-		});
-		content.appendChild(button);
-	}
-
-	content.className = "item-message-future-online";
-	pattern.appendChild(content);
-};
-
-window.onload = async () => {
-	if (!window.location.href.includes("web.whatsapp.com")) return;
-	const main = document.querySelector("div#main");
-
-	waitForElement("span.x1okw0bk", () => {
-		loadButton();
-	});
-
-	const data = (await chrome.storage.sync.get()) as {
-		messages: { content: string; title: string }[];
-		midias: { title: string; image: { file: File; subtitle: string } }[];
-	};
-
-	waitForElement("div#main", () => {
-		const observer = new MutationObserver(() => {
-			const main = document.querySelector("div#main");
-			const footer = main.querySelector("footer");
-
-			const existingPattern = footer.querySelector(
-				".item-pattern-future-online",
-			);
-
-			if (existingPattern) return;
-
-			const pattern = document.createElement("div");
-			pattern.className = "item-pattern-future-online";
-			footer.appendChild(pattern);
-
-			if (data.messages.length > 0) {
-				loadItems(
-					"Mensagens",
-					data.messages,
-					pattern,
-					"button-message-future-online",
-				);
-			}
-
-			if (data.midias.length > 0) {
-				loadItems(
-					"Midias",
-					data.messages,
-					pattern,
-					"button-midias-future-online",
-				);
-			}
-
-			return;
-		});
-
-		observer.observe(main, {
-			childList: true,
-			subtree: true,
-		});
-	});
-};
+	// 	observer.observe(document, {
+	// 		childList: true,
+	// 		subtree: true,
+	// 	});
+	// });
+// });
