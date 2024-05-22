@@ -46,7 +46,6 @@ const File = ({ dataItem, setDataItem, ...rest }: Props) => {
 	const handlerChangeValue = async (e: ChangeEvent<HTMLInputElement>) => {
 		const fileInput = e.target;
 		const file = fileInput.files[0];
-		console.log(file);
 
 		if (file && !FILES_TYPE.includes(file.type)) {
 			setError("Formato de arquivo inválido");

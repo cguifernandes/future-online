@@ -77,7 +77,6 @@ const Form = ({
 		const title = formData.get("title") as string;
 		const subtitle = formData.get("subtitle") as string;
 		const file = formData.get("file") as File;
-		console.log(file);
 
 		if (contentItem && file.name !== "") {
 			setIsLoading(true);

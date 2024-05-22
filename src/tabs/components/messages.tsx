@@ -23,7 +23,7 @@ const Messages = () => {
 		try {
 			setIsLoading(true);
 			chrome.storage.sync
-				.get("messages")
+				.get()
 				.then(({ messages }) => {
 					setData({ itens: messages });
 				})
@@ -69,7 +69,9 @@ const Messages = () => {
 									type="button"
 									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 									key={index}
-									onClick={() => setContentItem(item)}
+									onClick={() => {
+										setContentItem(item);
+									}}
 									theme="purple-dark"
 									className={clsx(
 										"text-left !rounded-none hover:bg-purple-800",

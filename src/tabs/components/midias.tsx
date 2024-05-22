@@ -44,7 +44,7 @@ const Midias = () => {
 	useEffect(() => {
 		try {
 			chrome.storage.sync
-				.get("midias")
+				.get()
 				.then(({ midias }) => {
 					setData({ itens: midias });
 				})
@@ -88,8 +88,8 @@ const Midias = () => {
 									key={index}
 									theme="green-dark"
 									onClick={() => {
-										console.log("oi")
-										setContentItem(item)}}
+										setContentItem(item);
+									}}
 									className={clsx(
 										"text-left !rounded-none hover:bg-green-700",
 										contentItem && item.id === contentItem.id && "bg-green-700",
