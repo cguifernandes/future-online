@@ -2,6 +2,7 @@ import React, { useState, type ReactNode } from "react";
 import Item from "../components/item";
 import Messages from "../components/messages";
 import Midias from "../components/midias";
+import Funis from "../components/funis";
 
 const Dashboard = () => {
 	const [contentDashboard, setContentDashboard] = useState<{
@@ -58,6 +59,28 @@ const Dashboard = () => {
 			),
 			content: <Midias />,
 			color: "bg-green-800/90",
+		},
+		{
+			title: "Funis",
+			icon: (
+				// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					className="lucide lucide-filter"
+				>
+					<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+				</svg>
+			),
+			content: <Funis />,
+			color: "bg-yellow-800/90",
 		},
 	];
 

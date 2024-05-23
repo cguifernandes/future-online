@@ -50,7 +50,6 @@ const File = ({ dataItem, setDataItem, error, setError, ...rest }: Props) => {
 
 		if (file && !FILES_TYPE.includes(file.type)) {
 			setError("Formato de arquivo inválido");
-			fileInput.value = undefined;
 			return;
 		}
 

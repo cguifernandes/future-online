@@ -12,9 +12,9 @@ module.exports = {
 		dashboard: path.resolve("./src/tabs/dashboard/index.tsx"),
 		content: path.resolve("./src/content/content.ts"),
 		background: path.resolve("./src/background/background.ts"),
-		// "wa-js": path.resolve("./src/content/wa-js.ts"),
-		// wpp: path.resolve("./src/content/wpp.js"),
-		// injector: path.resolve("./src/content/injector.ts"),
+		"wa-js": path.resolve("./src/content/wa-js.ts"),
+		wpp: path.resolve("./src/content/wpp.js"),
+		injector: path.resolve("./src/content/injector.ts"),
 	},
 	module: {
 		rules: [

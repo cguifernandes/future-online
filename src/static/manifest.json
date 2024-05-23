@@ -17,7 +17,7 @@
 	"content_scripts": [
 		{
 			"matches": ["https://web.whatsapp.com/*"],
-			"js": ["content.js"]
+			"js": ["injector.js", "content.js"]
 		}
 	],
 	"file_system_provider_capabilities": {
@@ -29,10 +29,13 @@
 	"background": {
 		"service_worker": "background.js"
 	},
+	"externally_connectable": {
+		"matches": ["*://*.whatsapp.com/*"]
+	},
 	"web_accessible_resources": [
 		{
 			"matches": ["https://web.whatsapp.com/*"],
-			"resources": ["wa-js.js", "wpp.js", "content.js"]
+			"resources": ["*.js"]
 		}
 	]
 }

@@ -1,43 +1,58 @@
 import React, { useEffect, useState } from "react";
+import Form from "../forms/form-funis";
 import Button from "./button";
-import { v4 as uuidv4 } from "uuid";
 import clsx from "clsx";
-import Form from "../forms/form-midias";
+import { v4 as uuidv4 } from "uuid";
 
-const Midias = () => {
-	const [error, setError] = useState<string | null>(null);
+const Funis = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [data, setData] = useState<{
 		itens: {
 			title: string;
-			image: { url: string; subtitle: string; preview: string };
+			item: {
+				selectedId: string;
+				delay: {
+					minutes: number;
+					seconds: number;
+				};
+			};
 			id: string;
 		}[];
 	}>({ itens: [] });
+	const [contentItem, setContentItem] = useState<{
+		title: string;
+		item: {
+			selectedId: string;
+			delay: {
+				minutes: number;
+				seconds: number;
+			};
+		};
+		id: string;
+	}>();
 	const [dataItem, setDataItem] = useState<{
 		title: string;
-		image: {
-			url: string;
-			subtitle: string;
-			preview: string;
+		item: {
+			selectedId: string;
+			delay: {
+				minutes: number;
+				seconds: number;
+			};
 		};
 	}>({
 		title: "",
-		image: { url: undefined, subtitle: "", preview: "" },
+		item: { selectedId: "", delay: { minutes: 0, seconds: 0 } },
 	});
-	const [contentItem, setContentItem] = useState<{
-		title: string;
-		image: { url: string; subtitle: string; preview: string };
-		id: string;
-	}>();
 
 	useEffect(() => {
 		setDataItem({
 			title: contentItem?.title || "",
-			image: {
-				url: contentItem?.image.url || "",
-				subtitle: contentItem?.image.subtitle || "",
-				preview: contentItem?.image.preview || "",
+			item: {
+				selectedId: contentItem?.item.selectedId || "",
+				delay: {
+					minutes: contentItem?.item.delay.minutes || 0,
+					seconds: contentItem?.item.delay.seconds || 0,
+				},
 			},
 		});
 	}, [contentItem]);
@@ -46,8 +61,8 @@ const Midias = () => {
 		try {
 			chrome.storage.sync
 				.get()
-				.then(({ midias }) => {
-					setData({ itens: midias });
+				.then(({ funis }) => {
+					setData({ itens: funis });
 				})
 				.catch((error) => {
 					console.log(error);
@@ -59,12 +74,18 @@ const Midias = () => {
 
 	const handlerAddItem = (newItem: {
 		title: string;
-		image: { url: string; subtitle: string; preview: string };
+		item: {
+			selectedId: string;
+			delay: {
+				minutes: number;
+				seconds: number;
+			};
+		};
 	}) => {
 		const newItemWithId = { ...newItem, id: uuidv4() };
 		const newItems = [...data.itens, newItemWithId];
 
-		chrome.storage.sync.set({ midias: newItems }, () => {
+		chrome.storage.sync.set({ funis: newItems }, () => {
 			setData({ itens: newItems });
 		});
 	};
@@ -72,7 +93,7 @@ const Midias = () => {
 	return (
 		<>
 			<div className="flex flex-col max-w-sm w-full h-full bg-black/70 rounded-l-lg">
-				<h1 className="text-lg font-semibold text-center text-white p-2 w-full bg-green-500 rounded-tl-lg">
+				<h1 className="text-lg font-semibold text-center text-white p-2 w-full bg-yellow-500 rounded-tl-lg">
 					Gerenciamento de Mídias
 				</h1>
 				{isLoading ? (
@@ -87,14 +108,15 @@ const Midias = () => {
 									type="button"
 									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 									key={index}
-									theme="green-dark"
+									theme="yellow-dark"
 									onClick={() => {
 										setContentItem(item);
-										setError(null);
 									}}
 									className={clsx(
-										"text-left !rounded-none hover:bg-green-700 min-h-12",
-										contentItem && item.id === contentItem.id && "bg-green-700",
+										"text-left !rounded-none hover:bg-yellow-700 min-h-12",
+										contentItem &&
+											item.id === contentItem.id &&
+											"bg-yellow-700",
 									)}
 								>
 									{item.title}
@@ -104,12 +126,15 @@ const Midias = () => {
 						<div className="flex flex-col justify-center items-center flex-1">
 							<Button
 								type="button"
-								theme="green-dark"
-								className="hover:bg-green-700"
+								theme="yellow-dark"
+								className="hover:bg-yellow-700"
 								onClick={() =>
 									handlerAddItem({
-										title: "Novo conteúdo",
-										image: { url: "", subtitle: "", preview: "" },
+										title: "Novo funil",
+										item: {
+											selectedId: "",
+											delay: { minutes: 0, seconds: 0 },
+										},
 									})
 								}
 								icon={
@@ -143,11 +168,14 @@ const Midias = () => {
 							</span>
 							<Button
 								type="button"
-								theme="green-dark"
+								theme="yellow-dark"
 								onClick={() =>
 									handlerAddItem({
-										title: "Novo conteúdo",
-										image: { url: "", subtitle: "", preview: "" },
+										title: "Novo funil",
+										item: {
+											selectedId: "",
+											delay: { minutes: 0, seconds: 0 },
+										},
 									})
 								}
 								icon={
@@ -177,19 +205,17 @@ const Midias = () => {
 			<div className="bg-black/70 rounded-r-lg border-l-2 border-white w-full h-full">
 				{contentItem ? (
 					<Form
-						error={error}
-						setError={setError}
 						contentItem={contentItem}
-						dataItem={dataItem}
 						setContentItem={setContentItem}
 						setData={setData}
+						dataItem={dataItem}
 						setDataItem={setDataItem}
 					/>
 				) : (
 					<div className="flex items-center justify-center px-4 h-full">
 						<h1 className="text-lg text-white text-center">
-							Selecione uma mídia para editar na aba ao lado ou clique em "Novo
-							Item" para adicionar uma nova mídia
+							Selecione um funis para editar na aba ao lado ou clique em "Novo
+							Item" para adicionar um novo funil
 						</h1>
 					</div>
 				)}
@@ -198,4 +224,4 @@ const Midias = () => {
 	);
 };
 
-export default Midias;
+export default Funis;

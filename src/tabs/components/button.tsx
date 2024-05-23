@@ -10,6 +10,8 @@ const button = tv({
 			"purple-light": "bg-purple-500",
 			"green-dark": "bg-green-800/90",
 			"green-light": "bg-green-500",
+			"yellow-dark": "bg-yellow-800/90",
+			"yellow-light": "bg-yellow-500",
 			danger: "bg-red-600 hover:bg-red-700",
 		},
 	},

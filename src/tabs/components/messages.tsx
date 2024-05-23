@@ -74,7 +74,7 @@ const Messages = () => {
 									}}
 									theme="purple-dark"
 									className={clsx(
-										"text-left !rounded-none hover:bg-purple-800",
+										"text-left !rounded-none hover:bg-purple-800 min-h-12",
 										contentItem &&
 											item.id === contentItem?.id &&
 											"bg-purple-800",
