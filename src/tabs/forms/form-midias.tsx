@@ -6,59 +6,18 @@ import File from "../components/file";
 import Textarea from "../components/textarea";
 import { supabase } from "../../lib/supabase";
 import { generateThumbnail } from "../utils/utils";
+import type { Midia } from "../../type/type";
 
 interface Props {
 	setData: React.Dispatch<
 		React.SetStateAction<{
-			itens: {
-				title: string;
-				image: {
-					url: string;
-					subtitle: string;
-					preview?: string;
-				};
-				id: string;
-			}[];
+			itens: Midia[];
 		}>
 	>;
-	dataItem: {
-		title: string;
-		image: {
-			url: string;
-			subtitle: string;
-			preview: string;
-		};
-	};
-	setDataItem: React.Dispatch<
-		React.SetStateAction<{
-			title: string;
-			image: {
-				url: string;
-				subtitle: string;
-				preview: string;
-			};
-		}>
-	>;
-	setContentItem: React.Dispatch<
-		React.SetStateAction<{
-			title: string;
-			image: {
-				url: string;
-				subtitle: string;
-				preview: string;
-			};
-			id: string;
-		}>
-	>;
-	contentItem: {
-		title: string;
-		image: {
-			url: string;
-			subtitle: string;
-			preview?: string;
-		};
-		id: string;
-	};
+	dataItem: Midia;
+	setDataItem: React.Dispatch<React.SetStateAction<Midia>>;
+	setContentItem: React.Dispatch<React.SetStateAction<Midia>>;
+	contentItem: Midia;
 	setError: React.Dispatch<React.SetStateAction<string>>;
 	error: string;
 }
@@ -82,13 +41,12 @@ const Form = ({
 		const subtitle = formData.get("subtitle") as string;
 		const file = formData.get("file") as File;
 
-		if (contentItem && file.name !== "") {
+		if (contentItem && file && file.name !== "") {
+			// Verificando se o arquivo existe
 			setIsLoading(true);
 			const fileName = `${new Date().getTime()}${file.name}`;
 
 			try {
-				let thumbnailUrl: string | undefined;
-
 				const promises = [];
 
 				if (file.type.includes("video")) {
@@ -115,7 +73,7 @@ const Form = ({
 								return;
 							}
 
-							thumbnailUrl = signedData.signedUrl;
+							return signedData.signedUrl;
 						})(),
 					);
 				}
@@ -139,15 +97,16 @@ const Form = ({
 					})(),
 				);
 
-				const [fileUrl] = await Promise.all(promises);
+				const fileUrl = await Promise.all(promises);
 
-				const updatedItem = {
+				const updatedItem: Midia = {
 					...contentItem,
 					title,
 					image: {
 						subtitle,
-						url: fileUrl,
-						preview: thumbnailUrl || fileUrl,
+						url: fileUrl[1] || fileUrl[0],
+						preview: fileUrl[0],
+						type: file.type.includes("video") ? "Vídeo" : "Imagem",
 					},
 				};
 

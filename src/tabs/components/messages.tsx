@@ -3,21 +3,18 @@ import Button from "../components/button";
 import { v4 as uuidv4 } from "uuid";
 import clsx from "clsx";
 import Form from "../forms/form-messages";
+import type { Message } from "../../type/type";
 
 const Messages = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [data, setData] = useState<{
-		itens: { title: string; content: string; id: string }[];
+		itens: Message[];
 	}>({ itens: [] });
 	const [dataItem, setDataItem] = useState({
 		title: "",
 		content: "",
 	});
-	const [contentItem, setContentItem] = useState<{
-		title: string;
-		content: string;
-		id: string;
-	}>();
+	const [contentItem, setContentItem] = useState<Message>();
 
 	useEffect(() => {
 		try {
@@ -42,7 +39,7 @@ const Messages = () => {
 		});
 	}, [contentItem]);
 
-	const handlerAddItem = (newItem: { title: string; content: string }) => {
+	const handlerAddItem = (newItem: Message) => {
 		const newItemWithId = { ...newItem, id: uuidv4() };
 		const newItems = [...data.itens, newItemWithId];
 

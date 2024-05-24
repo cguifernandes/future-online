@@ -4,38 +4,18 @@ import type { FormEvent } from "react";
 import Input from "../components/input";
 import Textarea from "../components/textarea";
 import Button from "../components/button";
+import type { Message } from "../../type/type";
 
 interface Props {
-	contentItem: {
-		title: string;
-		content: string;
-		id: string;
-	};
-	setContentItem: React.Dispatch<
-		React.SetStateAction<
-			| {
-					title: string;
-					content: string;
-					id: string;
-			  }
-			| undefined
-		>
-	>;
-	dataItem: {
-		title: string;
-		content: string;
-	};
+	contentItem: Message;
+	setContentItem: React.Dispatch<React.SetStateAction<Message>>;
+	dataItem: Message;
 	setData: React.Dispatch<
 		React.SetStateAction<{
-			itens: { title: string; content: string; id: string }[];
+			itens: Message[];
 		}>
 	>;
-	setDataItem: React.Dispatch<
-		React.SetStateAction<{
-			title: string;
-			content: string;
-		}>
-	>;
+	setDataItem: React.Dispatch<React.SetStateAction<Message>>;
 }
 
 const Form = ({
@@ -69,11 +49,7 @@ const Form = ({
 		}
 	};
 
-	const handlerRemoveItem = (removeItem: {
-		title: string;
-		content: string;
-		id: string;
-	}) => {
+	const handlerRemoveItem = (removeItem: Message) => {
 		chrome.storage.sync.get("messages", (result) => {
 			const messages = result.messages || [];
 			const updatedItems = messages.filter(

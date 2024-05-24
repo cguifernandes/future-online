@@ -8,26 +8,11 @@ import {
 	loadingImage,
 	loadingVideo,
 } from "../utils/utils";
+import type { Midia } from "../../type/type";
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
-	dataItem: {
-		title: string;
-		image: {
-			url: string;
-			subtitle: string;
-			preview: string;
-		};
-	};
-	setDataItem: (
-		value: React.SetStateAction<{
-			title: string;
-			image: {
-				url: string;
-				subtitle: string;
-				preview: string;
-			};
-		}>,
-	) => void;
+	dataItem: Midia;
+	setDataItem: (value: React.SetStateAction<Midia>) => void;
 	setError: React.Dispatch<React.SetStateAction<string>>;
 	error: string;
 }
@@ -70,8 +55,9 @@ const File = ({ dataItem, setDataItem, error, setError, ...rest }: Props) => {
 				...prev,
 				image: {
 					...prev.image,
-					url: preview,
+					url: "",
 					preview,
+					type: file.type.includes("video") ? "Vídeo" : "Imagem",
 				},
 			}));
 		} else {

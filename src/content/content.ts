@@ -1,3 +1,5 @@
+import { saveFile } from "../background/background";
+import type { Message, Midia } from "../type/type";
 import "./whatsapp.css";
 
 const waitForElement = (selector, callback) => {
@@ -70,8 +72,7 @@ const loadButton = () => {
 
 const loadItems = (
 	titleText: string,
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-	items: any[],
+	items: Midia[] | Message[],
 	pattern: HTMLDivElement,
 	buttonClassName: string,
 ) => {
@@ -87,11 +88,26 @@ const loadItems = (
 		button.textContent = item.title;
 		button.className = buttonClassName;
 		button.addEventListener("click", async () => {
-			if (item.content) {
+			if (item.type === "message") {
 				window.dispatchEvent(
 					new CustomEvent("sendMessage", {
 						detail: {
 							content: item.content,
+						},
+					}),
+				);
+			}
+
+			if (item.type === "midia" && item.image.url !== "" && item.image.url) {
+				const fileName = new Date().getTime().toString();
+				const file = await saveFile(item.image.url, fileName);
+
+				window.dispatchEvent(
+					new CustomEvent("sendFile", {
+						detail: {
+							file: file,
+							subtitle: item.image.subtitle,
+							type: item.image.type,
 						},
 					}),
 				);
@@ -108,14 +124,8 @@ window.addEventListener("loadWpp", async () => {
 	if (!window.location.href.includes("web.whatsapp.com")) return;
 
 	const data = (await chrome.storage.sync.get()) as {
-		messages: { content: string; title: string }[];
-		midias: {
-			title: string;
-			image: {
-				url: string;
-				subtitle: string;
-			};
-		}[];
+		messages: Message[];
+		midias: Midia[];
 	};
 
 	waitForElement("span.x1okw0bk", () => {
@@ -138,21 +148,33 @@ window.addEventListener("loadWpp", async () => {
 			footer.appendChild(pattern);
 
 			if (data.messages?.length > 0) {
+				const messages: Message[] = data.messages.map((message) => ({
+					type: "message",
+					content: message.content,
+					title: message.title,
+				}));
+
 				loadItems(
 					"Mensagens",
-					data.messages,
+					messages,
 					pattern,
 					"button-message-future-online",
 				);
 			}
 
 			if (data.midias?.length > 0) {
-				loadItems(
-					"Midias",
-					data.midias,
-					pattern,
-					"button-midias-future-online",
-				);
+				const midias: Midia[] = data.midias.map((midia) => ({
+					type: "midia",
+					title: midia.title,
+					image: {
+						url: midia.image.url,
+						subtitle: midia.image.subtitle,
+						preview: midia.image.preview,
+						type: midia.image.type,
+					},
+				}));
+
+				loadItems("Midias", midias, pattern, "button-midias-future-online");
 			}
 
 			return;

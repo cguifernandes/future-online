@@ -3,33 +3,19 @@ import Button from "./button";
 import { v4 as uuidv4 } from "uuid";
 import clsx from "clsx";
 import Form from "../forms/form-midias";
+import type { Midia } from "../../type/type";
 
 const Midias = () => {
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [data, setData] = useState<{
-		itens: {
-			title: string;
-			image: { url: string; subtitle: string; preview: string };
-			id: string;
-		}[];
+		itens: Midia[];
 	}>({ itens: [] });
-	const [dataItem, setDataItem] = useState<{
-		title: string;
-		image: {
-			url: string;
-			subtitle: string;
-			preview: string;
-		};
-	}>({
+	const [dataItem, setDataItem] = useState<Midia>({
 		title: "",
-		image: { url: undefined, subtitle: "", preview: "" },
+		image: { url: undefined, subtitle: "", preview: "", type: "" },
 	});
-	const [contentItem, setContentItem] = useState<{
-		title: string;
-		image: { url: string; subtitle: string; preview: string };
-		id: string;
-	}>();
+	const [contentItem, setContentItem] = useState<Midia>();
 
 	useEffect(() => {
 		setDataItem({
@@ -38,6 +24,7 @@ const Midias = () => {
 				url: contentItem?.image.url || "",
 				subtitle: contentItem?.image.subtitle || "",
 				preview: contentItem?.image.preview || "",
+				type: contentItem?.image.type || "",
 			},
 		});
 	}, [contentItem]);
@@ -57,10 +44,7 @@ const Midias = () => {
 		}
 	}, []);
 
-	const handlerAddItem = (newItem: {
-		title: string;
-		image: { url: string; subtitle: string; preview: string };
-	}) => {
+	const handlerAddItem = (newItem: Midia) => {
 		const newItemWithId = { ...newItem, id: uuidv4() };
 		const newItems = [...data.itens, newItemWithId];
 
@@ -109,7 +93,7 @@ const Midias = () => {
 								onClick={() =>
 									handlerAddItem({
 										title: "Novo conteúdo",
-										image: { url: "", subtitle: "", preview: "" },
+										image: { url: "", subtitle: "", preview: "", type: "" },
 									})
 								}
 								icon={
@@ -147,7 +131,7 @@ const Midias = () => {
 								onClick={() =>
 									handlerAddItem({
 										title: "Novo conteúdo",
-										image: { url: "", subtitle: "", preview: "" },
+										image: { url: "", subtitle: "", preview: "", type: "" },
 									})
 								}
 								icon={

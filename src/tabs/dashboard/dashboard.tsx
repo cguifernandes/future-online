@@ -91,7 +91,7 @@ const Dashboard = () => {
 					<img src="https://i.imgur.com/L43iCAC.png" alt="Logo" />
 				</nav>
 			</header>
-			<main className="min-h-[calc(100vh_-_64px)] max-w-7xl w-full mx-auto px-8">
+			<main className="min-h-[calc(100vh_-_96px)] max-w-7xl w-full mx-auto px-8">
 				<div className="flex flex-col gap-y-px py-6">
 					<h1 className="text-xl font-semibold">
 						Bem vindo(a) ao Painel de Controle
