@@ -113,7 +113,7 @@ const Funis = () => {
 										setContentItem(item);
 									}}
 									className={clsx(
-										"text-left !rounded-none hover:bg-yellow-700 min-h-12",
+										"text-left !rounded-none hover:bg-yellow-700 min-h-[48px]",
 										contentItem &&
 											item.id === contentItem.id &&
 											"bg-yellow-700",

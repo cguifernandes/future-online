@@ -17,7 +17,6 @@ window.addEventListener("sendFile", async (e: CustomEvent) => {
 
 	try {
 		if (type === "Imagem") {
-			console.log(file);
 			await WPP.chat.sendFileMessage(chatId, file, {
 				type: "image",
 				caption: subtitle,
@@ -25,7 +24,6 @@ window.addEventListener("sendFile", async (e: CustomEvent) => {
 		}
 
 		if (type === "Vídeo") {
-			console.log(file);
 			await WPP.chat.sendFileMessage(chatId, file, {
 				type: "video",
 				caption: subtitle,

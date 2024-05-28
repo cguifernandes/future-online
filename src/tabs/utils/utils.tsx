@@ -1,3 +1,5 @@
+import { supabase } from "../../lib/supabase";
+
 export const FILES_TYPE = [
 	"image/jpeg",
 	"image/png",
@@ -117,4 +119,26 @@ export const generateThumbnail = (videoFile: File): Promise<Blob> => {
 
 		video.src = URL.createObjectURL(videoFile);
 	});
+};
+
+export const uploadAndSign = async (path: string, content) => {
+	const uploadResponse = await supabase.storage
+		.from("future-online")
+		.upload(path, content);
+
+	if (uploadResponse.error) {
+		console.log(uploadResponse.error);
+		return null;
+	}
+
+	const { data: signedData, error: signedError } = await supabase.storage
+		.from("future-online")
+		.createSignedUrl(uploadResponse.data.path, 30 * 24 * 60 * 60);
+
+	if (signedError) {
+		console.log(signedError);
+		return null;
+	}
+
+	return signedData.signedUrl;
 };

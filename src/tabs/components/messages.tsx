@@ -17,19 +17,19 @@ const Messages = () => {
 	const [contentItem, setContentItem] = useState<Message>();
 
 	useEffect(() => {
-		try {
-			setIsLoading(true);
-			chrome.storage.sync
-				.get()
-				.then(({ messages }) => {
-					setData({ itens: messages });
-				})
-				.catch((error) => {
-					console.log(error);
-				});
-		} finally {
-			setIsLoading(false);
-		}
+		chrome.storage.sync
+			.get()
+			.then((result) => {
+				const messages =
+					Object.keys(result).length === 0 ? [] : result.messages || [];
+				setData({ itens: messages });
+			})
+			.catch((error) => {
+				console.log(error);
+			})
+			.finally(() => {
+				setIsLoading(false);
+			});
 	}, []);
 
 	useEffect(() => {
@@ -71,7 +71,7 @@ const Messages = () => {
 									}}
 									theme="purple-dark"
 									className={clsx(
-										"text-left !rounded-none hover:bg-purple-800 min-h-12",
+										"text-left !rounded-none hover:bg-purple-800 min-h-[48px]",
 										contentItem &&
 											item.id === contentItem?.id &&
 											"bg-purple-800",

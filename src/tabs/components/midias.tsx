@@ -30,18 +30,19 @@ const Midias = () => {
 	}, [contentItem]);
 
 	useEffect(() => {
-		try {
-			chrome.storage.sync
-				.get()
-				.then(({ midias }) => {
-					setData({ itens: midias });
-				})
-				.catch((error) => {
-					console.log(error);
-				});
-		} finally {
-			setIsLoading(false);
-		}
+		chrome.storage.sync
+			.get()
+			.then((result) => {
+				const midias =
+					Object.keys(result).length === 0 ? [] : result.midias || [];
+				setData({ itens: midias });
+			})
+			.catch((error) => {
+				console.log(error);
+			})
+			.finally(() => {
+				setIsLoading(false);
+			});
 	}, []);
 
 	const handlerAddItem = (newItem: Midia) => {
@@ -77,7 +78,7 @@ const Midias = () => {
 										setError(null);
 									}}
 									className={clsx(
-										"text-left !rounded-none hover:bg-green-700 min-h-12",
+										"text-left !rounded-none hover:bg-green-700 min-h-[48px]",
 										contentItem && item.id === contentItem.id && "bg-green-700",
 									)}
 								>

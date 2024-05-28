@@ -4,8 +4,7 @@ import Input from "../components/input";
 import Button from "../components/button";
 import File from "../components/file";
 import Textarea from "../components/textarea";
-import { supabase } from "../../lib/supabase";
-import { generateThumbnail } from "../utils/utils";
+import { generateThumbnail, uploadAndSign } from "../utils/utils";
 import type { Midia } from "../../type/type";
 
 interface Props {
@@ -41,91 +40,49 @@ const Form = ({
 		const subtitle = formData.get("subtitle") as string;
 		const file = formData.get("file") as File;
 
-		if (contentItem && file && file.name !== "") {
-			// Verificando se o arquivo existe
+		try {
 			setIsLoading(true);
-			const fileName = `${new Date().getTime()}${file.name}`;
+			const fileUrl = [];
+			const promises = [];
 
-			try {
-				const promises = [];
+			if (file.type !== "application/octet-stream" && file.name !== "") {
+				const fileName = `${new Date().getTime()}${file.name}`;
 
 				if (file.type.includes("video")) {
-					promises.push(
-						(async () => {
-							const thumbnailBlob = await generateThumbnail(file);
+					const thumbnailBlob = await generateThumbnail(file);
 
-							const { data, error } = await supabase.storage
-								.from("future-online")
-								.upload(`preview-${fileName}`, thumbnailBlob);
-
-							if (error) {
-								console.log(error);
-								return;
-							}
-
-							const { data: signedData, error: signedError } =
-								await supabase.storage
-									.from("future-online")
-									.createSignedUrl(data.path, 30 * 24 * 60 * 60);
-
-							if (signedError) {
-								console.log(signedError);
-								return;
-							}
-
-							return signedData.signedUrl;
-						})(),
-					);
+					promises.push(uploadAndSign(`preview-${fileName}`, thumbnailBlob));
 				}
 
-				promises.push(
-					(async () => {
-						const { data, error } = await supabase.storage
-							.from("future-online")
-							.upload(fileName, file);
+				promises.push(uploadAndSign(fileName, file));
+			}
 
-						if (error) throw error;
+			const updatedItem: Midia = {
+				...contentItem,
+				title,
+				image: {
+					subtitle,
+					url: fileUrl[1] || fileUrl[0],
+					preview: fileUrl[0],
+					type: file.type.includes("video") ? "Vídeo" : "Imagem",
+				},
+			};
 
-						const { data: signedData, error: signedError } =
-							await supabase.storage
-								.from("future-online")
-								.createSignedUrl(data.path, 30 * 24 * 60 * 60);
-
-						if (signedError) throw signedError;
-
-						return signedData.signedUrl;
-					})(),
+			chrome.storage.sync.get("midias", (result) => {
+				const updatedItems = result.midias.map((item) =>
+					item.id === contentItem.id ? updatedItem : item,
 				);
 
-				const fileUrl = await Promise.all(promises);
-
-				const updatedItem: Midia = {
-					...contentItem,
-					title,
-					image: {
-						subtitle,
-						url: fileUrl[1] || fileUrl[0],
-						preview: fileUrl[0],
-						type: file.type.includes("video") ? "Vídeo" : "Imagem",
-					},
-				};
-
-				chrome.storage.sync.get("midias", (result) => {
-					const updatedItems = result.midias.map((item) =>
-						item.id === contentItem.id ? updatedItem : item,
-					);
-
-					chrome.storage.sync.set({ midias: updatedItems }, () => {
-						setData({ itens: updatedItems });
-						setDataItem(updatedItem);
-						setContentItem(updatedItem);
-					});
+				chrome.storage.sync.set({ midias: updatedItems }, () => {
+					setData({ itens: updatedItems });
+					setDataItem(updatedItem);
+					setContentItem(updatedItem);
 				});
-			} catch (error) {
-				console.log(error);
-			} finally {
-				setIsLoading(false);
-			}
+			});
+		} catch (error) {
+			console.log(error);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 

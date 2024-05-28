@@ -132,6 +132,8 @@ window.addEventListener("loadWpp", async () => {
 		loadButton();
 	});
 
+	if (Object.keys(data).length === 0) return;
+
 	waitForElement("div#main", () => {
 		const observer = new MutationObserver(() => {
 			const main = document.querySelector("div#main");
