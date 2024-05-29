@@ -9,27 +9,21 @@ window.addEventListener("sendMessage", async (e: CustomEvent) => {
 });
 
 window.addEventListener("sendFile", async (e: CustomEvent) => {
-	const { file, subtitle, type } = e.detail;
+	const { file, subtitle } = e.detail;
 	const activeChat = WPP.chat.getActiveChat();
 	if (!activeChat?.id?._serialized) return;
 
 	const chatId = activeChat.id._serialized;
 
 	try {
-		if (type === "Imagem") {
-			await WPP.chat.sendFileMessage(chatId, file, {
-				type: "image",
-				caption: subtitle,
-			});
-		}
-
-		if (type === "Vídeo") {
-			await WPP.chat.sendFileMessage(chatId, file, {
-				type: "video",
-				caption: subtitle,
-			});
-		}
+		console.log("Carregando...");
+		await WPP.chat.sendFileMessage(chatId, file, {
+			type: "auto-detect",
+			caption: subtitle,
+		});
 	} catch (error) {
 		console.error("Erro ao enviar o arquivo:", error);
+	} finally {
+		console.log("Mensagem enviada");
 	}
 });

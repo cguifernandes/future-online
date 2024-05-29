@@ -6,7 +6,10 @@ chrome.runtime.onMessage.addListener((message) => {
 
 export const saveFile = async (path: string, fileName: string) => {
 	try {
-		const response = await fetch(path);
+		const response = await fetch(path, {
+			cache: "force-cache",
+		});
+
 		const blob = await response.blob();
 		const filetype = blob.type;
 

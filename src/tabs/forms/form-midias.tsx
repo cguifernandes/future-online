@@ -85,16 +85,16 @@ const Form = ({
 				promises.push(uploadAndSign(fileName, image.file));
 			}
 
-			const [previewUrl, url] = await Promise.all(promises);
-			const hasChangeOnTitle = previewUrl === undefined && url === undefined;
+			const [preview, url] = await Promise.all(promises);
+			const hasImage = preview === undefined && url === undefined;
 
 			const updatedItem: Midia = {
 				...contentItem,
 				title,
 				image: {
 					subtitle: image.subtitle,
-					url: hasChangeOnTitle ? contentItem.image.url : previewUrl || url,
-					preview: hasChangeOnTitle ? contentItem.image.preview : previewUrl,
+					url: hasImage ? contentItem.image.url : url || preview,
+					preview: hasImage ? contentItem.image.preview : preview,
 					type: image.file
 						? image.file.type.includes("video")
 							? "Vídeo"

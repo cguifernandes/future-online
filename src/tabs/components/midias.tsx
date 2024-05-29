@@ -34,7 +34,6 @@ const Midias = () => {
 			.then((result) => {
 				const midias =
 					Object.keys(result).length === 0 ? [] : result.midias || [];
-				console.log(result);
 				setData({ itens: midias });
 			})
 			.catch((error) => {

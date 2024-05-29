@@ -5,8 +5,8 @@ import clsx from "clsx";
 import {
 	ACCEPT_FILES_TYPE,
 	FILES_TYPE,
+	generateThumbnail,
 	loadingImage,
-	loadingVideo,
 } from "../utils/utils";
 import type { Midia } from "../../type/type";
 import type { UseFormSetError, UseFormSetValue } from "react-hook-form";
@@ -35,8 +35,8 @@ const File = ({
 	const [isLoadingImage, setIsLoadingImage] = useState(false);
 
 	useEffect(() => {
-		if (dataItem.image.preview) {
-			setImagePreview(dataItem.image.preview);
+		if (dataItem.image.preview || dataItem.image.url) {
+			setImagePreview(dataItem.image.preview || dataItem.image.url);
 		} else {
 			setImagePreview(null);
 		}
@@ -65,9 +65,11 @@ const File = ({
 
 			let preview = "";
 			if (file.type.includes("video")) {
-				preview = await loadingVideo(file, setIsLoadingImage);
+				preview = (await generateThumbnail(file, true)) as string;
+				setIsLoadingImage(false);
 			} else {
-				preview = await loadingImage(file, setIsLoadingImage);
+				preview = await loadingImage(file);
+				setIsLoadingImage(false);
 			}
 
 			setImagePreview(preview);

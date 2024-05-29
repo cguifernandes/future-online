@@ -107,12 +107,12 @@ const loadItems = (
 						detail: {
 							file: file,
 							subtitle: item.image.subtitle,
-							type: item.image.type,
 						},
 					}),
 				);
 			}
 		});
+
 		content.appendChild(button);
 	}
 

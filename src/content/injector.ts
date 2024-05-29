@@ -11,7 +11,7 @@ async function injectScripts() {
 			window.dispatchEvent(new CustomEvent("initWpp"));
 			window.dispatchEvent(new CustomEvent("loadWpp"));
 		}
-	}, 2000);
+	}, 1000);
 }
 
 const injectScript = (src: string): Promise<void> => {
