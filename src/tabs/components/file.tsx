@@ -9,15 +9,28 @@ import {
 	loadingVideo,
 } from "../utils/utils";
 import type { Midia } from "../../type/type";
+import type { UseFormSetError, UseFormSetValue } from "react-hook-form";
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
 	dataItem: Midia;
 	setDataItem: (value: React.SetStateAction<Midia>) => void;
-	setError: React.Dispatch<React.SetStateAction<string>>;
-	error: string;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	setValue?: UseFormSetValue<any>;
+	name?: string;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	setError?: UseFormSetError<any>;
+	error?: string;
 }
 
-const File = ({ dataItem, setDataItem, error, setError, ...rest }: Props) => {
+const File = ({
+	dataItem,
+	setError,
+	error,
+	setValue,
+	name,
+	setDataItem,
+	...rest
+}: Props) => {
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [isLoadingImage, setIsLoadingImage] = useState(false);
 
@@ -33,13 +46,20 @@ const File = ({ dataItem, setDataItem, error, setError, ...rest }: Props) => {
 		const fileInput = e.target;
 		const file = fileInput.files[0];
 
-		if (file && !FILES_TYPE.includes(file.type)) {
-			setError("Formato de arquivo inválido");
+		if (!FILES_TYPE.includes(file.type)) {
+			if (setError) {
+				setError(name, {
+					message: "Formato de arquivo inválido",
+				});
+			}
 			return;
 		}
 
+		if (setValue && name) {
+			setValue(name, file);
+		}
+
 		if (file) {
-			setError(null);
 			setIsLoadingImage(true);
 			setImagePreview(null);
 
@@ -62,7 +82,6 @@ const File = ({ dataItem, setDataItem, error, setError, ...rest }: Props) => {
 			}));
 		} else {
 			setImagePreview(null);
-			setError(null);
 			setDataItem((prev) => ({
 				...prev,
 				image: {

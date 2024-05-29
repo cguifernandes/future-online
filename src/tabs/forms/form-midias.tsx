@@ -1,11 +1,13 @@
-import React from "react";
-import type { FormEvent } from "react";
+import React, { useEffect } from "react";
 import Input from "../components/input";
 import Button from "../components/button";
 import File from "../components/file";
 import Textarea from "../components/textarea";
 import { generateThumbnail, uploadAndSign } from "../utils/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { Midia } from "../../type/type";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 interface Props {
 	setData: React.Dispatch<
@@ -17,8 +19,6 @@ interface Props {
 	setDataItem: React.Dispatch<React.SetStateAction<Midia>>;
 	setContentItem: React.Dispatch<React.SetStateAction<Midia>>;
 	contentItem: Midia;
-	setError: React.Dispatch<React.SetStateAction<string>>;
-	error: string;
 }
 
 const Form = ({
@@ -27,44 +27,79 @@ const Form = ({
 	setDataItem,
 	setData,
 	contentItem,
-	error,
-	setError,
 }: Props) => {
 	const [isLoading, setIsLoading] = React.useState(false);
 
-	const handlerSubmit = async (e: FormEvent) => {
-		e.preventDefault();
+	const schema = z.object({
+		title: z.string(),
+		image: z.object({
+			subtitle: z.string(),
+			file: z.any().optional(),
+		}),
+	});
 
-		const formData = new FormData(e.currentTarget as HTMLFormElement);
-		const title = formData.get("title") as string;
-		const subtitle = formData.get("subtitle") as string;
-		const file = formData.get("file") as File;
+	const {
+		handleSubmit,
+		register,
+		setValue,
+		setError,
+		reset,
+		formState: { errors },
+	} = useForm<z.infer<typeof schema>>({
+		reValidateMode: "onSubmit",
+		resolver: zodResolver(schema),
+		defaultValues: {
+			title: "Novo contéudo" || contentItem.title,
+			image: {
+				subtitle: contentItem.image.subtitle,
+				file: undefined,
+			},
+		},
+	});
 
+	useEffect(() => {
+		reset({
+			title: contentItem.title,
+			image: {
+				subtitle: contentItem.image.subtitle,
+				file: undefined,
+			},
+		});
+	}, [contentItem, reset]);
+
+	const handlerSubmit = async ({ image, title }: z.infer<typeof schema>) => {
 		try {
 			setIsLoading(true);
-			const fileUrl = [];
+
 			const promises = [];
 
-			if (file.type !== "application/octet-stream" && file.name !== "") {
-				const fileName = `${new Date().getTime()}${file.name}`;
+			if (image?.file) {
+				const fileName = `${new Date().getTime()}${image.file.name}`;
 
-				if (file.type.includes("video")) {
-					const thumbnailBlob = await generateThumbnail(file);
+				if (image.file.type.includes("video")) {
+					const thumbnailBlob = await generateThumbnail(image.file);
 
 					promises.push(uploadAndSign(`preview-${fileName}`, thumbnailBlob));
 				}
 
-				promises.push(uploadAndSign(fileName, file));
+				promises.push(uploadAndSign(fileName, image.file));
 			}
+
+			const [previewUrl, url] = await Promise.all(promises);
+			const hasChangeOnTitle = previewUrl === undefined && url === undefined;
 
 			const updatedItem: Midia = {
 				...contentItem,
 				title,
 				image: {
-					subtitle,
-					url: fileUrl[1] || fileUrl[0],
-					preview: fileUrl[0],
-					type: file.type.includes("video") ? "Vídeo" : "Imagem",
+					subtitle: image.subtitle,
+					url: hasChangeOnTitle ? contentItem.image.url : previewUrl || url,
+					preview: hasChangeOnTitle ? contentItem.image.preview : previewUrl,
+					type: image.file
+						? image.file.type.includes("video")
+							? "Vídeo"
+							: "Imagem"
+						: contentItem.image.type,
 				},
 			};
 
@@ -102,18 +137,15 @@ const Form = ({
 
 	return (
 		<form
-			onSubmit={handlerSubmit}
+			onSubmit={handleSubmit(handlerSubmit)}
 			className="flex flex-col gap-y-3 items-center justify-center p-4 h-full"
 		>
 			<div className="flex gap-x-3 w-full">
 				<Input
+					{...register("title")}
 					placeholder="Título do item"
 					className="w-full"
 					name="title"
-					value={dataItem.title}
-					onChange={(e) => {
-						setDataItem((prev) => ({ ...prev, title: e.target.value }));
-					}}
 					theme="green"
 				/>
 				<button
@@ -144,23 +176,19 @@ const Form = ({
 			</div>
 			<div className="flex gap-x-3 w-full flex-1">
 				<File
-					error={error}
-					setError={setError}
+					setValue={setValue}
+					name="image.file"
 					dataItem={dataItem}
 					setDataItem={setDataItem}
+					setError={setError}
+					error={errors.image?.file.message.toString()}
 				/>
 				<Textarea
 					name="subtitle"
 					theme="green"
 					className="resize-none"
 					placeholder="Insira uma legenda para a mídia (Opcional)"
-					value={dataItem.image.subtitle}
-					onChange={(e) =>
-						setDataItem((prev) => ({
-							...prev,
-							image: { ...prev.image, subtitle: e.target.value },
-						}))
-					}
+					{...register("image.subtitle")}
 				/>
 			</div>
 			<div className="flex items-center gap-x-3 justify-end w-full">

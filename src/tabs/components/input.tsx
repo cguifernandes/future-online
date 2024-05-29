@@ -12,13 +12,13 @@ const input = tv({
 	},
 });
 
-const Input = ({
-	theme,
-	className,
-	...rest
-}: InputHTMLAttributes<HTMLInputElement> & VariantProps<typeof input>) => {
+const Input = React.forwardRef<
+	HTMLInputElement,
+	InputHTMLAttributes<HTMLInputElement> & VariantProps<typeof input>
+>(({ theme, className, ...rest }, ref) => {
 	return (
 		<input
+			ref={ref}
 			className={input({
 				theme,
 				className,
@@ -26,6 +26,6 @@ const Input = ({
 			{...rest}
 		/>
 	);
-};
+});
 
 export default Input;

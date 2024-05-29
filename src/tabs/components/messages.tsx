@@ -158,10 +158,8 @@ const Messages = () => {
 				{contentItem ? (
 					<Form
 						contentItem={contentItem}
-						dataItem={dataItem}
 						setContentItem={setContentItem}
 						setData={setData}
-						setDataItem={setContentItem}
 					/>
 				) : (
 					<div className="flex items-center justify-center px-4 h-full">

@@ -1,37 +1,47 @@
 // biome-ignore lint/style/useImportType: <explanation>
-import React from "react";
+import React, { useEffect } from "react";
 import type { FormEvent } from "react";
 import Input from "../components/input";
 import Textarea from "../components/textarea";
 import Button from "../components/button";
 import type { Message } from "../../type/type";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface Props {
 	contentItem: Message;
 	setContentItem: React.Dispatch<React.SetStateAction<Message>>;
-	dataItem: Message;
 	setData: React.Dispatch<
 		React.SetStateAction<{
 			itens: Message[];
 		}>
 	>;
-	setDataItem: React.Dispatch<React.SetStateAction<Message>>;
 }
 
-const Form = ({
-	contentItem,
-	setContentItem,
-	dataItem,
-	setDataItem,
-	setData,
-}: Props) => {
-	const handlerSubmit = (e: FormEvent) => {
-		e.preventDefault();
+const Form = ({ contentItem, setContentItem, setData }: Props) => {
+	const schema = z.object({
+		title: z.string(),
+		content: z.string(),
+	});
 
-		const formData = new FormData(e.currentTarget as HTMLFormElement);
-		const title = formData.get("title") as string;
-		const content = formData.get("content") as string;
+	const { handleSubmit, register, reset } = useForm<z.infer<typeof schema>>({
+		reValidateMode: "onSubmit",
+		resolver: zodResolver(schema),
+		defaultValues: {
+			title: "Novo contéudo" || contentItem.title,
+			content: "Novo item" || contentItem.content,
+		},
+	});
 
+	useEffect(() => {
+		reset({
+			title: contentItem.title,
+			content: contentItem.content,
+		});
+	}, [contentItem, reset]);
+
+	const handlerSubmit = ({ content, title }: z.infer<typeof schema>) => {
 		if (contentItem) {
 			const updatedItem = { ...contentItem, title, content };
 
@@ -66,18 +76,15 @@ const Form = ({
 
 	return (
 		<form
-			onSubmit={handlerSubmit}
+			onSubmit={handleSubmit(handlerSubmit)}
 			className="flex flex-col gap-y-3 items-center justify-center p-4 h-full"
 		>
 			<div className="flex gap-x-3 w-full">
 				<Input
 					placeholder="Título do item"
+					{...register("title")}
 					className="w-full"
 					name="title"
-					value={dataItem.title}
-					onChange={(e) =>
-						setDataItem((prev) => ({ ...prev, title: e.target.value }))
-					}
 					theme="purple"
 				/>
 				<button
@@ -111,10 +118,7 @@ const Form = ({
 				placeholder="Conteúdo do item"
 				className="h-full w-full resize-none text-base"
 				theme="purple"
-				value={dataItem.content}
-				onChange={(e) =>
-					setDataItem((prev) => ({ ...prev, content: e.target.value }))
-				}
+				{...register("content")}
 			/>
 			<div className="flex items-center gap-x-3 justify-end w-full">
 				<Button theme="purple-light" className="hover:bg-purple-600 w-28">

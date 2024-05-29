@@ -6,7 +6,6 @@ import Form from "../forms/form-midias";
 import type { Midia } from "../../type/type";
 
 const Midias = () => {
-	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
 	const [data, setData] = useState<{
 		itens: Midia[];
@@ -35,6 +34,7 @@ const Midias = () => {
 			.then((result) => {
 				const midias =
 					Object.keys(result).length === 0 ? [] : result.midias || [];
+				console.log(result);
 				setData({ itens: midias });
 			})
 			.catch((error) => {
@@ -75,7 +75,6 @@ const Midias = () => {
 									theme="green-dark"
 									onClick={() => {
 										setContentItem(item);
-										setError(null);
 									}}
 									className={clsx(
 										"text-left !rounded-none hover:bg-green-700 min-h-[48px]",
@@ -162,8 +161,6 @@ const Midias = () => {
 			<div className="bg-black/70 rounded-r-lg border-l-2 border-white w-full h-full">
 				{contentItem ? (
 					<Form
-						error={error}
-						setError={setError}
 						contentItem={contentItem}
 						dataItem={dataItem}
 						setContentItem={setContentItem}

@@ -12,14 +12,13 @@ const textarea = tv({
 	},
 });
 
-const Textarea = ({
-	theme,
-	className,
-	...rest
-}: TextareaHTMLAttributes<HTMLTextAreaElement> &
-	VariantProps<typeof textarea>) => {
+const Textarea = React.forwardRef<
+	HTMLTextAreaElement,
+	TextareaHTMLAttributes<HTMLTextAreaElement> & VariantProps<typeof textarea>
+>(({ theme, className, ...rest }, ref) => {
 	return (
 		<textarea
+			ref={ref}
 			className={textarea({
 				theme,
 				className,
@@ -27,6 +26,6 @@ const Textarea = ({
 			{...rest}
 		/>
 	);
-};
+});
 
 export default Textarea;
