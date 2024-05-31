@@ -1,76 +1,24 @@
 // biome-ignore lint/style/useImportType: <explanation>
-import React, { type FormEvent } from "react";
+import React, { useState, type FormEvent } from "react";
 import Input from "../components/input";
+import type { Funil } from "../../type/type";
+import Button from "../components/button";
 
 interface Props {
-	contentItem: {
-		title: string;
-		item: {
-			selectedId: string;
-			delay: {
-				minutes: number;
-				seconds: number;
-			};
-		};
-		id: string;
-	};
-	setContentItem: React.Dispatch<
-		React.SetStateAction<{
-			title: string;
-			item: {
-				selectedId: string;
-				delay: {
-					minutes: number;
-					seconds: number;
-				};
-			};
-			id: string;
-		}>
-	>;
+	contentItem: Funil;
+	setContentItem: React.Dispatch<React.SetStateAction<Funil>>;
 	setData: React.Dispatch<
 		React.SetStateAction<{
-			itens: {
-				title: string;
-				item: {
-					selectedId: string;
-					delay: {
-						minutes: number;
-						seconds: number;
-					};
-				};
-				id: string;
-			}[];
+			itens: Funil[];
 		}>
 	>;
-	dataItem: {
-		title: string;
-		item: {
-			selectedId: string;
-			delay: {
-				minutes: number;
-				seconds: number;
-			};
-		};
-	};
-	setDataItem: React.Dispatch<
-		React.SetStateAction<{
-			title: string;
-			item: {
-				selectedId: string;
-				delay: {
-					minutes: number;
-					seconds: number;
-				};
-			};
-		}>
-	>;
+	setVisibleModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Form = ({
 	contentItem,
-	dataItem,
-	setDataItem,
 	setContentItem,
+	setVisibleModal,
 	setData,
 }: Props) => {
 	const handlerSubmit = (e: FormEvent) => {
@@ -83,14 +31,14 @@ const Form = ({
 		if (contentItem) {
 			const updatedItem = { ...contentItem, title, content };
 
-			chrome.storage.sync.get("messages", (result) => {
-				const messages = result.messages || [];
-				const updatedItems = messages.map((item) =>
+			chrome.storage.sync.get("mensagens", (result) => {
+				const mensagens = result.mensagens || [];
+				const updatedItems: Funil = mensagens.map((item) =>
 					item.id === contentItem.id ? updatedItem : item,
 				);
 
-				chrome.storage.sync.set({ messages: updatedItems }, () => {
-					setData({ itens: updatedItems });
+				chrome.storage.sync.set({ mensagens: updatedItems }, () => {
+					// setData({ itens: updatedItems });
 					setContentItem(updatedItem);
 				});
 			});
@@ -114,7 +62,7 @@ const Form = ({
 			);
 
 			chrome.storage.sync.set({ funis: updatedItems }, () => {
-				setData({ itens: updatedItems });
+				// setData({ itens: updatedItems });
 				setContentItem(undefined);
 			});
 		});
@@ -130,18 +78,13 @@ const Form = ({
 					placeholder="Título do item"
 					className="w-full"
 					name="title"
-					value={dataItem.title}
-					onChange={(e) => {
-						setDataItem((prev) => ({ ...prev, title: e.target.value }));
-					}}
-					theme="green"
+					theme="yellow"
 				/>
 				<button
 					type="button"
 					onClick={() => handlerRemoveItem(contentItem.id)}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
-					{/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -154,6 +97,7 @@ const Form = ({
 						strokeLinejoin="round"
 						className="text-white"
 					>
+						<title>Remover</title>
 						<path d="M3 6h18" />
 						<path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
 						<path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
@@ -161,6 +105,36 @@ const Form = ({
 						<line x1="14" x2="14" y1="11" y2="17" />
 					</svg>
 				</button>
+			</div>
+			<div className="flex-1 h-full flex flex-col items-center justify-center gap-y-3 max-w-md">
+				<p className="text-center text-white text-base">
+					Você ainda não possui nenhum item adicionado neste funil. Caso queira
+					adicionar um item clique no botão abaixo
+				</p>
+				<Button
+					type="button"
+					onClick={() => setVisibleModal(true)}
+					theme="yellow-dark"
+					icon={
+						// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="18"
+							height="18"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+						>
+							<path d="M5 12h14" />
+							<path d="M12 5v14" />
+						</svg>
+					}
+				>
+					Adicionar primeiro item
+				</Button>
 			</div>
 		</form>
 	);

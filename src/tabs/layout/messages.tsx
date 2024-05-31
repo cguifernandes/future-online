@@ -10,19 +10,16 @@ const Messages = () => {
 	const [data, setData] = useState<{
 		itens: Message[];
 	}>({ itens: [] });
-	const [dataItem, setDataItem] = useState({
-		title: "",
-		content: "",
-	});
-	const [contentItem, setContentItem] = useState<Message>();
+
+	const [contentItem, setContentItem] = useState<Message>(undefined);
 
 	useEffect(() => {
 		chrome.storage.sync
 			.get()
 			.then((result) => {
-				const messages =
-					Object.keys(result).length === 0 ? [] : result.messages || [];
-				setData({ itens: messages });
+				const mensagens =
+					Object.keys(result).length === 0 ? [] : result.mensagens || [];
+				setData({ itens: mensagens });
 			})
 			.catch((error) => {
 				console.log(error);
@@ -32,18 +29,11 @@ const Messages = () => {
 			});
 	}, []);
 
-	useEffect(() => {
-		setDataItem({
-			title: contentItem?.title || "",
-			content: contentItem?.content || "",
-		});
-	}, [contentItem]);
-
 	const handlerAddItem = (newItem: Message) => {
 		const newItemWithId = { ...newItem, id: uuidv4() };
 		const newItems = [...data.itens, newItemWithId];
 
-		chrome.storage.sync.set({ messages: newItems }, () => {
+		chrome.storage.sync.set({ mensagens: newItems }, () => {
 			setData({ itens: newItems });
 		});
 	};

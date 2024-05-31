@@ -1,6 +1,5 @@
 // biome-ignore lint/style/useImportType: <explanation>
 import React, { useEffect } from "react";
-import type { FormEvent } from "react";
 import Input from "../components/input";
 import Textarea from "../components/textarea";
 import Button from "../components/button";
@@ -45,13 +44,13 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		if (contentItem) {
 			const updatedItem = { ...contentItem, title, content };
 
-			chrome.storage.sync.get("messages", (result) => {
-				const messages = result.messages || [];
-				const updatedItems = messages.map((item) =>
+			chrome.storage.sync.get("mensagens", (result) => {
+				const mensagens = result.mensagens || [];
+				const updatedItems = mensagens.map((item) =>
 					item.id === contentItem.id ? updatedItem : item,
 				);
 
-				chrome.storage.sync.set({ messages: updatedItems }, () => {
+				chrome.storage.sync.set({ mensagens: updatedItems }, () => {
 					setData({ itens: updatedItems });
 					setContentItem(updatedItem);
 				});
@@ -60,14 +59,14 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 	};
 
 	const handlerRemoveItem = (removeItem: Message) => {
-		chrome.storage.sync.get("messages", (result) => {
-			const messages = result.messages || [];
-			const updatedItems = messages.filter(
+		chrome.storage.sync.get("mensagens", (result) => {
+			const mensagens = result.mensagens || [];
+			const updatedItems = mensagens.filter(
 				(item: { title: string; content: string; id: string }) =>
 					item.id !== removeItem.id,
 			);
 
-			chrome.storage.sync.set({ messages: updatedItems }, () => {
+			chrome.storage.sync.set({ mensagens: updatedItems }, () => {
 				setData({ itens: updatedItems });
 				setContentItem(undefined);
 			});
@@ -92,7 +91,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					onClick={() => handlerRemoveItem(contentItem)}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
-					{/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -105,6 +103,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 						strokeLinejoin="round"
 						className="text-white"
 					>
+						<title>Remover</title>
 						<path d="M3 6h18" />
 						<path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
 						<path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
@@ -116,7 +115,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			<Textarea
 				name="content"
 				placeholder="Conteúdo do item"
-				className="h-full w-full resize-none text-base"
+				className="h-full w-full resize-none"
 				theme="purple"
 				{...register("content")}
 			/>

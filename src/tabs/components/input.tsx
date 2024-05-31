@@ -8,6 +8,7 @@ const input = tv({
 		theme: {
 			purple: "focus:ring-purple-500",
 			green: "focus:ring-green-500",
+			yellow: "focus:ring-yellow-500",
 		},
 	},
 });

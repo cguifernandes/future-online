@@ -1,67 +1,28 @@
+// biome-ignore lint/style/useImportType: <explanation>
 import React, { useEffect, useState } from "react";
 import Form from "../forms/form-funis";
-import Button from "./button";
+import Button from "../components/button";
 import clsx from "clsx";
 import { v4 as uuidv4 } from "uuid";
+import type { Funil } from "../../type/type";
+import Modal from "./modal-funil";
 
-const Funis = () => {
+const Funis = ({
+	setVisibleModal,
+}: { setVisibleModal: React.Dispatch<React.SetStateAction<boolean>> }) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [data, setData] = useState<{
-		itens: {
-			title: string;
-			item: {
-				selectedId: string;
-				delay: {
-					minutes: number;
-					seconds: number;
-				};
-			};
-			id: string;
-		}[];
+		itens: Funil[];
 	}>({ itens: [] });
-	const [contentItem, setContentItem] = useState<{
-		title: string;
-		item: {
-			selectedId: string;
-			delay: {
-				minutes: number;
-				seconds: number;
-			};
-		};
-		id: string;
-	}>();
-	const [dataItem, setDataItem] = useState<{
-		title: string;
-		item: {
-			selectedId: string;
-			delay: {
-				minutes: number;
-				seconds: number;
-			};
-		};
-	}>({
-		title: "",
-		item: { selectedId: "", delay: { minutes: 0, seconds: 0 } },
-	});
-
-	useEffect(() => {
-		setDataItem({
-			title: contentItem?.title || "",
-			item: {
-				selectedId: contentItem?.item.selectedId || "",
-				delay: {
-					minutes: contentItem?.item.delay.minutes || 0,
-					seconds: contentItem?.item.delay.seconds || 0,
-				},
-			},
-		});
-	}, [contentItem]);
+	const [contentItem, setContentItem] = useState<Funil>(undefined);
 
 	useEffect(() => {
 		try {
 			chrome.storage.sync
 				.get()
-				.then(({ funis }) => {
+				.then((result) => {
+					const funis =
+						Object.keys(result).length === 0 ? [] : result.funis || [];
 					setData({ itens: funis });
 				})
 				.catch((error) => {
@@ -72,16 +33,7 @@ const Funis = () => {
 		}
 	}, []);
 
-	const handlerAddItem = (newItem: {
-		title: string;
-		item: {
-			selectedId: string;
-			delay: {
-				minutes: number;
-				seconds: number;
-			};
-		};
-	}) => {
+	const handlerAddItem = (newItem: Funil) => {
 		const newItemWithId = { ...newItem, id: uuidv4() };
 		const newItems = [...data.itens, newItemWithId];
 
@@ -202,14 +154,13 @@ const Funis = () => {
 					</div>
 				)}
 			</div>
-			<div className="bg-black/70 rounded-r-lg border-l-2 border-white w-full h-full">
+			<div className="relative w-full h-full bg-black/70 backdrop-blur rounded-r-lg border-l-2 border-white">
 				{contentItem ? (
 					<Form
 						contentItem={contentItem}
 						setContentItem={setContentItem}
 						setData={setData}
-						dataItem={dataItem}
-						setDataItem={setDataItem}
+						setVisibleModal={setVisibleModal}
 					/>
 				) : (
 					<div className="flex items-center justify-center px-4 h-full">

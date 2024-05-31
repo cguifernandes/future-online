@@ -15,19 +15,11 @@ interface Props {
 			itens: Midia[];
 		}>
 	>;
-	dataItem: Midia;
-	setDataItem: React.Dispatch<React.SetStateAction<Midia>>;
 	setContentItem: React.Dispatch<React.SetStateAction<Midia>>;
 	contentItem: Midia;
 }
 
-const Form = ({
-	dataItem,
-	setContentItem,
-	setDataItem,
-	setData,
-	contentItem,
-}: Props) => {
+const Form = ({ setContentItem, setData, contentItem }: Props) => {
 	const [isLoading, setIsLoading] = React.useState(false);
 
 	const schema = z.object({
@@ -110,7 +102,6 @@ const Form = ({
 
 				chrome.storage.sync.set({ midias: updatedItems }, () => {
 					setData({ itens: updatedItems });
-					setDataItem(updatedItem);
 					setContentItem(updatedItem);
 				});
 			});
@@ -153,7 +144,6 @@ const Form = ({
 					onClick={() => handlerRemoveItem(contentItem.id)}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
-					{/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="24"
@@ -166,6 +156,7 @@ const Form = ({
 						strokeLinejoin="round"
 						className="text-white"
 					>
+						<title>Remover</title>
 						<path d="M3 6h18" />
 						<path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
 						<path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
@@ -176,10 +167,9 @@ const Form = ({
 			</div>
 			<div className="flex gap-x-3 w-full flex-1">
 				<File
+					contentItem={contentItem}
 					setValue={setValue}
 					name="image.file"
-					dataItem={dataItem}
-					setDataItem={setDataItem}
 					setError={setError}
 					error={errors.image?.file.message.toString()}
 				/>

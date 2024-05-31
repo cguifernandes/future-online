@@ -1,10 +1,13 @@
 import React, { useState, type ReactNode } from "react";
 import Item from "../components/item";
-import Messages from "../components/messages";
-import Midias from "../components/midias";
-import Funis from "../components/funis";
+import Messages from "../layout/messages";
+import Midias from "../layout/midias";
+import Funis from "../layout/funis";
+import Modal from "../layout/modal-funil";
+import clsx from "clsx";
 
 const Dashboard = () => {
+	const [visibleModal, setVisibleModal] = useState(false);
 	const [contentDashboard, setContentDashboard] = useState<{
 		content: ReactNode;
 		index: number;
@@ -79,7 +82,7 @@ const Dashboard = () => {
 					<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
 				</svg>
 			),
-			content: <Funis />,
+			content: <Funis setVisibleModal={setVisibleModal} />,
 			color: "bg-yellow-800/90",
 		},
 	];
@@ -104,7 +107,9 @@ const Dashboard = () => {
 					<ul className="flex flex-col gap-y-2 max-w-[256px] w-full">
 						{itens.map((item, index) => (
 							<Item
-								className={item.color}
+								color={item.color}
+								className={clsx("w-full rounded-lg transition-all group")}
+								classNameButton="px-4 py-3 w-full flex items-center gap-x-3"
 								setContent={setContentDashboard}
 								contentDashboard={contentDashboard}
 								content={item.content}
@@ -120,6 +125,16 @@ const Dashboard = () => {
 						{contentDashboard.content}
 					</div>
 				</div>
+				{visibleModal && (
+					<>
+						{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+						<div
+							className="absolute top-0 left-0 w-screen h-screen bg-black bg-opacity-50"
+							onClick={() => setVisibleModal(false)}
+						/>
+						<Modal setVisibleModal={setVisibleModal} />
+					</>
+				)}
 			</main>
 		</>
 	);

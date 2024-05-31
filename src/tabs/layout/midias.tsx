@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Button from "./button";
+import Button from "../components/button";
 import { v4 as uuidv4 } from "uuid";
 import clsx from "clsx";
 import Form from "../forms/form-midias";
@@ -10,23 +10,7 @@ const Midias = () => {
 	const [data, setData] = useState<{
 		itens: Midia[];
 	}>({ itens: [] });
-	const [dataItem, setDataItem] = useState<Midia>({
-		title: "",
-		image: { url: undefined, subtitle: "", preview: "", type: "" },
-	});
-	const [contentItem, setContentItem] = useState<Midia>();
-
-	useEffect(() => {
-		setDataItem({
-			title: contentItem?.title || "",
-			image: {
-				url: contentItem?.image.url || "",
-				subtitle: contentItem?.image.subtitle || "",
-				preview: contentItem?.image.preview || "",
-				type: contentItem?.image.type || "",
-			},
-		});
-	}, [contentItem]);
+	const [contentItem, setContentItem] = useState<Midia>(undefined);
 
 	useEffect(() => {
 		chrome.storage.sync
@@ -161,10 +145,8 @@ const Midias = () => {
 				{contentItem ? (
 					<Form
 						contentItem={contentItem}
-						dataItem={dataItem}
-						setContentItem={setContentItem}
 						setData={setData}
-						setDataItem={setDataItem}
+						setContentItem={setContentItem}
 					/>
 				) : (
 					<div className="flex items-center justify-center px-4 h-full">

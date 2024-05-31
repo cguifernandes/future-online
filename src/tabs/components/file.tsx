@@ -1,4 +1,3 @@
-// biome-ignore lint/style/useImportType: <explanation>
 import React, { useEffect } from "react";
 import { type InputHTMLAttributes, useState, type ChangeEvent } from "react";
 import clsx from "clsx";
@@ -12,35 +11,33 @@ import type { Midia } from "../../type/type";
 import type { UseFormSetError, UseFormSetValue } from "react-hook-form";
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
-	dataItem: Midia;
-	setDataItem: (value: React.SetStateAction<Midia>) => void;
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	setValue?: UseFormSetValue<any>;
 	name?: string;
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	setError?: UseFormSetError<any>;
 	error?: string;
+	contentItem: Midia;
 }
 
 const File = ({
-	dataItem,
 	setError,
 	error,
 	setValue,
 	name,
-	setDataItem,
+	contentItem,
 	...rest
 }: Props) => {
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [isLoadingImage, setIsLoadingImage] = useState(false);
 
 	useEffect(() => {
-		if (dataItem.image.preview || dataItem.image.url) {
-			setImagePreview(dataItem.image.preview || dataItem.image.url);
+		if (contentItem.image.preview || contentItem.image.url) {
+			setImagePreview(contentItem.image.preview || contentItem.image.url);
 		} else {
 			setImagePreview(null);
 		}
-	}, [dataItem]);
+	}, [contentItem]);
 
 	const handlerChangeValue = async (e: ChangeEvent<HTMLInputElement>) => {
 		const fileInput = e.target;
@@ -55,13 +52,18 @@ const File = ({
 			return;
 		}
 
-		if (setValue && name) {
-			setValue(name, file);
-		}
-
 		if (file) {
+			console.log("aqui");
 			setIsLoadingImage(true);
 			setImagePreview(null);
+
+			if (setValue && name) {
+				console.log({
+					name,
+					file,
+				});
+				setValue(name, file);
+			}
 
 			let preview = "";
 			if (file.type.includes("video")) {
@@ -73,24 +75,9 @@ const File = ({
 			}
 
 			setImagePreview(preview);
-			setDataItem((prev) => ({
-				...prev,
-				image: {
-					...prev.image,
-					url: "",
-					preview,
-					type: file.type.includes("video") ? "Vídeo" : "Imagem",
-				},
-			}));
 		} else {
+			console.log("aqui2");
 			setImagePreview(null);
-			setDataItem((prev) => ({
-				...prev,
-				image: {
-					...prev.image,
-					file: undefined,
-				},
-			}));
 		}
 	};
 
@@ -98,7 +85,6 @@ const File = ({
 		<div className="flex flex-col gap-y-1 w-3/5">
 			<div className="flex flex-col flex-1 justify-center border-dashed border-2 border-green-600 p-3 relative rounded-lg gap-y-2">
 				<div className="flex flex-col text-center text-white gap-y-1">
-					{/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="72"
@@ -111,6 +97,7 @@ const File = ({
 						strokeLinejoin="round"
 						className="lucide lucide-images mx-auto"
 					>
+						<title>Images</title>
 						<path d="M18 22H4a2 2 0 0 1-2-2V6" />
 						<path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18" />
 						<circle cx="12" cy="8" r="2" />

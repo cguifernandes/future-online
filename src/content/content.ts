@@ -124,7 +124,7 @@ window.addEventListener("loadWpp", async () => {
 	if (!window.location.href.includes("web.whatsapp.com")) return;
 
 	const data = (await chrome.storage.sync.get()) as {
-		messages: Message[];
+		mensagens: Message[];
 		midias: Midia[];
 	};
 
@@ -149,8 +149,8 @@ window.addEventListener("loadWpp", async () => {
 			pattern.className = "item-pattern-future-online";
 			footer.appendChild(pattern);
 
-			if (data.messages?.length > 0) {
-				const messages: Message[] = data.messages.map((message) => ({
+			if (data.mensagens?.length > 0) {
+				const mensagens: Message[] = data.mensagens.map((message) => ({
 					type: "message",
 					content: message.content,
 					title: message.title,
@@ -158,7 +158,7 @@ window.addEventListener("loadWpp", async () => {
 
 				loadItems(
 					"Mensagens",
-					messages,
+					mensagens,
 					pattern,
 					"button-message-future-online",
 				);
