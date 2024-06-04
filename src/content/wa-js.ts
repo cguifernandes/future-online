@@ -16,7 +16,8 @@ window.addEventListener("sendFile", async (e: CustomEvent) => {
 	const chatId = activeChat.id._serialized;
 
 	try {
-		console.log("Carregando...");
+		window.dispatchEvent(new CustomEvent("fileUploadStart"));
+
 		await WPP.chat.sendFileMessage(chatId, file, {
 			type: "auto-detect",
 			caption: subtitle,
@@ -24,6 +25,6 @@ window.addEventListener("sendFile", async (e: CustomEvent) => {
 	} catch (error) {
 		console.error("Erro ao enviar o arquivo:", error);
 	} finally {
-		console.log("Mensagem enviada");
+		window.dispatchEvent(new CustomEvent("fileUploadEnd"));
 	}
 });

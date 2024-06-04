@@ -3,15 +3,15 @@ import Button from "../components/button";
 import { v4 as uuidv4 } from "uuid";
 import clsx from "clsx";
 import Form from "../forms/form-messages";
-import type { Message } from "../../type/type";
+import type { Mensagem } from "../../type/type";
 
 const Messages = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [data, setData] = useState<{
-		itens: Message[];
+		itens: Mensagem[];
 	}>({ itens: [] });
 
-	const [contentItem, setContentItem] = useState<Message>(undefined);
+	const [contentItem, setContentItem] = useState<Mensagem>(undefined);
 
 	useEffect(() => {
 		chrome.storage.sync
@@ -29,7 +29,7 @@ const Messages = () => {
 			});
 	}, []);
 
-	const handlerAddItem = (newItem: Message) => {
+	const handlerAddItem = (newItem: Mensagem) => {
 		const newItemWithId = { ...newItem, id: uuidv4() };
 		const newItems = [...data.itens, newItemWithId];
 

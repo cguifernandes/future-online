@@ -6,7 +6,7 @@ import {
 	FILES_TYPE,
 	generateThumbnail,
 	loadingImage,
-} from "../utils/utils";
+} from "../../utils/utils";
 import type { Midia } from "../../type/type";
 import type { UseFormSetError, UseFormSetValue } from "react-hook-form";
 

@@ -1,4 +1,5 @@
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../lib/supabase";
+import type { Funil } from "../type/type";
 
 export const FILES_TYPE = [
 	"image/jpeg",
@@ -86,4 +87,33 @@ export const uploadAndSign = async (path: string, content) => {
 	}
 
 	return signedData.signedUrl;
+};
+
+export const getItem = async (contentItem: Funil["item"]) => {
+	const localData = [];
+
+	const data = await new Promise((resolve) => {
+		chrome.storage.sync.get(null, resolve);
+	});
+
+	for (const item of contentItem) {
+		const itemsOfType =
+			data[
+				item.type
+					.toLocaleLowerCase()
+					.normalize("NFD")
+					// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
+					.replace(/[\u0300-\u036f]/g, "")
+			];
+
+		if (itemsOfType && itemsOfType.length > 0) {
+			for (const selectedItem of itemsOfType) {
+				if (item.selectedId === selectedItem.id) {
+					localData.push({ item: selectedItem, ...item });
+				}
+			}
+		}
+	}
+
+	return localData;
 };

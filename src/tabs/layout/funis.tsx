@@ -1,4 +1,3 @@
-// biome-ignore lint/style/useImportType: <explanation>
 import React, { useEffect, useState } from "react";
 import Form from "../forms/form-funis";
 import Button from "../components/button";
@@ -7,9 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 import type { Funil } from "../../type/type";
 import Modal from "./modal-funil";
 
-const Funis = ({
-	setVisibleModal,
-}: { setVisibleModal: React.Dispatch<React.SetStateAction<boolean>> }) => {
+const Funis = () => {
+	const [visibleModal, setVisibleModal] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [data, setData] = useState<{
 		itens: Funil[];
@@ -52,7 +50,7 @@ const Funis = ({
 					<span className="text-center text-white text-base">
 						Carrengando...
 					</span>
-				) : data.itens?.length > 0 ? (
+				) : data.itens.length > 0 ? (
 					<>
 						<div className="flex flex-col max-h-60 overflow-y-auto">
 							{data.itens.map((item, index) => (
@@ -83,10 +81,7 @@ const Funis = ({
 								onClick={() =>
 									handlerAddItem({
 										title: "Novo funil",
-										item: {
-											selectedId: "",
-											delay: { minutes: 0, seconds: 0 },
-										},
+										item: undefined,
 									})
 								}
 								icon={
@@ -124,10 +119,7 @@ const Funis = ({
 								onClick={() =>
 									handlerAddItem({
 										title: "Novo funil",
-										item: {
-											selectedId: "",
-											delay: { minutes: 0, seconds: 0 },
-										},
+										item: undefined,
 									})
 								}
 								icon={
@@ -171,6 +163,21 @@ const Funis = ({
 					</div>
 				)}
 			</div>
+			{visibleModal && (
+				<>
+					{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
+					<div
+						className="absolute top-0 left-0 w-screen h-screen bg-black bg-opacity-50"
+						onClick={() => setVisibleModal(false)}
+					/>
+					<Modal
+						setContentItem={setContentItem}
+						setData={setData}
+						content={contentItem}
+						setVisibleModal={setVisibleModal}
+					/>
+				</>
+			)}
 		</>
 	);
 };

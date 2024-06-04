@@ -3,11 +3,12 @@ import Input from "../components/input";
 import Button from "../components/button";
 import File from "../components/file";
 import Textarea from "../components/textarea";
-import { generateThumbnail, uploadAndSign } from "../utils/utils";
+import { generateThumbnail, uploadAndSign } from "../../utils/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Midia } from "../../type/type";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Trash2 } from "lucide-react";
 
 interface Props {
 	setData: React.Dispatch<
@@ -144,25 +145,7 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					onClick={() => handlerRemoveItem(contentItem.id)}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="24"
-						height="24"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						className="text-white"
-					>
-						<title>Remover</title>
-						<path d="M3 6h18" />
-						<path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-						<path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-						<line x1="10" x2="10" y1="11" y2="17" />
-						<line x1="14" x2="14" y1="11" y2="17" />
-					</svg>
+					<Trash2 color="#fff" size={24} strokeWidth={1.5} />
 				</button>
 			</div>
 			<div className="flex gap-x-3 w-full flex-1">

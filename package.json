@@ -37,6 +37,7 @@
 		"@supabase/supabase-js": "^2.43.2",
 		"autoprefixer": "^10.4.7",
 		"clsx": "^2.1.1",
+		"lucide-react": "^0.383.0",
 		"postcss": "^8.4.14",
 		"react-hook-form": "^7.51.5",
 		"react-router-dom": "6.2",

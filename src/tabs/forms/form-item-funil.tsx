@@ -2,18 +2,29 @@
 import React, { useEffect, useState } from "react";
 import Item from "../components/item";
 import Select from "../components/select";
-import type { Funil, Message, Midia } from "../../type/type";
+import type { Funil, Mensagem, Midia } from "../../type/type";
 import Input from "../components/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "../components/button";
+import { Image, Mail } from "lucide-react";
 
-const Form = ({
-	setVisibleModal,
-}: { setVisibleModal: React.Dispatch<React.SetStateAction<boolean>> }) => {
+interface Props {
+	setVisibleModal: React.Dispatch<React.SetStateAction<boolean>>;
+	content: Funil;
+	setContentItem: React.Dispatch<React.SetStateAction<Funil>>;
+	setData: React.Dispatch<
+		React.SetStateAction<{
+			itens: Funil[];
+		}>
+	>;
+}
+
+const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 	const [visibleDropdown, setVisibleDropdown] = useState(false);
 	const [options, setOptions] = useState<{ title: string; id: string }[]>([]);
+	const [selectedValue, setSelectedValue] = useState("");
 	const [selectedItem, setSelectedItem] = useState<{
 		index: number;
 		title?: string;
@@ -22,60 +33,38 @@ const Form = ({
 	const itens = [
 		{
 			title: "Mensagens",
-			icon: (
-				// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="32"
-					height="32"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="2"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-				>
-					<rect width="20" height="16" x="2" y="4" rx="2" />
-					<path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-				</svg>
-			),
+			icon: <Mail size={32} strokeWidth={1.5} />,
 			color: "bg-purple-900/90",
 		},
 		{
 			title: "Mídias",
-			icon: (
-				// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="32"
-					height="32"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="2"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					className="lucide lucide-image"
-				>
-					<rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-					<circle cx="9" cy="9" r="2" />
-					<path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-				</svg>
-			),
+			icon: <Image size={32} strokeWidth={1.5} />,
 			color: "bg-green-800/90",
 		},
 	];
 
 	const schema = z.object({
 		type: z.enum(["Mensagens", "Mídias"]),
-		item: z.object({
-			id: z.string(),
-			title: z.string(),
-		}),
-		delay: z.object({
-			minutes: z.number(),
-			seconds: z.number(),
-		}),
+		selectedId: z.string({ required_error: "Este campo é obrigatório." }),
+		delay: z
+			.object({
+				minutes: z
+					.number()
+					.refine(
+						(value) => value >= 0 && value <= 5,
+						"Os minutos não podem ser maior que 5.",
+					),
+				seconds: z
+					.number()
+					.refine(
+						(value) => value >= 0 && value <= 60,
+						"Os segundos não podem ser maior que 60.",
+					),
+			})
+			.refine(
+				(data) => data.minutes !== 0 || data.seconds !== 0,
+				"Os valores não podem ser 0",
+			),
 	});
 
 	const {
@@ -95,11 +84,37 @@ const Form = ({
 		},
 	});
 
-	const handlerSubmit = (data: z.infer<typeof schema>) => {
-		console.log(data);
-	};
+	const handlerSubmit = ({
+		delay,
+		selectedId,
+		type,
+	}: z.infer<typeof schema>) => {
+		chrome.storage.sync.get("funis", (result) => {
+			const funis = result.funis || [];
+			let updatedItem: Funil;
 
-	console.log(errors);
+			const updatedFunis = funis.map((funil) => {
+				if (funil.id === content.id) {
+					const newItem = { delay, selectedId, type };
+
+					const updatedItems = Array.isArray(funil.item)
+						? [...funil.item, newItem]
+						: [newItem];
+
+					updatedItem = { ...funil, item: updatedItems };
+
+					return updatedItem;
+				}
+				return funil;
+			});
+
+			chrome.storage.sync.set({ funis: updatedFunis }, () => {
+				setData({ itens: updatedFunis });
+				setContentItem(updatedItem);
+				setVisibleModal(false);
+			});
+		});
+	};
 
 	useEffect(() => {
 		chrome.storage.sync
@@ -110,17 +125,16 @@ const Form = ({
 					// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
 					.replace(/[\u0300-\u036f]/g, ""),
 			)
-			.then(
-				(result: { mensagens: Message[]; midias: Midia[]; funis: Funil[] }) => {
-					let options = [];
-					if (selectedItem.title === "Mensagens" && result.mensagens) {
-						options = result.mensagens.map(({ id, title }) => ({ id, title }));
-					} else if (selectedItem.title === "Mídias" && result.midias) {
-						options = result.midias.map(({ id, title }) => ({ id, title }));
-					}
-					setOptions(options);
-				},
-			)
+			.then((result: { mensagens: Mensagem[]; midias: Midia[] }) => {
+				let options = [];
+				if (selectedItem.title === "Mensagens" && result.mensagens) {
+					options = result.mensagens.map(({ id, title }) => ({ id, title }));
+				} else if (selectedItem.title === "Mídias" && result.midias) {
+					options = result.midias.map(({ id, title }) => ({ id, title }));
+				}
+				setSelectedValue("");
+				setOptions(options);
+			})
 			.catch((error) => {
 				console.log(error);
 			});
@@ -175,7 +189,10 @@ const Form = ({
 				label="Item:"
 				options={options}
 				setValue={setValue}
-				name="item.id"
+				setSelectedValue={setSelectedValue}
+				selectedValue={selectedValue}
+				name="selectedId"
+				error={errors.selectedId?.message}
 			/>
 			{visibleDropdown && (
 				// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
@@ -190,29 +207,32 @@ const Form = ({
 					<div className="flex flex-col gap-y-2 flex-1">
 						<span className="text-center text-base text-white">Minutos</span>
 						<Input
-							min={0}
-							max={50}
 							type="number"
 							className="w-full text-center"
 							{...register("delay.minutes", {
 								valueAsNumber: true,
 							})}
+							error={errors.delay?.minutes?.message}
 						/>
 					</div>
 					<span className="text-2xl text-white">:</span>
 					<div className="flex flex-col gap-y-2 flex-1">
 						<span className="text-center text-base text-white">Segundos</span>
 						<Input
-							min={0}
-							max={50}
 							type="number"
 							className="w-full text-center"
 							{...register("delay.seconds", {
 								valueAsNumber: true,
 							})}
+							error={errors.delay?.seconds?.message}
 						/>
 					</div>
 				</div>
+				{errors.delay?.root?.message && (
+					<span className="text-red-600 text-sm">
+						{errors.delay?.root?.message}
+					</span>
+				)}
 			</div>
 			<Button className="bg-black/30" type="submit">
 				Salvar

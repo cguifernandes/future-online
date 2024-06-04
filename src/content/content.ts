@@ -1,5 +1,5 @@
 import { saveFile } from "../background/background";
-import type { Message, Midia } from "../type/type";
+import type { Mensagem, Midia } from "../type/type";
 import "./whatsapp.css";
 
 const waitForElement = (selector, callback) => {
@@ -72,7 +72,7 @@ const loadButton = () => {
 
 const loadItems = (
 	titleText: string,
-	items: Midia[] | Message[],
+	items: Midia[] | Mensagem[],
 	pattern: HTMLDivElement,
 	buttonClassName: string,
 ) => {
@@ -124,7 +124,7 @@ window.addEventListener("loadWpp", async () => {
 	if (!window.location.href.includes("web.whatsapp.com")) return;
 
 	const data = (await chrome.storage.sync.get()) as {
-		mensagens: Message[];
+		mensagens: Mensagem[];
 		midias: Midia[];
 	};
 
@@ -150,7 +150,7 @@ window.addEventListener("loadWpp", async () => {
 			footer.appendChild(pattern);
 
 			if (data.mensagens?.length > 0) {
-				const mensagens: Message[] = data.mensagens.map((message) => ({
+				const mensagens: Mensagem[] = data.mensagens.map((message) => ({
 					type: "message",
 					content: message.content,
 					title: message.title,

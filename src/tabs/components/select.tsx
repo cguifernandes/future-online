@@ -14,6 +14,9 @@ interface Props {
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	setValue?: UseFormSetValue<any>;
 	name?: string;
+	error?: string;
+	setSelectedValue: React.Dispatch<React.SetStateAction<string>>;
+	selectedValue: string;
 }
 
 const Select = ({
@@ -23,11 +26,12 @@ const Select = ({
 	visibleDropdown,
 	setValue,
 	name,
+	error,
+	selectedValue,
+	setSelectedValue,
 }: Props) => {
-	const [selectedValue, setSelectedValue] = useState("");
-
 	return (
-		<div className="relative flex flex-col gap-y-2 ">
+		<div className="relative flex flex-col gap-y-2">
 			{label && <label className="text-white text-lg">{label}</label>}
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 			<div
@@ -62,36 +66,37 @@ const Select = ({
 			</div>
 			{visibleDropdown && (
 				<ul className="absolute top-full flex flex-col gap-y-2 mt-2 z-30 w-full p-3 select-none rounded-lg bg-[#353535] shadow-md">
-					{options.map((option, index) => {
-						return (
-							<li
-								// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-								key={index}
-								className="cursor-pointer text-white rounded-lg transition-all text-base hover:bg-[#202020]"
-							>
-								<button
-									className="w-full px-4 py-2 text-left"
-									type="button"
-									onClick={() => {
-										setSelectedValue(option.title);
-										setVisibleDropdown(false);
-
-										if (setValue && name) {
-											console.log({
-												name,
-												value: option.id,
-											});
-											setValue(name, option.id);
-										}
-									}}
+					{options.length === 0 ? (
+						<span className="text-white text-base">Não há nenhum item</span>
+					) : (
+						options.map((option, index) => {
+							return (
+								<li
+									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+									key={index}
+									className="cursor-pointer text-white rounded-lg transition-all text-base hover:bg-[#202020]"
 								>
-									{option.title}
-								</button>
-							</li>
-						);
-					})}
+									<button
+										className="w-full px-4 py-2 text-left"
+										type="button"
+										onClick={() => {
+											setSelectedValue(option.title);
+											setVisibleDropdown(false);
+
+											if (setValue && name) {
+												setValue(name, option.id);
+											}
+										}}
+									>
+										{option.title}
+									</button>
+								</li>
+							);
+						})
+					)}
 				</ul>
 			)}
+			{error && <span className="text-red-600 text-sm">{error}</span>}
 		</div>
 	);
 };

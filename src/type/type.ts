@@ -10,7 +10,7 @@ export interface Midia {
 	};
 }
 
-export interface Message {
+export interface Mensagem {
 	type?: "message";
 	content: string;
 	title: string;
@@ -22,10 +22,11 @@ export interface Funil {
 	title: string;
 	item: {
 		selectedId: string;
+		type: "Mensagens" | "Mídias" | "";
 		delay: {
 			minutes: number;
 			seconds: number;
 		};
-	};
+	}[];
 	id?: string;
 }

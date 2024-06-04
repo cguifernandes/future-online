@@ -33,6 +33,14 @@
   z-index: 99999;
 }
 
+.loading-overlay {
+  @apply absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 z-50
+}
+
+.loading-text {
+  @apply text-white text-lg
+}
+
 .button-popup-future-online {
   font-family: "Poppins", sans-serif !important;
   @apply bg-gray-800 text-white text-base px-3 py-2 rounded-lg

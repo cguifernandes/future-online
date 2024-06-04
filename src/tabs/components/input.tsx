@@ -15,8 +15,25 @@ const input = tv({
 
 const Input = React.forwardRef<
 	HTMLInputElement,
-	InputHTMLAttributes<HTMLInputElement> & VariantProps<typeof input>
->(({ theme, className, ...rest }, ref) => {
+	InputHTMLAttributes<HTMLInputElement> &
+		VariantProps<typeof input> & { error?: string }
+>(({ theme, className, error, ...rest }, ref) => {
+	if (error) {
+		return (
+			<div className="flex flex-col gap-y-2">
+				<input
+					ref={ref}
+					className={input({
+						theme,
+						className,
+					})}
+					{...rest}
+				/>
+				{error && <span className="text-red-600 text-sm">{error}</span>}
+			</div>
+		);
+	}
+
 	return (
 		<input
 			ref={ref}
