@@ -4,39 +4,27 @@ import { v4 as uuidv4 } from "uuid";
 import clsx from "clsx";
 import Form from "../forms/form-messages";
 import type { Mensagem } from "../../type/type";
+import { addItem, getItem } from "../../utils/utils";
+import { Plus } from "lucide-react";
 
 const Messages = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [contentItem, setContentItem] = useState<Mensagem>(undefined);
 	const [data, setData] = useState<{
 		itens: Mensagem[];
 	}>({ itens: [] });
 
-	const [contentItem, setContentItem] = useState<Mensagem>(undefined);
-
 	useEffect(() => {
-		chrome.storage.sync
-			.get()
-			.then((result) => {
-				const mensagens =
-					Object.keys(result).length === 0 ? [] : result.mensagens || [];
-				setData({ itens: mensagens });
-			})
-			.catch((error) => {
-				console.log(error);
+		setIsLoading(true);
+
+		getItem<Mensagem>("mensagens")
+			.then((data) => {
+				setData({ itens: data });
 			})
 			.finally(() => {
 				setIsLoading(false);
 			});
 	}, []);
-
-	const handlerAddItem = (newItem: Mensagem) => {
-		const newItemWithId = { ...newItem, id: uuidv4() };
-		const newItems = [...data.itens, newItemWithId];
-
-		chrome.storage.sync.set({ mensagens: newItems }, () => {
-			setData({ itens: newItems });
-		});
-	};
 
 	return (
 		<>
@@ -77,28 +65,18 @@ const Messages = () => {
 								theme="purple-dark"
 								className="hover:bg-purple-800"
 								onClick={() =>
-									handlerAddItem({
-										content: "Novo item",
-										title: "Novo conteúdo",
+									setData({
+										itens: addItem<Mensagem>(
+											{
+												content: "Novo item",
+												title: "Novo conteúdo",
+												type: "mensagens",
+											},
+											data,
+										),
 									})
 								}
-								icon={
-									// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="18"
-										height="18"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="2"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									>
-										<path d="M5 12h14" />
-										<path d="M12 5v14" />
-									</svg>
-								}
+								icon={<Plus size={18} color="#fff" />}
 							>
 								Novo item
 							</Button>
@@ -115,28 +93,18 @@ const Messages = () => {
 								type="button"
 								theme="purple-dark"
 								onClick={() =>
-									handlerAddItem({
-										content: "Novo item",
-										title: "Novo conteúdo",
+									setData({
+										itens: addItem<Mensagem>(
+											{
+												content: "Novo item",
+												title: "Novo conteúdo",
+												type: "mensagens",
+											},
+											data,
+										),
 									})
 								}
-								icon={
-									// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="18"
-										height="18"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="2"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									>
-										<path d="M5 12h14" />
-										<path d="M12 5v14" />
-									</svg>
-								}
+								icon={<Plus size={18} color="#fff" />}
 							>
 								Novo item
 							</Button>

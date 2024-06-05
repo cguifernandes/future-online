@@ -1,5 +1,6 @@
 import { supabase } from "../lib/supabase";
-import type { Funil } from "../type/type";
+import type { Funil, Gatilho, Mensagem, Midia } from "../type/type";
+import { v4 as uuidv4 } from "uuid";
 
 export const FILES_TYPE = [
 	"image/jpeg",
@@ -89,7 +90,7 @@ export const uploadAndSign = async (path: string, content) => {
 	return signedData.signedUrl;
 };
 
-export const getItem = async (contentItem: Funil["item"]) => {
+export const getFunilItem = async (contentItem: Funil["item"]) => {
 	const localData = [];
 
 	const data = await new Promise((resolve) => {
@@ -116,4 +117,57 @@ export const getItem = async (contentItem: Funil["item"]) => {
 	}
 
 	return localData;
+};
+
+type Item = Gatilho | Funil | Mensagem | Midia;
+
+export const addItem = <T extends Item>(
+	newItem: T,
+	data: { itens: T[] },
+): T[] => {
+	const newItemWithId = { ...newItem, id: uuidv4() };
+	const newItens = [...data.itens, newItemWithId];
+
+	chrome.storage.sync.set({ [newItem.type.toLocaleLowerCase()]: newItens });
+
+	return newItens;
+};
+
+export const removeItem = async <T extends Midia | Mensagem | Funil | Gatilho>(
+	removeItem: T,
+	type: "midias" | "mensagens" | "funis" | "gatilhos",
+) => {
+	const items = await new Promise<T[]>((resolve) => {
+		chrome.storage.sync.get(type, (result) => {
+			resolve(result[type] || []);
+		});
+	});
+
+	const updatedItems = items.filter((item) => item.id !== removeItem.id);
+
+	await new Promise<void>((resolve) => {
+		chrome.storage.sync.set({ [type]: updatedItems }, () => {
+			resolve();
+		});
+	});
+
+	return updatedItems;
+};
+
+export const getItem = async <T extends Midia | Mensagem | Funil | Gatilho>(
+	type: "midias" | "mensagens" | "funis" | "gatilhos",
+) => {
+	const result = await new Promise<{ [key: string]: T[] }>(
+		(resolve, reject) => {
+			chrome.storage.sync.get(type, (items) => {
+				if (chrome.runtime.lastError) {
+					reject(chrome.runtime.lastError);
+				} else {
+					resolve(items);
+				}
+			});
+		},
+	);
+
+	return result[type] || [];
 };

@@ -70,9 +70,9 @@ const loadButton = () => {
 	});
 };
 
-const loadItems = (
+const loadItens = (
 	titleText: string,
-	items: Midia[] | Mensagem[],
+	itens: Midia[] | Mensagem[],
 	pattern: HTMLDivElement,
 	buttonClassName: string,
 ) => {
@@ -83,12 +83,12 @@ const loadItems = (
 	content.appendChild(title);
 	content.className = "item-content-future-online";
 
-	for (const item of items) {
+	for (const item of itens) {
 		const button = document.createElement("button");
 		button.textContent = item.title;
 		button.className = buttonClassName;
 		button.addEventListener("click", async () => {
-			if (item.type === "message") {
+			if (item.type === "mensagens") {
 				window.dispatchEvent(
 					new CustomEvent("sendMessage", {
 						detail: {
@@ -98,7 +98,7 @@ const loadItems = (
 				);
 			}
 
-			if (item.type === "midia" && item.image.url !== "" && item.image.url) {
+			if (item.type === "midias" && item.image.url !== "" && item.image.url) {
 				const fileName = new Date().getTime().toString();
 				const file = await saveFile(item.image.url, fileName);
 
@@ -151,12 +151,12 @@ window.addEventListener("loadWpp", async () => {
 
 			if (data.mensagens?.length > 0) {
 				const mensagens: Mensagem[] = data.mensagens.map((message) => ({
-					type: "message",
+					type: "mensagens",
 					content: message.content,
 					title: message.title,
 				}));
 
-				loadItems(
+				loadItens(
 					"Mensagens",
 					mensagens,
 					pattern,
@@ -166,7 +166,7 @@ window.addEventListener("loadWpp", async () => {
 
 			if (data.midias?.length > 0) {
 				const midias: Midia[] = data.midias.map((midia) => ({
-					type: "midia",
+					type: "midias",
 					title: midia.title,
 					image: {
 						url: midia.image.url,
@@ -176,7 +176,7 @@ window.addEventListener("loadWpp", async () => {
 					},
 				}));
 
-				loadItems("Midias", midias, pattern, "button-midias-future-online");
+				loadItens("Midias", midias, pattern, "button-midias-future-online");
 			}
 
 			return;

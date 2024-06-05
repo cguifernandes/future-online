@@ -4,7 +4,8 @@ import Messages from "../layout/messages";
 import Midias from "../layout/midias";
 import Funis from "../layout/funis";
 import clsx from "clsx";
-import { Filter, Image, Mail } from "lucide-react";
+import { Bot, Filter, Image, Mail } from "lucide-react";
+import Gatilhos from "../layout/gatilhos";
 
 const Dashboard = () => {
 	const [contentDashboard, setContentDashboard] = useState<{
@@ -33,6 +34,12 @@ const Dashboard = () => {
 			icon: <Filter size={24} strokeWidth={1.5} />,
 			content: <Funis />,
 			color: "bg-yellow-800/90",
+		},
+		{
+			title: "Gatilhos",
+			icon: <Bot size={24} strokeWidth={1.5} />,
+			content: <Gatilhos />,
+			color: "bg-orange-800/90",
 		},
 	];
 

@@ -1,8 +1,22 @@
 // biome-ignore lint/style/useImportType: <explanation>
-import React, { useState } from "react";
+import React from "react";
+import { ChevronDown } from "lucide-react";
 import type { UseFormSetValue } from "react-hook-form";
+import { type VariantProps, tv } from "tailwind-variants";
+import clsx from "clsx";
 
-interface Props {
+const select = tv({
+	variants: {
+		size: {
+			base: "text-base",
+			small: "text-sm",
+			lg: "text-lg",
+			xl: "text-xl",
+		},
+	},
+});
+
+interface Props extends VariantProps<typeof select> {
 	options: {
 		title: string;
 		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -17,6 +31,7 @@ interface Props {
 	error?: string;
 	setSelectedValue: React.Dispatch<React.SetStateAction<string>>;
 	selectedValue: string;
+	isLoading?: boolean;
 }
 
 const Select = ({
@@ -29,10 +44,16 @@ const Select = ({
 	error,
 	selectedValue,
 	setSelectedValue,
+	isLoading,
+	size = "base",
 }: Props) => {
+	const sizeClass = select({ size });
+
 	return (
 		<div className="relative flex flex-col gap-y-2">
-			{label && <label className="text-white text-lg">{label}</label>}
+			{label && (
+				<label className={clsx("text-white", sizeClass)}>{label}</label>
+			)}
 			{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 			<div
 				onClick={() =>
@@ -40,59 +61,72 @@ const Select = ({
 						return !prev;
 					})
 				}
-				className="relative h-11 bg-black/30 rounded-lg"
+				className="relative flex items-center text-sm justify-between h-11 bg-black/30 rounded-lg"
 			>
 				<input
 					placeholder="Selecione um item"
 					readOnly
-					className="w-full text-white cursor-pointer bg-transparent text-sm px-4 py-3"
+					className={clsx(
+						"w-full text-white cursor-pointer bg-transparent",
+						size === "small" && "px-3 py-2",
+						size === "lg" && "px-5 py-4",
+						size === "xl" && "px-6 py-5",
+						size === "base" && "px-4 py-3",
+					)}
 					value={selectedValue}
 				/>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="24"
-					height="24"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					strokeWidth="2"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					className="lucide absolute text-white top-1/2 -translate-y-1/2 right-3 lucide-chevron-down"
-				>
-					<title>Chevron Down</title>
-					<path d="m6 9 6 6 6-6" />
-				</svg>
+				<ChevronDown
+					className={clsx(
+						"absolute top-1/2 -translate-y-1/2",
+						size === "small" && "right-3",
+						size === "lg" && "right-5",
+						size === "xl" && "right-6",
+						size === "base" && "right-4",
+					)}
+					size={24}
+					color="#fff"
+				/>
 			</div>
 			{visibleDropdown && (
 				<ul className="absolute top-full flex flex-col gap-y-2 mt-2 z-30 w-full p-3 select-none rounded-lg bg-[#353535] shadow-md">
-					{options.length === 0 ? (
-						<span className="text-white text-base">Não há nenhum item</span>
+					{isLoading ? (
+						<span className={clsx("text-white", sizeClass)}>Carregando...</span>
+					) : options.length === 0 ? (
+						<span className={clsx("text-white", sizeClass)}>
+							Não há nenhum item
+						</span>
 					) : (
-						options.map((option, index) => {
-							return (
-								<li
-									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-									key={index}
-									className="cursor-pointer text-white rounded-lg transition-all text-base hover:bg-[#202020]"
-								>
-									<button
-										className="w-full px-4 py-2 text-left"
-										type="button"
-										onClick={() => {
-											setSelectedValue(option.title);
-											setVisibleDropdown(false);
+						options.map((option, index) => (
+							<li
+								// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+								key={index}
+								className={clsx(
+									"cursor-pointer text-white rounded-lg transition-all hover:bg-[#202020]",
+								)}
+							>
+								<button
+									className={clsx(
+										"w-full text-left",
+										size === "small" && "px-3 py-2",
+										size === "lg" && "px-5 py-4",
+										size === "xl" && "px-6 py-5",
+										size === "base" && "px-4 py-3",
+										sizeClass,
+									)}
+									type="button"
+									onClick={() => {
+										setSelectedValue(option.title);
+										setVisibleDropdown(false);
 
-											if (setValue && name) {
-												setValue(name, option.id);
-											}
-										}}
-									>
-										{option.title}
-									</button>
-								</li>
-							);
-						})
+										if (setValue && name) {
+											setValue(name, option.id);
+										}
+									}}
+								>
+									{option.title}
+								</button>
+							</li>
+						))
 					)}
 				</ul>
 			)}

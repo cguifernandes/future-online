@@ -9,6 +9,7 @@ import {
 } from "../../utils/utils";
 import type { Midia } from "../../type/type";
 import type { UseFormSetError, UseFormSetValue } from "react-hook-form";
+import { Image } from "lucide-react";
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
 	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -85,24 +86,7 @@ const File = ({
 		<div className="flex flex-col gap-y-1 w-3/5">
 			<div className="flex flex-col flex-1 justify-center border-dashed border-2 border-green-600 p-3 relative rounded-lg gap-y-2">
 				<div className="flex flex-col text-center text-white gap-y-1">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="72"
-						height="72"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="1.5"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						className="lucide lucide-images mx-auto"
-					>
-						<title>Images</title>
-						<path d="M18 22H4a2 2 0 0 1-2-2V6" />
-						<path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18" />
-						<circle cx="12" cy="8" r="2" />
-						<rect width="16" height="16" x="6" y="2" rx="2" />
-					</svg>
+					<Image size={72} color="#fff" />
 					<label htmlFor="input-file" className="text-base font-semibold">
 						Clique aqui ou arraste o arquivo a ser salvo
 					</label>

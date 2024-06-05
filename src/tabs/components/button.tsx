@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import React from "react";
 import { type VariantProps, tv } from "tailwind-variants";
+import Switch from "./switch";
 
 const button = tv({
 	base: "text-white text-base px-4 rounded-lg transition-all py-3",
@@ -12,6 +13,8 @@ const button = tv({
 			"green-light": "bg-green-500",
 			"yellow-dark": "bg-yellow-800/90",
 			"yellow-light": "bg-yellow-500",
+			"orange-dark": "bg-orange-700/90",
+			"orange-light": "bg-orange-500",
 			danger: "bg-red-600 hover:bg-red-700",
 		},
 	},
@@ -23,6 +26,7 @@ interface Props
 	children: ReactNode;
 	icon?: ReactNode;
 	isLoading?: boolean;
+	inputSwitch?: boolean;
 }
 
 const Button = ({
@@ -31,8 +35,28 @@ const Button = ({
 	theme,
 	className,
 	isLoading,
+	inputSwitch,
 	...rest
 }: Props) => {
+	if (inputSwitch) {
+		return (
+			<div className="relative w-full flex items-center">
+				<button
+					className={button({
+						theme,
+						className: `${className} w-full`,
+					})}
+					{...rest}
+				>
+					{isLoading && "Carregando..."}
+					{icon}
+					{children}
+				</button>
+				<Switch className="absolute right-4 top-1/2 -translate-y-1/2" />
+			</div>
+		);
+	}
+
 	if (icon) {
 		return (
 			<button

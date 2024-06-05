@@ -4,6 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import clsx from "clsx";
 import Form from "../forms/form-midias";
 import type { Midia } from "../../type/type";
+import { addItem, getItem } from "../../utils/utils";
+import { Plus } from "lucide-react";
 
 const Midias = () => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -13,29 +15,16 @@ const Midias = () => {
 	const [contentItem, setContentItem] = useState<Midia>(undefined);
 
 	useEffect(() => {
-		chrome.storage.sync
-			.get()
-			.then((result) => {
-				const midias =
-					Object.keys(result).length === 0 ? [] : result.midias || [];
-				setData({ itens: midias });
-			})
-			.catch((error) => {
-				console.log(error);
+		setIsLoading(true);
+
+		getItem<Midia>("midias")
+			.then((data) => {
+				setData({ itens: data });
 			})
 			.finally(() => {
 				setIsLoading(false);
 			});
 	}, []);
-
-	const handlerAddItem = (newItem: Midia) => {
-		const newItemWithId = { ...newItem, id: uuidv4() };
-		const newItems = [...data.itens, newItemWithId];
-
-		chrome.storage.sync.set({ midias: newItems }, () => {
-			setData({ itens: newItems });
-		});
-	};
 
 	return (
 		<>
@@ -74,28 +63,18 @@ const Midias = () => {
 								theme="green-dark"
 								className="hover:bg-green-700"
 								onClick={() =>
-									handlerAddItem({
-										title: "Novo conteúdo",
-										image: { url: "", subtitle: "", preview: "", type: "" },
+									setData({
+										itens: addItem<Midia>(
+											{
+												title: "Novo conteúdo",
+												image: { url: "", subtitle: "", preview: "", type: "" },
+												type: "midias",
+											},
+											data,
+										),
 									})
 								}
-								icon={
-									// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="18"
-										height="18"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="2"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									>
-										<path d="M5 12h14" />
-										<path d="M12 5v14" />
-									</svg>
-								}
+								icon={<Plus size={18} color="#fff" />}
 							>
 								Novo item
 							</Button>
@@ -112,28 +91,18 @@ const Midias = () => {
 								type="button"
 								theme="green-dark"
 								onClick={() =>
-									handlerAddItem({
-										title: "Novo conteúdo",
-										image: { url: "", subtitle: "", preview: "", type: "" },
+									setData({
+										itens: addItem<Midia>(
+											{
+												title: "Novo conteúdo",
+												image: { url: "", subtitle: "", preview: "", type: "" },
+												type: "midias",
+											},
+											data,
+										),
 									})
 								}
-								icon={
-									// biome-ignore lint/a11y/noSvgWithoutTitle: <explanation>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										width="18"
-										height="18"
-										viewBox="0 0 24 24"
-										fill="none"
-										stroke="currentColor"
-										strokeWidth="2"
-										strokeLinecap="round"
-										strokeLinejoin="round"
-									>
-										<path d="M5 12h14" />
-										<path d="M12 5v14" />
-									</svg>
-								}
+								icon={<Plus size={18} color="#fff" />}
 							>
 								Novo item
 							</Button>

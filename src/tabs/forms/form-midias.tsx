@@ -3,7 +3,11 @@ import Input from "../components/input";
 import Button from "../components/button";
 import File from "../components/file";
 import Textarea from "../components/textarea";
-import { generateThumbnail, uploadAndSign } from "../../utils/utils";
+import {
+	generateThumbnail,
+	removeItem,
+	uploadAndSign,
+} from "../../utils/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Midia } from "../../type/type";
 import { useForm } from "react-hook-form";
@@ -113,20 +117,6 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 		}
 	};
 
-	const handlerRemoveItem = (id: string) => {
-		chrome.storage.sync.get("midias", (result) => {
-			const updatedItems = result.midias.filter(
-				(item: { title: string; content: string; id: string }) =>
-					item.id !== id,
-			);
-
-			chrome.storage.sync.set({ midias: updatedItems }, () => {
-				setData({ itens: updatedItems });
-				setContentItem(undefined);
-			});
-		});
-	};
-
 	return (
 		<form
 			onSubmit={handleSubmit(handlerSubmit)}
@@ -142,7 +132,10 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 				/>
 				<button
 					type="button"
-					onClick={() => handlerRemoveItem(contentItem.id)}
+					onClick={async () => {
+						setData({ itens: await removeItem(contentItem, "midias") });
+						setContentItem(undefined);
+					}}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
 					<Trash2 color="#fff" size={24} strokeWidth={1.5} />

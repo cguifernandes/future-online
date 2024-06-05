@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
+import { removeItem } from "../../utils/utils";
 
 interface Props {
 	contentItem: Mensagem;
@@ -59,21 +60,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		}
 	};
 
-	const handlerRemoveItem = (removeItem: Mensagem) => {
-		chrome.storage.sync.get("mensagens", (result) => {
-			const mensagens = result.mensagens || [];
-			const updatedItems = mensagens.filter(
-				(item: { title: string; content: string; id: string }) =>
-					item.id !== removeItem.id,
-			);
-
-			chrome.storage.sync.set({ mensagens: updatedItems }, () => {
-				setData({ itens: updatedItems });
-				setContentItem(undefined);
-			});
-		});
-	};
-
 	return (
 		<form
 			onSubmit={handleSubmit(handlerSubmit)}
@@ -89,7 +75,10 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				/>
 				<button
 					type="button"
-					onClick={() => handlerRemoveItem(contentItem)}
+					onClick={async () => {
+						setData({ itens: await removeItem(contentItem, "mensagens") });
+						setContentItem(undefined);
+					}}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
 					<Trash2 color="#fff" size={24} strokeWidth={1.5} />
@@ -103,7 +92,11 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				{...register("content")}
 			/>
 			<div className="flex items-center gap-x-3 justify-end w-full">
-				<Button theme="purple-light" className="hover:bg-purple-600 w-28">
+				<Button
+					type="submit"
+					theme="purple-light"
+					className="hover:bg-purple-600 w-28"
+				>
 					Salvar
 				</Button>
 				<Button

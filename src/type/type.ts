@@ -1,5 +1,5 @@
 export interface Midia {
-	type?: "midia";
+	type?: "midias";
 	title: string;
 	id?: string;
 	image: {
@@ -11,14 +11,14 @@ export interface Midia {
 }
 
 export interface Mensagem {
-	type?: "message";
+	type?: "mensagens";
 	content: string;
 	title: string;
 	id?: string;
 }
 
 export interface Funil {
-	type?: "funil";
+	type?: "funis";
 	title: string;
 	item: {
 		selectedId: string;
@@ -28,5 +28,17 @@ export interface Funil {
 			seconds: number;
 		};
 	}[];
+	id?: string;
+}
+
+export interface Gatilho {
+	type?: "gatilhos";
+	title: string;
+	active: boolean;
+	delay: number;
+	saveContacts: boolean;
+	sendGroups: boolean;
+	ignoreCase: boolean;
+	funilId: string;
 	id?: string;
 }
