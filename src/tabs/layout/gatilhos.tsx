@@ -19,7 +19,6 @@ const Gatilhos = () => {
 		getItem<Gatilho>("gatilhos")
 			.then((data) => {
 				setData({ itens: data });
-				console.log(data);
 			})
 			.finally(() => {
 				setIsLoading(false);
@@ -72,11 +71,15 @@ const Gatilhos = () => {
 												title: "Novo gatilho",
 												type: "gatilhos",
 												active: true,
-												delay: 0,
+												delay: 1,
 												ignoreCase: false,
 												saveContacts: false,
 												sendGroups: false,
-												funilId: "",
+												funil: {
+													id: undefined,
+													name: undefined,
+												},
+												keywords: [],
 											},
 											data,
 										),
@@ -105,11 +108,15 @@ const Gatilhos = () => {
 												title: "Novo gatilho",
 												type: "gatilhos",
 												active: true,
-												delay: 0,
+												delay: 1,
 												ignoreCase: false,
 												saveContacts: false,
 												sendGroups: false,
-												funilId: "",
+												funil: {
+													id: undefined,
+													name: undefined,
+												},
+												keywords: [],
 											},
 											data,
 										),

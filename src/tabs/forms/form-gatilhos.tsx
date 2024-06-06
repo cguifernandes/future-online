@@ -10,6 +10,7 @@ import { Trash2 } from "lucide-react";
 import Button from "../components/button";
 import Select from "../components/select";
 import Switch from "../components/switch";
+import Keywords from "../components/keywords";
 
 interface Props {
 	contentItem: Gatilho;
@@ -22,8 +23,6 @@ interface Props {
 }
 
 const Form = ({ contentItem, setContentItem, setData }: Props) => {
-	const [selectedFunil, setSelectedFunil] = useState("");
-	const [visibleDropdown, setVisibleDropdown] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [funis, setFunis] = useState<{
 		itens: Funil[];
@@ -41,7 +40,18 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		saveContacts: z.boolean(),
 		sendGroups: z.boolean(),
 		ignoreCase: z.boolean(),
-		funilId: z.string({ required_error: "Este campo é obrigátorio" }),
+		funil: z
+			.object(
+				{
+					id: z.string({ required_error: "Este campo é obrigátorio" }),
+					name: z.string().optional(),
+				},
+				{ required_error: "Este campo é obrigátorio" },
+			)
+			.refine((value) => value.id !== "" && value.name !== "", {
+				message: "Este campo é obrigatório",
+			}),
+		keywords: z.array(z.string()).optional(),
 	});
 
 	const {
@@ -56,29 +66,23 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		resolver: zodResolver(schema),
 		defaultValues: {
 			title: contentItem.title || "Novo gatilho",
-			delay: contentItem.delay || 0,
+			delay: contentItem.delay || 1,
 			saveContacts: contentItem.saveContacts || false,
 			sendGroups: contentItem.sendGroups || false,
 			ignoreCase: contentItem.ignoreCase || false,
-			funilId: contentItem.funilId || "",
+			funil: {
+				id: contentItem.funil.id === undefined ? "" : contentItem.funil.id,
+				name:
+					contentItem.funil.name === undefined ? "" : contentItem.funil.name,
+			},
+			keywords: contentItem.keywords || [],
 		},
 	});
 
 	useEffect(() => {
-		reset({
-			title: contentItem.title,
-			delay: contentItem.delay,
-			saveContacts: contentItem.saveContacts,
-			sendGroups: contentItem.sendGroups,
-			ignoreCase: contentItem.ignoreCase,
-			funilId: contentItem.funilId,
-		});
-	}, [contentItem, reset]);
-
-	useEffect(() => {
 		setIsLoading(true);
 
-		if (visibleDropdown) {
+		if (contentItem) {
 			getItem<Funil>("funis")
 				.then((data) => {
 					const selectedFunil = data.filter((funil) => funil.item);
@@ -88,11 +92,24 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					setIsLoading(false);
 				});
 		}
-	}, [visibleDropdown]);
+	}, [contentItem]);
+
+	useEffect(() => {
+		reset({
+			title: contentItem.title,
+			delay: contentItem.delay,
+			saveContacts: contentItem.saveContacts,
+			sendGroups: contentItem.sendGroups,
+			ignoreCase: contentItem.ignoreCase,
+			funil: { id: contentItem.funil.id, name: contentItem.funil.name },
+			keywords: contentItem.keywords,
+		});
+	}, [contentItem, reset]);
 
 	const handlerSubmit = (data: z.infer<typeof schema>) => {
+		console.log(data);
 		if (contentItem) {
-			const updatedItem = { ...contentItem, ...data };
+			const updatedItem: Gatilho = { ...contentItem, ...data };
 
 			chrome.storage.sync.get("gatilhos", (result) => {
 				const gatilhos = result.gatilhos || [];
@@ -111,7 +128,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 	return (
 		<form
 			onSubmit={handleSubmit(handlerSubmit)}
-			className="flex flex-col gap-y-3 items-center justify-center p-4 h-full"
+			className="flex flex-col gap-y-3 items-center justify-between overflow-y-auto p-4 h-full"
 		>
 			<div className="flex gap-x-3 w-full">
 				<Input
@@ -133,7 +150,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					<Trash2 color="#fff" size={24} strokeWidth={1.5} />
 				</button>
 			</div>
-			<div className="flex-1 flex-col gap-y-2 h-full w-full">
+			<div className="flex-1 flex flex-col gap-y-2 h-full w-full">
 				<div className="flex gap-x-2 items-center">
 					<div className="flex flex-col gap-y-2 max-w-xs w-full">
 						<div className="flex items-center gap-x-2 w-full">
@@ -141,19 +158,22 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 								Funil a ser disparado:
 							</label>
 							<Select
-								visibleDropdown={visibleDropdown}
-								setVisibleDropdown={setVisibleDropdown}
+								error={
+									errors.funil?.message ||
+									errors.funil?.id?.message ||
+									errors.funil?.name?.message
+								}
+								size="small"
+								isLoading={isLoading}
 								options={funis.itens.map((funil) => ({
 									title: funil.title,
 									id: funil.id,
 								}))}
-								selectedValue={selectedFunil}
-								setSelectedValue={setSelectedFunil}
-								size="small"
-								isLoading={isLoading}
-								setValue={setValue}
-								name="funilId"
-								error={errors.funilId?.message}
+								defaultValue={contentItem.funil.name}
+								handleOnClick={(option: { id: string; title: string }) => {
+									setValue("funil.id", option.id);
+									setValue("funil.name", option.title);
+								}}
 							/>
 						</div>
 						<div className="flex items-center gap-x-2 w-full">
@@ -166,6 +186,8 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 								})}
 								className="w-36 text-center"
 								error={errors.delay?.message}
+								theme="orange"
+								type="number"
 							/>
 						</div>
 					</div>
@@ -186,6 +208,27 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 							label="Ignorar maiúsculos e minúsculos"
 						/>
 					</div>
+				</div>
+				<div className="text-white max-h-[128px] justify-between flex-1 bg-black/30 px-4 rounded-lg transition-all py-3 gap-y-2 flex flex-col">
+					<div className="flex items-center gap-x-2">
+						<span className="text-white text-base">Se</span>
+						<Select
+							zIndex={50}
+							className="w-full"
+							size="small"
+							options={[
+								{ title: "A mensagem é igual a" },
+								{ title: "A mensagem contém (alguma)" },
+								{ title: "A mensagem começa com (alguma)" },
+								{ title: "A mensagem não contém (nenhuma)" },
+							]}
+						/>
+					</div>
+					<Keywords
+						name="keywords"
+						setValue={setValue}
+						defaultValue={contentItem.keywords}
+					/>
 				</div>
 			</div>
 			<div className="flex items-center gap-x-3 justify-end w-full">

@@ -54,15 +54,10 @@ const File = ({
 		}
 
 		if (file) {
-			console.log("aqui");
 			setIsLoadingImage(true);
 			setImagePreview(null);
 
 			if (setValue && name) {
-				console.log({
-					name,
-					file,
-				});
 				setValue(name, file);
 			}
 
@@ -77,7 +72,6 @@ const File = ({
 
 			setImagePreview(preview);
 		} else {
-			console.log("aqui2");
 			setImagePreview(null);
 		}
 	};

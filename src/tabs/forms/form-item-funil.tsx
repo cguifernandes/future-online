@@ -189,8 +189,6 @@ const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 				label="Item:"
 				options={options}
 				setValue={setValue}
-				setSelectedValue={setSelectedValue}
-				selectedValue={selectedValue}
 				name="selectedId"
 				error={errors.selectedId?.message}
 			/>

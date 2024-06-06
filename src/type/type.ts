@@ -39,6 +39,10 @@ export interface Gatilho {
 	saveContacts: boolean;
 	sendGroups: boolean;
 	ignoreCase: boolean;
-	funilId: string;
+	keywords: string[];
+	funil?: {
+		id?: string;
+		name?: string;
+	};
 	id?: string;
 }
