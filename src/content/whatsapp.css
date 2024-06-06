@@ -57,7 +57,7 @@
 
 .item-pattern-future-online button {
   font-family: "Poppins", sans-serif !important;
-  @apply px-2 py-1 rounded-lg text-sm text-white w-fit
+  @apply px-2 py-1 rounded-lg text-sm text-white w-fit truncate max-w-[140px]
 }
 
 .item-message-future-online {
@@ -75,4 +75,8 @@
 
 .button-midias-future-online {
   @apply bg-green-500 hover:bg-green-600
+}
+
+.button-funis-future-online {
+  @apply bg-yellow-500 hover:bg-yellow-600
 }

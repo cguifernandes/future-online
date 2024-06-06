@@ -78,9 +78,9 @@ const File = ({
 
 	return (
 		<div className="flex flex-col gap-y-1 w-3/5">
-			<div className="flex flex-col flex-1 justify-center border-dashed border-2 border-green-600 p-3 relative rounded-lg gap-y-2">
+			<div className="flex flex-col flex-1 items-center justify-center border-dashed border-2 border-green-600 p-3 relative rounded-lg gap-y-2">
 				<div className="flex flex-col text-center text-white gap-y-1">
-					<Image size={72} color="#fff" />
+					<Image className="mx-auto" size={72} color="#fff" />
 					<label htmlFor="input-file" className="text-base font-semibold">
 						Clique aqui ou arraste o arquivo a ser salvo
 					</label>

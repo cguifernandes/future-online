@@ -1,5 +1,5 @@
 import { saveFile } from "../background/background";
-import type { Mensagem, Midia } from "../type/type";
+import type { Mensagem, Midia, Funil } from "../type/type";
 import "./whatsapp.css";
 
 const waitForElement = (selector, callback) => {
@@ -72,7 +72,7 @@ const loadButton = () => {
 
 const loadItens = (
 	titleText: string,
-	itens: Midia[] | Mensagem[],
+	itens: Midia[] | Mensagem[] | Funil[],
 	pattern: HTMLDivElement,
 	buttonClassName: string,
 ) => {
@@ -126,6 +126,7 @@ window.addEventListener("loadWpp", async () => {
 	const data = (await chrome.storage.sync.get()) as {
 		mensagens: Mensagem[];
 		midias: Midia[];
+		funis: Funil[];
 	};
 
 	waitForElement("span.x1okw0bk", () => {
@@ -152,8 +153,7 @@ window.addEventListener("loadWpp", async () => {
 			if (data.mensagens?.length > 0) {
 				const mensagens: Mensagem[] = data.mensagens.map((message) => ({
 					type: "mensagens",
-					content: message.content,
-					title: message.title,
+					...message,
 				}));
 
 				loadItens(
@@ -167,16 +167,19 @@ window.addEventListener("loadWpp", async () => {
 			if (data.midias?.length > 0) {
 				const midias: Midia[] = data.midias.map((midia) => ({
 					type: "midias",
-					title: midia.title,
-					image: {
-						url: midia.image.url,
-						subtitle: midia.image.subtitle,
-						preview: midia.image.preview,
-						type: midia.image.type,
-					},
+					...midia,
 				}));
 
 				loadItens("Midias", midias, pattern, "button-midias-future-online");
+			}
+
+			if (data.funis?.length > 0) {
+				const funis: Funil[] = data.funis.map((funil) => ({
+					type: "funis",
+					...funil,
+				}));
+
+				loadItens("Funis", funis, pattern, "button-funis-future-online");
 			}
 
 			return;

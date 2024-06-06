@@ -40,6 +40,7 @@
 		"lucide-react": "^0.383.0",
 		"postcss": "^8.4.14",
 		"react-hook-form": "^7.51.5",
+		"react-hot-toast": "^2.4.1",
 		"react-router-dom": "6.2",
 		"react-scripts": "^5.0.1",
 		"tailwind-variants": "^0.2.1",
