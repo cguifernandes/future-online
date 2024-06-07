@@ -41,6 +41,23 @@ const Gatilhos = () => {
 							{data.itens.map((item, index) => (
 								<Button
 									inputSwitch
+									switchDefaultValue={item.active}
+									onSwitchChange={(e) => {
+										const updatedItem = { ...item, active: e.target.checked };
+										chrome.storage.sync.get("gatilhos", (result) => {
+											const gatilhos = result.gatilhos || [];
+											const updatedItems = gatilhos.map((i: Gatilho) =>
+												i.id === item.id ? updatedItem : i,
+											);
+
+											chrome.storage.sync.set(
+												{ gatilhos: updatedItems },
+												() => {
+													setData({ itens: updatedItems });
+												},
+											);
+										});
+									}}
 									type="button"
 									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 									key={index}

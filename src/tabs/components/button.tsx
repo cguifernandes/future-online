@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ChangeEvent, ReactNode } from "react";
 import React from "react";
 import { type VariantProps, tv } from "tailwind-variants";
 import Switch from "./switch";
@@ -27,6 +27,8 @@ interface Props
 	icon?: ReactNode;
 	isLoading?: boolean;
 	inputSwitch?: boolean;
+	onSwitchChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+	switchDefaultValue?: boolean;
 }
 
 const Button = ({
@@ -35,7 +37,9 @@ const Button = ({
 	theme,
 	className,
 	isLoading,
+	onSwitchChange,
 	inputSwitch,
+	switchDefaultValue,
 	...rest
 }: Props) => {
 	if (inputSwitch) {
@@ -52,7 +56,11 @@ const Button = ({
 					{icon}
 					{children}
 				</button>
-				<Switch className="absolute right-4 top-1/2 -translate-y-1/2" />
+				<Switch
+					defaultChecked={switchDefaultValue}
+					onChange={onSwitchChange}
+					className="absolute right-4 top-1/2 -translate-y-1/2"
+				/>
 			</div>
 		);
 	}

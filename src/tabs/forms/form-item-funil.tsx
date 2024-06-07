@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "../components/button";
 import { Image, Mail } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Props {
 	setVisibleModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -112,6 +113,10 @@ const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 				setData({ itens: updatedFunis });
 				setContentItem(updatedItem);
 				setVisibleModal(false);
+				toast.success("Alterações salvas com sucesso!", {
+					position: "bottom-right",
+					className: "text-base ring-2 ring-[#1F2937]",
+				});
 			});
 		});
 	};

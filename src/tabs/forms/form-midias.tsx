@@ -13,6 +13,7 @@ import type { Midia } from "../../type/type";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Props {
 	setData: React.Dispatch<
@@ -108,6 +109,10 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 				chrome.storage.sync.set({ midias: updatedItems }, () => {
 					setData({ itens: updatedItems });
 					setContentItem(updatedItem);
+					toast.success("Alterações salvas com sucesso!", {
+						position: "bottom-right",
+						className: "text-base ring-2 ring-[#1F2937]",
+					});
 				});
 			});
 		} catch (error) {

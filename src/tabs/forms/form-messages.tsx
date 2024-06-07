@@ -9,6 +9,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
 import { removeItem } from "../../utils/utils";
+import toast from "react-hot-toast";
 
 interface Props {
 	contentItem: Mensagem;
@@ -55,6 +56,10 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				chrome.storage.sync.set({ mensagens: updatedItems }, () => {
 					setData({ itens: updatedItems });
 					setContentItem(updatedItem);
+					toast.success("Alterações salvas com sucesso!", {
+						position: "bottom-right",
+						className: "text-base ring-2 ring-[#1F2937]",
+					});
 				});
 			});
 		}
@@ -72,6 +77,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					className="w-full"
 					name="title"
 					theme="purple"
+					maxLength={42}
 				/>
 				<button
 					type="button"

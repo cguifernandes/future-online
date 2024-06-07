@@ -1,18 +1,46 @@
 import clsx from "clsx";
-import React from "react";
+import React, { useEffect, useState, type ChangeEvent } from "react";
 import { useController, type UseControllerProps } from "react-hook-form";
 
 interface Props extends Partial<UseControllerProps> {
 	label?: string;
 	className?: string;
+	onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+	defaultChecked?: boolean;
 }
 
-const Switch = ({ label, className, control, name, defaultValue }: Props) => {
+const Switch = ({
+	label,
+	className,
+	onChange,
+	control,
+	name,
+	defaultChecked,
+}: Props) => {
+	const [checked, setChecked] = useState(defaultChecked);
+
+	useEffect(() => {
+		setChecked(defaultChecked);
+	}, [defaultChecked]);
+
+	const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+		setChecked(event.target.checked);
+		if (onChange) {
+			onChange(event);
+		}
+	};
+
 	let fieldProps = {};
 
 	if (control && name) {
-		const { field } = useController({ name, control, defaultValue });
-		fieldProps = { ...field, checked: field.value };
+		const { field } = useController({
+			name,
+			control,
+			defaultValue: defaultChecked,
+		});
+		fieldProps = { ...field, checked: field.value, onChange: handleChange };
+	} else {
+		fieldProps = { checked, onChange: handleChange };
 	}
 
 	return (
@@ -30,7 +58,7 @@ const Switch = ({ label, className, control, name, defaultValue }: Props) => {
 					"after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600",
 				)}
 			/>
-			{label && <span className="text-white">{label}</span>}
+			<span className="text-white">{label}</span>
 		</label>
 	);
 };

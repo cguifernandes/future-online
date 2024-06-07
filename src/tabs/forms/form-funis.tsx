@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { getFunilItem, removeItem } from "../../utils/utils";
 import { Image, Mail, Plus, Timer, Trash2 } from "lucide-react";
 import clsx from "clsx";
+import toast from "react-hot-toast";
 
 interface Props {
 	contentItem: Funil;
@@ -98,6 +99,10 @@ const Form = ({
 				chrome.storage.sync.set({ funis: updatedItems }, () => {
 					setData({ itens: updatedItems });
 					setContentItem(updatedItem);
+					toast.success("Alterações salvas com sucesso!", {
+						position: "bottom-right",
+						className: "text-base ring-2 ring-[#1F2937]",
+					});
 				});
 			});
 		} catch (error) {

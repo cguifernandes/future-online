@@ -11,6 +11,7 @@ import Button from "../components/button";
 import Select from "../components/select";
 import Switch from "../components/switch";
 import Keywords from "../components/keywords";
+import toast from "react-hot-toast";
 
 interface Props {
 	contentItem: Gatilho;
@@ -107,7 +108,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 	}, [contentItem, reset]);
 
 	const handlerSubmit = (data: z.infer<typeof schema>) => {
-		console.log(data);
 		if (contentItem) {
 			const updatedItem: Gatilho = { ...contentItem, ...data };
 
@@ -120,6 +120,10 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				chrome.storage.sync.set({ gatilhos: updatedItems }, () => {
 					setData({ itens: updatedItems });
 					setContentItem(updatedItem);
+					toast.success("Alterações salvas com sucesso!", {
+						position: "bottom-right",
+						className: "text-base ring-2 ring-[#1F2937]",
+					});
 				});
 			});
 		}
