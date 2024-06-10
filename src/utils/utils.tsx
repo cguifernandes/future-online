@@ -28,6 +28,11 @@ export const loadingImage = (file: File): Promise<string> => {
 	});
 };
 
+export const delay = (minutes: number, seconds: number) =>
+	new Promise((resolve) =>
+		setTimeout(resolve, (minutes * 60 + seconds) * 1000),
+	);
+
 export const generateThumbnail = (videoFile: File, asBase64 = false) => {
 	return new Promise((resolve, reject) => {
 		const video = document.createElement("video");
@@ -88,6 +93,31 @@ export const uploadAndSign = async (path: string, content) => {
 	}
 
 	return signedData.signedUrl;
+};
+
+export const getItemWithId = async (
+	id: string,
+	type: string,
+): Promise<Item | null> => {
+	const selectedType = type
+		.toLocaleLowerCase()
+		.normalize("NFD")
+		// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
+		.replace(/[\u0300-\u036f]/g, "");
+
+	const data = await new Promise<{
+		[key: string]: Item[];
+	}>((resolve) => {
+		chrome.storage.sync.get(null, resolve);
+	});
+
+	const itemsOfType = data[selectedType];
+
+	if (itemsOfType && itemsOfType.length > 0) {
+		return itemsOfType.find((item: Item) => item.id === id) || null;
+	}
+
+	return null;
 };
 
 export const getFunilItem = async (contentItem: Funil["item"]) => {

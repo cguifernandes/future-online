@@ -24,7 +24,7 @@ const injectScript = (src: string): Promise<void> => {
 	});
 };
 
-window.addEventListener("fileUploadStart", () => {
+window.addEventListener("loadingStart", () => {
 	const loadingContainer = document.querySelector(
 		".item-pattern-future-online",
 	);
@@ -41,7 +41,31 @@ window.addEventListener("fileUploadStart", () => {
 	overlay.appendChild(text);
 });
 
-window.addEventListener("fileUploadEnd", () => {
+window.addEventListener("loadingEnd", () => {
+	const loadingContainer = document.querySelector(".loading-overlay");
+	if (!loadingContainer) return;
+
+	loadingContainer.remove();
+});
+
+window.addEventListener("funilStart", () => {
+	const loadingContainer = document.querySelector(
+		".item-pattern-future-online",
+	);
+
+	if (!loadingContainer) return;
+
+	const text = document.createElement("h2");
+	const overlay = document.createElement("div");
+	overlay.className = "loading-overlay";
+	loadingContainer.appendChild(overlay);
+
+	text.textContent = "Enviando funil...";
+	text.className = "loading-text";
+	overlay.appendChild(text);
+});
+
+window.addEventListener("funilEnd", () => {
 	const loadingContainer = document.querySelector(".loading-overlay");
 	if (!loadingContainer) return;
 

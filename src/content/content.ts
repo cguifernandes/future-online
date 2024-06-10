@@ -1,5 +1,6 @@
 import { saveFile } from "../background/background";
-import type { Mensagem, Midia, Funil } from "../type/type";
+import type { Mensagem, Midia, Funil, Gatilho } from "../type/type";
+import { delay, getItemWithId } from "../utils/utils";
 import "./whatsapp.css";
 
 const waitForElement = (selector, callback) => {
@@ -88,28 +89,118 @@ const loadItens = (
 		button.textContent = item.title;
 		button.className = buttonClassName;
 		button.addEventListener("click", async () => {
+			window.dispatchEvent(new CustomEvent("loadingStart"));
+
 			if (item.type === "mensagens") {
-				window.dispatchEvent(
-					new CustomEvent("sendMessage", {
-						detail: {
-							content: item.content,
-						},
-					}),
-				);
+				try {
+					window.dispatchEvent(
+						new CustomEvent("sendMessage", {
+							detail: {
+								content: item.content,
+							},
+						}),
+					);
+				} finally {
+					window.dispatchEvent(new CustomEvent("loadingEnd"));
+				}
 			}
 
 			if (item.type === "midias" && item.image.url !== "" && item.image.url) {
-				const fileName = new Date().getTime().toString();
-				const file = await saveFile(item.image.url, fileName);
+				try {
+					const fileName = new Date().getTime().toString();
+					const file = await saveFile(item.image.url, fileName);
 
-				window.dispatchEvent(
-					new CustomEvent("sendFile", {
-						detail: {
-							file: file,
-							subtitle: item.image.subtitle,
-						},
-					}),
-				);
+					window.dispatchEvent(
+						new CustomEvent("sendFile", {
+							detail: {
+								file: file,
+								subtitle: item.image.subtitle,
+							},
+						}),
+					);
+				} finally {
+					window.dispatchEvent(new CustomEvent("loadingEnd"));
+				}
+			}
+
+			if (item.type === "funis") {
+				window.dispatchEvent(new CustomEvent("loadingEnd"));
+				if (!item.item) return;
+
+				window.dispatchEvent(new CustomEvent("funilStart"));
+
+				let setTimeoutCount = 0;
+
+				const processItem = async () => {
+					for (const i of item.item) {
+						const delayInMilliseconds =
+							(i.delay.minutes * 60 + i.delay.seconds) * 1000;
+						let selectedItem = null;
+
+						try {
+							const selectedType = i.type
+								.toLocaleLowerCase()
+								.normalize("NFD")
+								// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
+								.replace(/[\u0300-\u036f]/g, "");
+
+							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+							const getStorageData = (key: string): Promise<any[]> => {
+								return new Promise((resolve, reject) => {
+									chrome.storage.sync.get(key, (result) => {
+										if (chrome.runtime.lastError) {
+											reject(chrome.runtime.lastError);
+										} else {
+											resolve(result[key] || []);
+										}
+									});
+								});
+							};
+
+							const itens = await getStorageData(selectedType);
+							selectedItem = itens.find((item) => item.id === i.selectedId);
+						} finally {
+							setTimeout(() => {
+								if (selectedItem.type === "mensagens") {
+									window.dispatchEvent(
+										new CustomEvent("sendMessage", {
+											detail: {
+												content: selectedItem.content,
+											},
+										}),
+									);
+								}
+
+								if (selectedItem.type === "midias") {
+									const fileName = new Date().getTime().toString();
+									saveFile(selectedItem.image.url, fileName).then((file) => {
+										window.dispatchEvent(
+											new CustomEvent("sendFile", {
+												detail: {
+													file: file,
+													subtitle:
+														selectedItem.type === "midias" &&
+														selectedItem.image.subtitle,
+												},
+											}),
+										);
+									});
+								}
+
+								setTimeoutCount++;
+								if (setTimeoutCount === item.item.length) {
+									window.dispatchEvent(new CustomEvent("funilEnd"));
+								}
+							}, delayInMilliseconds);
+						}
+
+						await new Promise((resolve) =>
+							setTimeout(resolve, delayInMilliseconds),
+						);
+					}
+				};
+
+				processItem();
 			}
 		});
 

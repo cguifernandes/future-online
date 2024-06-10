@@ -5,18 +5,20 @@ window.addEventListener("sendMessage", async (e: CustomEvent) => {
 	const chatId = activeChat.id._serialized;
 	const { content } = e.detail;
 
-	await WPP.chat.sendTextMessage(chatId, content);
+	try {
+		WPP.chat.sendTextMessage(chatId, content);
+	} catch (e) {
+		console.error("Erro ao enviar a mensagem:", e);
+	}
 });
 
 window.addEventListener("sendFile", async (e: CustomEvent) => {
-	const { file, subtitle } = e.detail;
-	const activeChat = WPP.chat.getActiveChat();
-	if (!activeChat?.id?._serialized) return;
-
-	const chatId = activeChat.id._serialized;
-
 	try {
-		window.dispatchEvent(new CustomEvent("fileUploadStart"));
+		const { file, subtitle } = e.detail;
+		const activeChat = WPP.chat.getActiveChat();
+		if (!activeChat?.id?._serialized) return;
+
+		const chatId = activeChat.id._serialized;
 
 		await WPP.chat.sendFileMessage(chatId, file, {
 			type: "auto-detect",
@@ -24,7 +26,5 @@ window.addEventListener("sendFile", async (e: CustomEvent) => {
 		});
 	} catch (error) {
 		console.error("Erro ao enviar o arquivo:", error);
-	} finally {
-		window.dispatchEvent(new CustomEvent("fileUploadEnd"));
 	}
 });
