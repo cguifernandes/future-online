@@ -1,5 +1,5 @@
-chrome.runtime.onMessage.addListener((message) => {
-	if (message.action === "openDashboard") {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+	if (request.action === "openDashboard") {
 		chrome.tabs.create({ url: "/dashboard.html" });
 	}
 });

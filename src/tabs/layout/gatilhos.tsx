@@ -18,6 +18,7 @@ const Gatilhos = () => {
 
 		getItem<Gatilho>("gatilhos")
 			.then((data) => {
+				console.log(data);
 				setData({ itens: data });
 			})
 			.finally(() => {
@@ -35,7 +36,7 @@ const Gatilhos = () => {
 					<span className="text-center text-white text-base">
 						Carrengando...
 					</span>
-				) : data.itens.length > 0 ? (
+				) : data.itens?.length > 0 ? (
 					<>
 						<div className="flex flex-col max-h-60 overflow-y-auto">
 							{data.itens.map((item, index) => (
@@ -96,7 +97,10 @@ const Gatilhos = () => {
 													id: undefined,
 													name: undefined,
 												},
-												keywords: [],
+												keywords: {
+													key: [],
+													type: { name: "", value: "" },
+												},
 											},
 											data,
 										),
@@ -133,7 +137,10 @@ const Gatilhos = () => {
 													id: undefined,
 													name: undefined,
 												},
-												keywords: [],
+												keywords: {
+													key: [],
+													type: { name: "", value: "" },
+												},
 											},
 											data,
 										),

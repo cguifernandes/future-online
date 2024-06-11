@@ -1,7 +1,6 @@
 // biome-ignore lint/style/useImportType: <explanation>
 import React, { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
-import type { Gatilho } from "../../type/type";
 import type { UseFormSetValue } from "react-hook-form";
 
 interface Props {
@@ -19,7 +18,7 @@ const Keywords = ({ name, setValue, defaultValue }: Props) => {
 	const handleAddKeyword = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter" && inputValue.trim()) {
 			setKeywords((prevKeywords) => {
-				setValue(name, [...prevKeywords, inputValue.trim()]);
+				setValue?.(name, [...prevKeywords, inputValue.trim()]);
 				return [...prevKeywords, inputValue.trim()];
 			});
 			setInputValue("");

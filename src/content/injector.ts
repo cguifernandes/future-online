@@ -10,6 +10,7 @@ async function injectScripts() {
 			clearInterval(timer);
 			window.dispatchEvent(new CustomEvent("initWpp"));
 			window.dispatchEvent(new CustomEvent("loadWpp"));
+			window.dispatchEvent(new CustomEvent("initGatilho"));
 		}
 	}, 1000);
 }

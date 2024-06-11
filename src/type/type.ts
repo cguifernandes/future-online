@@ -39,7 +39,18 @@ export interface Gatilho {
 	saveContacts: boolean;
 	sendGroups: boolean;
 	ignoreCase: boolean;
-	keywords: string[];
+	keywords?: {
+		key?: string[];
+		type?: {
+			value?: "equals" | "contains" | "startsWith" | "notContains" | "";
+			name?:
+				| "A mensagem é igual a"
+				| "A mensagem contém (alguma)"
+				| "A mensagem começa com (alguma)"
+				| "A mensagem não contém (nenhuma)"
+				| "";
+		};
+	};
 	funil?: {
 		id?: string;
 		name?: string;

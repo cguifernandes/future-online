@@ -1,6 +1,5 @@
 import { saveFile } from "../background/background";
 import type { Mensagem, Midia, Funil, Gatilho } from "../type/type";
-import { delay, getItemWithId } from "../utils/utils";
 import "./whatsapp.css";
 
 const waitForElement = (selector, callback) => {
@@ -211,6 +210,12 @@ const loadItens = (
 	pattern.appendChild(content);
 };
 
+window.addEventListener("getGatilhosRequest", async () => {
+	const data = await chrome.storage.sync.get("gatilhos");
+	const event = new CustomEvent("getGatilhos", { detail: data.gatilhos });
+	window.dispatchEvent(event);
+});
+
 window.addEventListener("loadWpp", async () => {
 	if (!window.location.href.includes("web.whatsapp.com")) return;
 
@@ -230,6 +235,8 @@ window.addEventListener("loadWpp", async () => {
 		const observer = new MutationObserver(() => {
 			const main = document.querySelector("div#main");
 			const footer = main.querySelector("footer");
+
+			if (!main) return;
 
 			const existingPattern = footer.querySelector(
 				".item-pattern-future-online",

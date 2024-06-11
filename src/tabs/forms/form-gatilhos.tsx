@@ -52,13 +52,37 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			.refine((value) => value.id !== "" && value.name !== "", {
 				message: "Este campo é obrigatório",
 			}),
-		keywords: z.array(z.string()).optional(),
+		keywords: z
+			.object({
+				key: z.array(z.string()),
+				type: z.object({
+					value: z.enum([
+						"equals",
+						"contains",
+						"startsWith",
+						"notContains",
+						"",
+					]),
+					name: z.enum([
+						"A mensagem é igual a",
+						"A mensagem contém (alguma)",
+						"A mensagem começa com (alguma)",
+						"A mensagem não contém (nenhuma)",
+						"",
+					]),
+				}),
+			})
+			.refine(
+				(value) => value.key.length > 0 && value.type.value !== "",
+				"Os dois campos devem ser preenchidos",
+			),
 	});
 
 	const {
 		handleSubmit,
 		register,
 		reset,
+		getValues,
 		setValue,
 		control,
 		formState: { errors },
@@ -76,7 +100,14 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				name:
 					contentItem.funil.name === undefined ? "" : contentItem.funil.name,
 			},
-			keywords: contentItem.keywords || [],
+			keywords: {
+				key:
+					contentItem.keywords.key.length > 0 ? contentItem.keywords.key : [],
+				type: {
+					value: contentItem.keywords.type.value || "",
+					name: contentItem.keywords.type.name || "",
+				},
+			},
 		},
 	});
 
@@ -103,7 +134,13 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			sendGroups: contentItem.sendGroups,
 			ignoreCase: contentItem.ignoreCase,
 			funil: { id: contentItem.funil.id, name: contentItem.funil.name },
-			keywords: contentItem.keywords,
+			keywords: {
+				key: contentItem.keywords.key,
+				type: {
+					value: contentItem.keywords.type.value,
+					name: contentItem.keywords.type.name,
+				},
+			},
 		});
 	}, [contentItem, reset]);
 
@@ -220,20 +257,53 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 							zIndex={50}
 							className="w-full"
 							size="small"
+							defaultValue={
+								contentItem.keywords.type.name === ""
+									? undefined
+									: contentItem.keywords.type.name
+							}
+							handleOnClick={(option: {
+								title:
+									| "A mensagem é igual a"
+									| "A mensagem contém (alguma)"
+									| "A mensagem começa com (alguma)"
+									| "A mensagem não contém (nenhuma)"
+									| "";
+								value:
+									| "equals"
+									| "contains"
+									| "startsWith"
+									| "notContains"
+									| "";
+							}) => {
+								setValue("keywords.type.value", option.value);
+								setValue("keywords.type.name", option.title);
+							}}
 							options={[
-								{ title: "A mensagem é igual a" },
-								{ title: "A mensagem contém (alguma)" },
-								{ title: "A mensagem começa com (alguma)" },
-								{ title: "A mensagem não contém (nenhuma)" },
+								{ title: "A mensagem é igual a", value: "equals" },
+								{ title: "A mensagem contém (alguma)", value: "contains" },
+								{
+									title: "A mensagem começa com (alguma)",
+									value: "startsWith",
+								},
+								{
+									title: "A mensagem não contém (nenhuma)",
+									value: "notContains",
+								},
 							]}
 						/>
 					</div>
 					<Keywords
-						name="keywords"
+						name="keywords.key"
 						setValue={setValue}
-						defaultValue={contentItem.keywords}
+						defaultValue={contentItem.keywords.key}
 					/>
 				</div>
+				{errors.keywords && (
+					<span className="text-red-600 text-sm">
+						{errors.keywords?.message}
+					</span>
+				)}
 			</div>
 			<div className="flex items-center gap-x-3 justify-end w-full">
 				<Button
