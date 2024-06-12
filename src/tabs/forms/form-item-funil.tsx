@@ -23,9 +23,7 @@ interface Props {
 }
 
 const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
-	const [visibleDropdown, setVisibleDropdown] = useState(false);
 	const [options, setOptions] = useState<{ title: string; id: string }[]>([]);
-	const [selectedValue, setSelectedValue] = useState("");
 	const [selectedItem, setSelectedItem] = useState<{
 		index: number;
 		title?: string;
@@ -133,11 +131,14 @@ const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 			.then((result: { mensagens: Mensagem[]; midias: Midia[] }) => {
 				let options = [];
 				if (selectedItem.title === "Mensagens" && result.mensagens) {
-					options = result.mensagens.map(({ id, title }) => ({ id, title }));
+					options = result.mensagens
+						.filter((value) => value.content !== "")
+						.map(({ id, title }) => ({ id, title }));
 				} else if (selectedItem.title === "Mídias" && result.midias) {
-					options = result.midias.map(({ id, title }) => ({ id, title }));
+					options = result.midias
+						.filter((value) => value.image.preview !== "")
+						.map(({ id, title }) => ({ id, title }));
 				}
-				setSelectedValue("");
 				setOptions(options);
 			})
 			.catch((error) => {
@@ -189,21 +190,12 @@ const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 				</ul>
 			</div>
 			<Select
-				visibleDropdown={visibleDropdown}
-				setVisibleDropdown={setVisibleDropdown}
 				label="Item:"
 				options={options}
 				setValue={setValue}
 				name="selectedId"
 				error={errors.selectedId?.message}
 			/>
-			{visibleDropdown && (
-				// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-				<div
-					className="absolute top-0 left-0 w-full h-full"
-					onClick={() => setVisibleDropdown(false)}
-				/>
-			)}
 			<div className="flex flex-col gap-y-2">
 				<label className="text-lg text-white">Delay:</label>
 				<div className="flex items-center justify-between gap-x-4">

@@ -135,7 +135,6 @@ const loadItens = (
 						const delayInMilliseconds =
 							(i.delay.minutes * 60 + i.delay.seconds) * 1000;
 						let selectedItem = null;
-
 						try {
 							const selectedType = i.type
 								.toLocaleLowerCase()
@@ -216,6 +215,52 @@ window.addEventListener("getGatilhosRequest", async () => {
 	window.dispatchEvent(event);
 });
 
+window.addEventListener("getFunilWithIdRequest", async (e: CustomEvent) => {
+	const { id } = e.detail;
+	const data = await chrome.storage.sync.get("funis");
+	const itemsOfType = data.funis as Funil[];
+
+	let foundItem: Funil | null = null;
+	if (itemsOfType && itemsOfType.length > 0) {
+		foundItem = itemsOfType.find((item) => item.id === id) || null;
+	}
+
+	if (foundItem) {
+		const selectedItemsPromises = foundItem.item.map(async (item) => {
+			const delayInMilliseconds =
+				(item.delay.minutes * 60 + item.delay.seconds) * 1000;
+
+			const key = item.type
+				.toLocaleLowerCase()
+				.normalize("NFD")
+				// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
+				.replace(/[\u0300-\u036f]/g, "");
+
+			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+			return new Promise<any>((resolve) => {
+				chrome.storage.sync.get(key, (result) => {
+					const found = result[key]?.find((i) => i.id === item.selectedId);
+					resolve({ ...found, delay: delayInMilliseconds });
+				});
+			});
+		});
+
+		const selectedItems = await Promise.all(selectedItemsPromises);
+
+		const responseEvent = new CustomEvent("getFunilWithIdResponse", {
+			detail: { ...foundItem, selectedItems },
+		});
+
+		window.dispatchEvent(responseEvent);
+	} else {
+		const responseEvent = new CustomEvent("getFunilWithIdResponse", {
+			detail: null,
+		});
+
+		window.dispatchEvent(responseEvent);
+	}
+});
+
 window.addEventListener("loadWpp", async () => {
 	if (!window.location.href.includes("web.whatsapp.com")) return;
 
@@ -288,4 +333,31 @@ window.addEventListener("loadWpp", async () => {
 			subtree: true,
 		});
 	});
+});
+
+window.addEventListener("saveFile", async (e: CustomEvent) => {
+	const { path, fileName } = e.detail;
+
+	try {
+		const response = await fetch(path, {
+			cache: "force-cache",
+		});
+
+		const blob = await response.blob();
+		const filetype = blob.type;
+
+		const file = new File([blob], fileName, { type: filetype });
+
+		const responseEvent = new CustomEvent("saveFileResponse", {
+			detail: file,
+		});
+		window.dispatchEvent(responseEvent);
+	} catch (error) {
+		console.error("Erro ao baixar o arquivo:", error);
+
+		const responseEvent = new CustomEvent("saveFileResponse", {
+			detail: null,
+		});
+		window.dispatchEvent(responseEvent);
+	}
 });

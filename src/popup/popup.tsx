@@ -1,16 +1,19 @@
 import React from "react";
 import "./popup.css";
+import Button from "../tabs/components/button";
 
 const Popup = () => {
 	return (
-		<div className="w-full h-full flex items-center justify-center">
-			<button
+		<div className="w-full h-full gap-y-2 flex-col flex items-center justify-center">
+			<img src="https://i.imgur.com/L43iCAC.png" alt="Logo" />
+			<div className="w-full h-px bg-white/50 my-2" />
+			<Button
 				type="button"
-				className="bg-gray-800 text-white text-base px-3 py-2 rounded-lg"
+				className="bg-black/30"
 				onClick={() => chrome.tabs.create({ url: "/dashboard.html" })}
 			>
 				Abrir dashboard
-			</button>
+			</Button>
 		</div>
 	);
 };

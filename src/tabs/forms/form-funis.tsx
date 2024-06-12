@@ -142,6 +142,7 @@ const Form = ({
 					className="w-full"
 					name="title"
 					theme="yellow"
+					maxLength={24}
 					{...register("title")}
 				/>
 				<button

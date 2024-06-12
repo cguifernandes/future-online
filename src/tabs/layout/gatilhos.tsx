@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { addItem, getItem } from "../../utils/utils";
 import { Plus } from "lucide-react";
 import Form from "../forms/form-gatilhos";
+import toast from "react-hot-toast";
 
 const Gatilhos = () => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +19,6 @@ const Gatilhos = () => {
 
 		getItem<Gatilho>("gatilhos")
 			.then((data) => {
-				console.log(data);
 				setData({ itens: data });
 			})
 			.finally(() => {
@@ -54,6 +54,11 @@ const Gatilhos = () => {
 											chrome.storage.sync.set(
 												{ gatilhos: updatedItems },
 												() => {
+													toast.success("Alterações salvas com sucesso!", {
+														position: "bottom-right",
+														className: "text-base ring-2 ring-[#1F2937]",
+													});
+													setContentItem(updatedItem);
 													setData({ itens: updatedItems });
 												},
 											);

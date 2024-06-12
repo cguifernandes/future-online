@@ -14,6 +14,7 @@ module.exports = {
 		background: path.resolve("./src/background/background.ts"),
 		"wa-js": path.resolve("./src/content/wa-js.ts"),
 		wpp: path.resolve("./src/content/wpp.js"),
+		utils: path.resolve("./src/utils/utils.tsx"),
 		injector: path.resolve("./src/content/injector.ts"),
 	},
 	module: {

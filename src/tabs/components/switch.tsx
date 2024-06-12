@@ -17,10 +17,12 @@ const Switch = ({
 	name,
 	defaultChecked,
 }: Props) => {
-	const [checked, setChecked] = useState(defaultChecked);
+	const [checked, setChecked] = useState(defaultChecked || false);
 
 	useEffect(() => {
-		setChecked(defaultChecked);
+		if (defaultChecked !== undefined) {
+			setChecked(defaultChecked);
+		}
 	}, [defaultChecked]);
 
 	const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -38,7 +40,14 @@ const Switch = ({
 			control,
 			defaultValue: defaultChecked,
 		});
-		fieldProps = { ...field, checked: field.value, onChange: handleChange };
+		fieldProps = {
+			...field,
+			checked: field.value,
+			onChange: (event: ChangeEvent<HTMLInputElement>) => {
+				field.onChange(event);
+				handleChange(event);
+			},
+		};
 	} else {
 		fieldProps = { checked, onChange: handleChange };
 	}

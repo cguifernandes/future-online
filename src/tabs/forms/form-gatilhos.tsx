@@ -82,7 +82,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		handleSubmit,
 		register,
 		reset,
-		getValues,
 		setValue,
 		control,
 		formState: { errors },
@@ -179,6 +178,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					name="title"
 					theme="orange"
 					error={errors.title?.message}
+					maxLength={24}
 				/>
 				<button
 					type="button"

@@ -8,6 +8,7 @@ export interface Midia {
 		preview: string;
 		type: "Imagem" | "Vídeo" | "";
 	};
+	delay?: number;
 }
 
 export interface Mensagem {
@@ -15,6 +16,7 @@ export interface Mensagem {
 	content: string;
 	title: string;
 	id?: string;
+	delay?: number;
 }
 
 export interface Funil {

@@ -14,6 +14,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../../lib/supabase";
 
 interface Props {
 	setData: React.Dispatch<
@@ -134,6 +136,7 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					className="w-full"
 					name="title"
 					theme="green"
+					maxLength={24}
 				/>
 				<button
 					type="button"

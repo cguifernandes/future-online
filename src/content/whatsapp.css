@@ -34,11 +34,11 @@
 }
 
 .loading-overlay {
-  @apply absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 z-50
+  @apply absolute top-0 left-0 w-full h-screen flex items-center justify-center bg-black/70 z-50
 }
 
 .loading-text {
-  @apply text-white text-lg
+  @apply text-white text-lg absolute top-[calc(192px_/_2)]
 }
 
 .button-popup-future-online {

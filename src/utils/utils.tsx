@@ -1,3 +1,4 @@
+import { saveFile } from "../background/background";
 import { supabase } from "../lib/supabase";
 import type { Funil, Gatilho, Mensagem, Midia } from "../type/type";
 import { v4 as uuidv4 } from "uuid";
@@ -33,7 +34,10 @@ export const delay = (minutes: number, seconds: number) =>
 		setTimeout(resolve, (minutes * 60 + seconds) * 1000),
 	);
 
-export const generateThumbnail = (videoFile: File, asBase64 = false) => {
+export const generateThumbnail = (
+	videoFile: File,
+	asBase64 = false,
+): Promise<string | Blob> => {
 	return new Promise((resolve, reject) => {
 		const video = document.createElement("video");
 		const canvas = document.createElement("canvas");
@@ -73,7 +77,10 @@ export const generateThumbnail = (videoFile: File, asBase64 = false) => {
 	});
 };
 
-export const uploadAndSign = async (path: string, content) => {
+export const uploadAndSign = async (
+	path: string,
+	content: File | Blob | string,
+) => {
 	const uploadResponse = await supabase.storage
 		.from("future-online")
 		.upload(path, content);
@@ -97,7 +104,7 @@ export const uploadAndSign = async (path: string, content) => {
 
 export const getItemWithId = async (
 	id: string,
-	type: string,
+	type: "midias" | "mensagens" | "funis" | "gatilhos",
 ): Promise<Item | null> => {
 	const selectedType = type
 		.toLocaleLowerCase()
@@ -200,4 +207,76 @@ export const getItem = async <T extends Midia | Mensagem | Funil | Gatilho>(
 	);
 
 	return result[type] || [];
+};
+
+export const sendFunil = async (item: Funil) => {
+	let setTimeoutCount = 0;
+
+	const processItem = async () => {
+		for (const i of item.item) {
+			const delayInMilliseconds =
+				(i.delay.minutes * 60 + i.delay.seconds) * 1000;
+			let selectedItem = null;
+			try {
+				const selectedType = i.type
+					.toLocaleLowerCase()
+					.normalize("NFD")
+					// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
+					.replace(/[\u0300-\u036f]/g, "");
+
+				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+				const getStorageData = (key: string): Promise<any[]> => {
+					return new Promise((resolve, reject) => {
+						chrome.storage.sync.get(key, (result) => {
+							if (chrome.runtime.lastError) {
+								reject(chrome.runtime.lastError);
+							} else {
+								resolve(result[key] || []);
+							}
+						});
+					});
+				};
+
+				const itens = await getStorageData(selectedType);
+				selectedItem = itens.find((item) => item.id === i.selectedId);
+			} finally {
+				setTimeout(() => {
+					if (selectedItem.type === "mensagens") {
+						window.dispatchEvent(
+							new CustomEvent("sendMessage", {
+								detail: {
+									content: selectedItem.content,
+								},
+							}),
+						);
+					}
+
+					if (selectedItem.type === "midias") {
+						const fileName = new Date().getTime().toString();
+						saveFile(selectedItem.image.url, fileName).then((file) => {
+							window.dispatchEvent(
+								new CustomEvent("sendFile", {
+									detail: {
+										file: file,
+										subtitle:
+											selectedItem.type === "midias" &&
+											selectedItem.image.subtitle,
+									},
+								}),
+							);
+						});
+					}
+
+					setTimeoutCount++;
+					if (setTimeoutCount === item.item.length) {
+						window.dispatchEvent(new CustomEvent("funilEnd"));
+					}
+				}, delayInMilliseconds);
+			}
+
+			await new Promise((resolve) => setTimeout(resolve, delayInMilliseconds));
+		}
+	};
+
+	processItem();
 };

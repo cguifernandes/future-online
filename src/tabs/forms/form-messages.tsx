@@ -77,7 +77,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					className="w-full"
 					name="title"
 					theme="purple"
-					maxLength={42}
+					maxLength={24}
 				/>
 				<button
 					type="button"

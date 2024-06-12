@@ -100,7 +100,7 @@ const Select = ({
 				{(visibleDropdown || localVisibleDropdown) && (
 					<ul
 						style={{ zIndex }}
-						className="absolute top-full flex flex-col gap-y-2 mt-2 w-full p-3 select-none rounded-lg bg-[#353535] shadow-md"
+						className="absolute max-h-60 overflow-y-auto top-full flex flex-col gap-y-2 mt-2 w-full p-3 select-none rounded-lg bg-[#353535] shadow-md"
 					>
 						{isLoading ? (
 							<span className={clsx("text-white", sizeClass)}>
