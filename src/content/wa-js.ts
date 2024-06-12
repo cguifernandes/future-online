@@ -1,4 +1,4 @@
-import type { Funil, Gatilho, Mensagem, Midia } from "../type/type";
+import type { Gatilho, Mensagem, Midia } from "../type/type";
 
 window.addEventListener("sendMessage", async (e: CustomEvent) => {
 	const activeChat = WPP.chat.getActiveChat();
@@ -44,7 +44,7 @@ const sendFunil = async (
 		}
 
 		if (funilItem.type === "mensagens") {
-			await WPP.chat.markIsComposing(chatId, funilItem.delay);
+			await WPP.chat.markIsComposing(chatId);
 			await WPP.chat.sendTextMessage(chatId, funilItem.content);
 		}
 

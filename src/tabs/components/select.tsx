@@ -52,7 +52,7 @@ const Select = ({
 	zIndex = 40,
 	size = "base",
 }: Props) => {
-	const [selectedValue, setSelectedValue] = useState("");
+	const [selectedValue, setSelectedValue] = useState(defaultValue ?? "");
 	const [localVisibleDropdown, setLocalVisibleDropdown] = useState(false);
 	const sizeClass = select({ size });
 
@@ -83,7 +83,7 @@ const Select = ({
 							size === "xl" && "px-6 py-5",
 							size === "base" && "px-4 py-3",
 						)}
-						value={defaultValue !== undefined ? defaultValue : selectedValue}
+						value={selectedValue}
 					/>
 					<ChevronDown
 						className={clsx(

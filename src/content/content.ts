@@ -92,6 +92,7 @@ const loadItens = (
 
 			if (item.type === "mensagens") {
 				try {
+					console.log("etoru");
 					window.dispatchEvent(
 						new CustomEvent("sendMessage", {
 							detail: {
@@ -100,6 +101,7 @@ const loadItens = (
 						}),
 					);
 				} finally {
+					console.log("lk");
 					window.dispatchEvent(new CustomEvent("loadingEnd"));
 				}
 			}
@@ -275,6 +277,13 @@ window.addEventListener("loadWpp", async () => {
 	});
 
 	if (Object.keys(data).length === 0) return;
+
+	if (
+		data.funis.length === 0 &&
+		data.mensagens.length === 0 &&
+		data.midias.length === 0
+	)
+		return;
 
 	waitForElement("div#main", () => {
 		const observer = new MutationObserver(() => {
