@@ -92,7 +92,6 @@ const loadItens = (
 
 			if (item.type === "mensagens") {
 				try {
-					console.log("etoru");
 					window.dispatchEvent(
 						new CustomEvent("sendMessage", {
 							detail: {
@@ -101,7 +100,6 @@ const loadItens = (
 						}),
 					);
 				} finally {
-					console.log("lk");
 					window.dispatchEvent(new CustomEvent("loadingEnd"));
 				}
 			}
