@@ -1,38 +1,34 @@
 import React, { useEffect } from "react";
 import Input from "../components/input";
-import Button from "../components/button";
-import File from "../components/file";
-import Textarea from "../components/textarea";
-import {
-	generateThumbnail,
-	removeItem,
-	uploadAndSign,
-} from "../../utils/utils";
-import { zodResolver } from "@hookform/resolvers/zod";
-import type { Midia } from "../../type/type";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Trash2 } from "lucide-react";
+import Button from "../components/button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Audio } from "../../type/type";
+import { removeItem, uploadAndSign } from "../../utils/utils";
+import Audios from "../components/fileAudio";
 import toast from "react-hot-toast";
 
 interface Props {
 	setData: React.Dispatch<
 		React.SetStateAction<{
-			itens: Midia[];
+			itens: Audio[];
 		}>
 	>;
-	setContentItem: React.Dispatch<React.SetStateAction<Midia>>;
-	contentItem: Midia;
+	setContentItem: React.Dispatch<React.SetStateAction<Audio>>;
+	contentItem: Audio;
 }
 
-const Form = ({ setContentItem, setData, contentItem }: Props) => {
+const Form = ({ contentItem, setContentItem, setData }: Props) => {
 	const [isLoading, setIsLoading] = React.useState(false);
 
 	const schema = z.object({
 		title: z.string(),
-		image: z.object({
-			subtitle: z.string(),
+		audio: z.object({
+			url: z.string(),
 			file: z.any().optional(),
+			fileName: z.string(),
 		}),
 	});
 
@@ -48,9 +44,10 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 		resolver: zodResolver(schema),
 		defaultValues: {
 			title: "Novo contéudo" || contentItem.title,
-			image: {
-				subtitle: contentItem.image.subtitle,
+			audio: {
+				url: "" || contentItem.audio.url,
 				file: undefined,
+				fileName: "" || contentItem.audio.fileName,
 			},
 		},
 	});
@@ -58,58 +55,44 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 	useEffect(() => {
 		reset({
 			title: contentItem.title,
-			image: {
-				subtitle: contentItem.image.subtitle,
+			audio: {
+				url: contentItem.audio.url,
 				file: undefined,
+				fileName: contentItem.audio.fileName,
 			},
 		});
 	}, [contentItem, reset]);
 
-	const handlerSubmit = async ({ image, title }: z.infer<typeof schema>) => {
+	const handlerSubmit = async ({ audio, title }: z.infer<typeof schema>) => {
 		try {
 			setIsLoading(true);
-
 			const promises = [];
 
-			if (image?.file) {
-				const sanitizedFileName = image.file.name
+			if (audio?.file) {
+				const sanitizedFileName = audio.file.name
 					.replace(/\s+/g, "_")
 					.replace(/[^\w.-]/g, "");
 				const fileName = `${new Date().getTime()}_${sanitizedFileName}`;
-
-				if (image.file.type.includes("video")) {
-					const thumbnailBlob = await generateThumbnail(image.file);
-
-					promises.push(uploadAndSign(`preview-${fileName}`, thumbnailBlob));
-				}
-
-				promises.push(uploadAndSign(fileName, image.file));
+				promises.push(uploadAndSign(fileName, audio.file));
 			}
 
-			const [preview, url] = await Promise.all(promises);
-			const hasImage = preview === undefined && url === undefined;
+			const [url] = await Promise.all(promises);
 
-			const updatedItem: Midia = {
+			const updatedItem: Audio = {
 				...contentItem,
 				title,
-				image: {
-					subtitle: image.subtitle,
-					url: hasImage ? contentItem.image.url : url || preview,
-					preview: hasImage ? contentItem.image.preview : preview,
-					type: image.file
-						? image.file.type.includes("video")
-							? "Vídeo"
-							: "Imagem"
-						: contentItem.image.type,
+				audio: {
+					url: audio.file ? url : contentItem.audio.url,
+					fileName: audio.file ? audio.file.name : contentItem.audio.fileName,
 				},
 			};
 
-			chrome.storage.sync.get("midias", (result) => {
-				const updatedItems = result.midias.map((item) =>
+			chrome.storage.sync.get("audios", (result) => {
+				const updatedItems = result.audios.map((item) =>
 					item.id === contentItem.id ? updatedItem : item,
 				);
 
-				chrome.storage.sync.set({ midias: updatedItems }, () => {
+				chrome.storage.sync.set({ audios: updatedItems }, () => {
 					setData({ itens: updatedItems });
 					setContentItem(updatedItem);
 					toast.success("Alterações salvas com sucesso!", {
@@ -136,13 +119,13 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					placeholder="Título do item"
 					className="w-full"
 					name="title"
-					theme="green"
+					theme="blue"
 					maxLength={24}
 				/>
 				<button
 					type="button"
 					onClick={async () => {
-						setData({ itens: await removeItem(contentItem, "midias") });
+						setData({ itens: await removeItem(contentItem, "audios") });
 						setContentItem(undefined);
 					}}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
@@ -150,27 +133,18 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					<Trash2 color="#fff" size={24} strokeWidth={1.5} />
 				</button>
 			</div>
-			<div className="flex gap-x-3 w-full flex-1">
-				<File
-					contentItem={contentItem}
-					setValue={setValue}
-					name="image.file"
-					setError={setError}
-					error={errors.image?.file.message.toString()}
-				/>
-				<Textarea
-					name="subtitle"
-					theme="green"
-					className="resize-none"
-					placeholder="Insira uma legenda para a mídia (Opcional)"
-					{...register("image.subtitle")}
-				/>
-			</div>
+			<Audios
+				contentItem={contentItem}
+				setValue={setValue}
+				name="audio.file"
+				setError={setError}
+				error={errors.audio?.file.message.toString()}
+			/>
 			<div className="flex items-center gap-x-3 justify-end w-full">
 				<Button
 					isLoading={isLoading}
-					theme="green-light"
-					className="hover:bg-green-600 w-28"
+					theme="blue-light"
+					className="hover:bg-blue-600 w-28"
 				>
 					Salvar
 				</Button>

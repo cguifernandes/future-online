@@ -1,11 +1,13 @@
+// biome-ignore lint/correctness/noUnusedImports: <explanation>
 import React, { useState, type ReactNode } from "react";
 import Item from "../components/item";
 import Messages from "../layout/messages";
 import Midias from "../layout/midias";
 import Funis from "../layout/funis";
 import clsx from "clsx";
-import { Bot, Filter, Image, Mail } from "lucide-react";
+import { Bot, Filter, Image, Mail, Mic } from "lucide-react";
 import Gatilhos from "../layout/gatilhos";
+import Audios from "../layout/audios";
 
 const Dashboard = () => {
 	const [contentDashboard, setContentDashboard] = useState<{
@@ -28,6 +30,12 @@ const Dashboard = () => {
 			icon: <Image size={24} strokeWidth={1.5} />,
 			content: <Midias />,
 			color: "bg-green-800/90",
+		},
+		{
+			title: "Áudios",
+			icon: <Mic size={24} strokeWidth={1.5} />,
+			content: <Audios />,
+			color: "bg-blue-800/90",
 		},
 		{
 			title: "Funis",
@@ -69,7 +77,6 @@ const Dashboard = () => {
 								setContent={setContentDashboard}
 								contentDashboard={contentDashboard}
 								content={item.content}
-								// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 								key={index}
 								icon={item.icon}
 								title={item.title}

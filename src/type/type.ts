@@ -11,6 +11,16 @@ export interface Midia {
 	delay?: number;
 }
 
+export interface Audio {
+	type?: "audios";
+	title: string;
+	id?: string;
+	audio: {
+		url: string;
+		fileName: string;
+	};
+}
+
 export interface Mensagem {
 	type?: "mensagens";
 	content: string;

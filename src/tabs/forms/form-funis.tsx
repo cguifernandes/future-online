@@ -1,4 +1,3 @@
-// biome-ignore lint/style/useImportType: <explanation>
 import React, { useEffect, useState } from "react";
 import Input from "../components/input";
 import type { Funil, Mensagem, Midia } from "../../type/type";
@@ -7,7 +6,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getFunilItem, removeItem } from "../../utils/utils";
-import { Image, Mail, Plus, Timer, Trash2 } from "lucide-react";
+import { Image, Mail, Mic, Plus, Timer, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import toast from "react-hot-toast";
 
@@ -186,19 +185,22 @@ const Form = ({
 						) : (
 							dataItem.data.map((item, index) => (
 								<div
-									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 									key={index}
 									className={clsx(
 										"px-4 py-3 flex items-center gap-x-3 rounded-lg",
 										item.type === "Mensagens"
 											? "bg-purple-900/90"
-											: "bg-green-800/90",
+											: item.type === "Mídias"
+												? "bg-green-800/90"
+												: "bg-blue-800/90",
 									)}
 								>
 									{item.type === "Mensagens" ? (
 										<Mail color="#fff" size={24} strokeWidth={1.5} />
-									) : (
+									) : item.type === "Mídias" ? (
 										<Image color="#fff" size={24} strokeWidth={1.5} />
+									) : (
+										<Mic color="#fff" size={24} strokeWidth={1.5} />
 									)}
 									<span className="text-white text-base">{item.type}</span>
 

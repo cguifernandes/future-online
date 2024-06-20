@@ -10,6 +10,7 @@ const input = tv({
 			green: "focus:ring-green-500",
 			yellow: "focus:ring-yellow-500",
 			orange: "focus:ring-orange-500",
+			blue: "focus:ring-blue-500",
 		},
 	},
 });

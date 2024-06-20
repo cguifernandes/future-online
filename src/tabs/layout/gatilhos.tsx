@@ -1,3 +1,4 @@
+// biome-ignore lint/correctness/noUnusedImports: <explanation>
 import React, { useEffect, useState } from "react";
 import Button from "../components/button";
 import type { Gatilho } from "../../type/type";
@@ -65,7 +66,6 @@ const Gatilhos = () => {
 										});
 									}}
 									type="button"
-									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 									key={index}
 									theme="orange-dark"
 									onClick={() => {

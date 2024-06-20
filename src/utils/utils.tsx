@@ -1,6 +1,6 @@
 import { saveFile } from "../background/background";
 import { supabase } from "../lib/supabase";
-import type { Funil, Gatilho, Mensagem, Midia } from "../type/type";
+import type { Audio, Funil, Gatilho, Mensagem, Midia } from "../type/type";
 import { v4 as uuidv4 } from "uuid";
 
 export const FILES_TYPE = [
@@ -11,7 +11,15 @@ export const FILES_TYPE = [
 	"video/x-m4v",
 ];
 
+export const AUDIOS_TYPE = [
+	"audio/mpeg",
+	"audio/aac",
+	"audio/aiff",
+	"audio/flac",
+];
+
 export const ACCEPT_FILES_TYPE = [".jpeg", ".png", ".svg+xml", ".mp4", ".m4v"];
+export const ACCEPT_AUDIOS_TYPE = [".mp3", ".aac", ".aiff", ".flac"];
 
 export const loadingImage = (file: File): Promise<string> => {
 	return new Promise((resolve, reject) => {
@@ -109,7 +117,6 @@ export const getItemWithId = async (
 	const selectedType = type
 		.toLocaleLowerCase()
 		.normalize("NFD")
-		// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
 		.replace(/[\u0300-\u036f]/g, "");
 
 	const data = await new Promise<{
@@ -140,7 +147,6 @@ export const getFunilItem = async (contentItem: Funil["item"]) => {
 				item.type
 					.toLocaleLowerCase()
 					.normalize("NFD")
-					// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
 					.replace(/[\u0300-\u036f]/g, "")
 			];
 
@@ -156,7 +162,7 @@ export const getFunilItem = async (contentItem: Funil["item"]) => {
 	return localData;
 };
 
-type Item = Gatilho | Funil | Mensagem | Midia;
+type Item = Gatilho | Funil | Mensagem | Midia | Audio;
 
 export const addItem = <T extends Item>(
 	newItem: T,
@@ -170,9 +176,11 @@ export const addItem = <T extends Item>(
 	return newItens;
 };
 
-export const removeItem = async <T extends Midia | Mensagem | Funil | Gatilho>(
+export const removeItem = async <
+	T extends Midia | Mensagem | Funil | Gatilho | Audio,
+>(
 	removeItem: T,
-	type: "midias" | "mensagens" | "funis" | "gatilhos",
+	type: "midias" | "mensagens" | "funis" | "gatilhos" | "audios",
 ) => {
 	const items = await new Promise<T[]>((resolve) => {
 		chrome.storage.sync.get(type, (result) => {
@@ -191,8 +199,10 @@ export const removeItem = async <T extends Midia | Mensagem | Funil | Gatilho>(
 	return updatedItems;
 };
 
-export const getItem = async <T extends Midia | Mensagem | Funil | Gatilho>(
-	type: "midias" | "mensagens" | "funis" | "gatilhos",
+export const getItem = async <
+	T extends Midia | Mensagem | Funil | Gatilho | Audio,
+>(
+	type: "midias" | "mensagens" | "funis" | "gatilhos" | "audios",
 ) => {
 	const result = await new Promise<{ [key: string]: T[] }>(
 		(resolve, reject) => {
@@ -221,10 +231,8 @@ export const sendFunil = async (item: Funil) => {
 				const selectedType = i.type
 					.toLocaleLowerCase()
 					.normalize("NFD")
-					// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
 					.replace(/[\u0300-\u036f]/g, "");
 
-				// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 				const getStorageData = (key: string): Promise<any[]> => {
 					return new Promise((resolve, reject) => {
 						chrome.storage.sync.get(key, (result) => {

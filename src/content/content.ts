@@ -1,5 +1,5 @@
 import { saveFile } from "../background/background";
-import type { Mensagem, Midia, Funil, Gatilho } from "../type/type";
+import type { Mensagem, Midia, Funil, Audio } from "../type/type";
 import "./whatsapp.css";
 
 const waitForElement = (selector, callback) => {
@@ -72,7 +72,7 @@ const loadButton = () => {
 
 const loadItens = (
 	titleText: string,
-	itens: Midia[] | Mensagem[] | Funil[],
+	itens: Midia[] | Mensagem[] | Funil[] | Audio[],
 	pattern: HTMLDivElement,
 	buttonClassName: string,
 ) => {
@@ -96,6 +96,23 @@ const loadItens = (
 						new CustomEvent("sendMessage", {
 							detail: {
 								content: item.content,
+							},
+						}),
+					);
+				} finally {
+					window.dispatchEvent(new CustomEvent("loadingEnd"));
+				}
+			}
+
+			if (item.type === "audios") {
+				try {
+					const fileName = new Date().getTime().toString();
+					const file = await saveFile(item.audio.url, fileName);
+
+					window.dispatchEvent(
+						new CustomEvent("sendFile", {
+							detail: {
+								file: file,
 							},
 						}),
 					);
@@ -134,15 +151,13 @@ const loadItens = (
 					for (const i of item.item) {
 						const delayInMilliseconds =
 							(i.delay.minutes * 60 + i.delay.seconds) * 1000;
-						let selectedItem = null;
+						let selectedItem: Audio | Midia | Mensagem = null;
 						try {
 							const selectedType = i.type
 								.toLocaleLowerCase()
 								.normalize("NFD")
-								// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
 								.replace(/[\u0300-\u036f]/g, "");
 
-							// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 							const getStorageData = (key: string): Promise<any[]> => {
 								return new Promise((resolve, reject) => {
 									chrome.storage.sync.get(key, (result) => {
@@ -175,10 +190,23 @@ const loadItens = (
 										window.dispatchEvent(
 											new CustomEvent("sendFile", {
 												detail: {
-													file: file,
+													file,
 													subtitle:
 														selectedItem.type === "midias" &&
 														selectedItem.image.subtitle,
+												},
+											}),
+										);
+									});
+								}
+
+								if (selectedItem.type === "audios") {
+									const fileName = new Date().getTime().toString();
+									saveFile(selectedItem.audio.url, fileName).then((file) => {
+										window.dispatchEvent(
+											new CustomEvent("sendFile", {
+												detail: {
+													file,
 												},
 											}),
 										);
@@ -233,10 +261,8 @@ window.addEventListener("getFunilWithIdRequest", async (e: CustomEvent) => {
 			const key = item.type
 				.toLocaleLowerCase()
 				.normalize("NFD")
-				// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
 				.replace(/[\u0300-\u036f]/g, "");
 
-			// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 			return new Promise<any>((resolve) => {
 				chrome.storage.sync.get(key, (result) => {
 					const found = result[key]?.find((i) => i.id === item.selectedId);
@@ -268,6 +294,7 @@ window.addEventListener("loadWpp", async () => {
 		mensagens: Mensagem[];
 		midias: Midia[];
 		funis: Funil[];
+		audios: Audio[];
 	};
 
 	waitForElement("span.x1okw0bk", () => {
@@ -276,12 +303,17 @@ window.addEventListener("loadWpp", async () => {
 
 	if (Object.keys(data).length === 0) return;
 
+	const isNonEmptyArray = (arr) => Array.isArray(arr) && arr.length > 0;
+
 	if (
-		data.funis.length === 0 &&
-		data.mensagens.length === 0 &&
-		data.midias.length === 0
-	)
+		!data ||
+		(!isNonEmptyArray(data.funis) &&
+			!isNonEmptyArray(data.mensagens) &&
+			!isNonEmptyArray(data.midias) &&
+			!isNonEmptyArray(data.audios))
+	) {
 		return;
+	}
 
 	waitForElement("div#main", () => {
 		const observer = new MutationObserver(() => {
@@ -314,13 +346,22 @@ window.addEventListener("loadWpp", async () => {
 				);
 			}
 
+			if (data.audios?.length > 0) {
+				const audios: Audio[] = data.audios.map((midia) => ({
+					type: "audios",
+					...midia,
+				}));
+
+				loadItens("Áudios", audios, pattern, "button-audios-future-online");
+			}
+
 			if (data.midias?.length > 0) {
 				const midias: Midia[] = data.midias.map((midia) => ({
 					type: "midias",
 					...midia,
 				}));
 
-				loadItens("Midias", midias, pattern, "button-midias-future-online");
+				loadItens("Mídias", midias, pattern, "button-midias-future-online");
 			}
 
 			if (data.funis?.length > 0) {

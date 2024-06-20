@@ -1,10 +1,8 @@
-// biome-ignore lint/style/useImportType: <explanation>
 import React, { useEffect, useState } from "react";
 import { Plus, X } from "lucide-react";
 import type { UseFormSetValue } from "react-hook-form";
 
 interface Props {
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	setValue?: UseFormSetValue<any>;
 	name?: string;
 	defaultValue?: string[];
@@ -39,7 +37,6 @@ const Keywords = ({ name, setValue, defaultValue }: Props) => {
 			<div className="flex items-center h-full overflow-y-auto flex-wrap gap-2">
 				{keywords.map((keyword, index) => (
 					<span
-						// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 						key={index}
 						className="bg-black/20 w-fit px-3 flex items-center gap-x-1 py-2 rounded-lg"
 					>
@@ -59,15 +56,20 @@ const Keywords = ({ name, setValue, defaultValue }: Props) => {
 				))}
 				Ou
 				{visibleInput ? (
-					<input
-						value={inputValue}
-						onChange={(e) => setInputValue(e.target.value)}
-						className="text-white max-w-fit bg-black/30 text-sm px-4 rounded-lg transition-all ring-transparent py-3 ring-2"
-						type="text"
-						maxLength={20}
-						onKeyDown={handleAddKeyword}
-						placeholder="Digite a palavra-chave"
-					/>
+					<div className="ring-transparent max-w-fit bg-black/30 text-sm px-4 rounded-lg py-3 ring-2">
+						<input
+							value={inputValue}
+							onChange={(e) => setInputValue(e.target.value)}
+							className="text-white bg-transparent"
+							type="text"
+							maxLength={20}
+							onKeyDown={handleAddKeyword}
+							placeholder="Digite a palavra-chave"
+						/>
+						<span className="bg-black text-white text-xs px-2 py-1 rounded-lg pointer-events-none">
+							Enter
+						</span>
+					</div>
 				) : (
 					<button
 						className="text-white flex items-center gap-x-2 max-w-fit bg-black/30 text-sm px-4 rounded-lg transition-all py-3"
@@ -85,15 +87,20 @@ const Keywords = ({ name, setValue, defaultValue }: Props) => {
 	return (
 		<>
 			{visibleInput ? (
-				<input
-					value={inputValue}
-					onChange={(e) => setInputValue(e.target.value)}
-					className="text-white max-w-fit bg-black/30 text-sm px-4 rounded-lg transition-all ring-transparent py-3 ring-2"
-					type="text"
-					maxLength={20}
-					onKeyDown={handleAddKeyword}
-					placeholder="Digite a palavra-chave"
-				/>
+				<div className="ring-transparent max-w-fit bg-black/30 text-sm px-4 rounded-lg py-3 ring-2">
+					<input
+						value={inputValue}
+						onChange={(e) => setInputValue(e.target.value)}
+						className="text-white bg-transparent"
+						type="text"
+						maxLength={20}
+						onKeyDown={handleAddKeyword}
+						placeholder="Digite a palavra-chave"
+					/>
+					<span className="bg-black text-white text-xs px-2 py-1 rounded-lg pointer-events-none">
+						Enter
+					</span>
+				</div>
 			) : (
 				<button
 					className="text-white flex items-center gap-x-2 max-w-fit bg-black/30 text-sm px-4 rounded-lg transition-all py-3"

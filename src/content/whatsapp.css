@@ -77,6 +77,10 @@
   @apply bg-green-500 hover:bg-green-600
 }
 
+.button-audios-future-online {
+  @apply bg-blue-500 hover:bg-blue-600
+}
+
 .button-funis-future-online {
   @apply bg-yellow-500 hover:bg-yellow-600
 }

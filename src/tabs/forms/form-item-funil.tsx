@@ -1,14 +1,13 @@
-// biome-ignore lint/style/useImportType: <explanation>
 import React, { useEffect, useState } from "react";
 import Item from "../components/item";
 import Select from "../components/select";
-import type { Funil, Mensagem, Midia } from "../../type/type";
+import type { Audio, Funil, Mensagem, Midia } from "../../type/type";
 import Input from "../components/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "../components/button";
-import { Image, Mail } from "lucide-react";
+import { Image, Mail, Mic } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Props {
@@ -40,10 +39,15 @@ const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 			icon: <Image size={32} strokeWidth={1.5} />,
 			color: "bg-green-800/90",
 		},
+		{
+			title: "Áudios",
+			icon: <Mic size={32} strokeWidth={1.5} />,
+			color: "bg-blue-800/90",
+		},
 	];
 
 	const schema = z.object({
-		type: z.enum(["Mensagens", "Mídias"]),
+		type: z.enum(["Mensagens", "Mídias", "Áudios"]),
 		selectedId: z.string({ required_error: "Este campo é obrigatório." }),
 		delay: z
 			.object({
@@ -119,28 +123,39 @@ const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 		});
 	};
 
+	console.log(errors);
+
 	useEffect(() => {
 		chrome.storage.sync
 			.get(
 				selectedItem.title
 					.toLocaleLowerCase()
 					.normalize("NFD")
-					// biome-ignore lint/suspicious/noMisleadingCharacterClass: <explanation>
 					.replace(/[\u0300-\u036f]/g, ""),
 			)
-			.then((result: { mensagens: Mensagem[]; midias: Midia[] }) => {
-				let options = [];
-				if (selectedItem.title === "Mensagens" && result.mensagens) {
-					options = result.mensagens
-						.filter((value) => value.content !== "")
-						.map(({ id, title }) => ({ id, title }));
-				} else if (selectedItem.title === "Mídias" && result.midias) {
-					options = result.midias
-						.filter((value) => value.image.preview !== "")
-						.map(({ id, title }) => ({ id, title }));
-				}
-				setOptions(options);
-			})
+			.then(
+				(result: {
+					mensagens: Mensagem[];
+					midias: Midia[];
+					audios: Audio[];
+				}) => {
+					let options = [];
+					if (selectedItem.title === "Mensagens" && result.mensagens) {
+						options = result.mensagens
+							.filter((value) => value.content !== "")
+							.map(({ id, title }) => ({ id, title }));
+					} else if (selectedItem.title === "Mídias" && result.midias) {
+						options = result.midias
+							.filter((value) => value.image.preview !== "")
+							.map(({ id, title }) => ({ id, title }));
+					} else if (selectedItem.title === "Áudios" && result.audios) {
+						options = result.audios
+							.filter((value) => value.audio.url !== "")
+							.map(({ id, title }) => ({ id, title }));
+					}
+					setOptions(options);
+				},
+			)
 			.catch((error) => {
 				console.log(error);
 			});

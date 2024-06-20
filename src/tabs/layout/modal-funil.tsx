@@ -1,4 +1,3 @@
-// biome-ignore lint/style/useImportType: <explanation>
 import React from "react";
 import Form from "../forms/form-item-funil";
 import type { Funil } from "../../type/type";

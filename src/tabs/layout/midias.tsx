@@ -1,6 +1,6 @@
+// biome-ignore lint/correctness/noUnusedImports: <explanation>
 import React, { useEffect, useState } from "react";
 import Button from "../components/button";
-import { v4 as uuidv4 } from "uuid";
 import clsx from "clsx";
 import Form from "../forms/form-midias";
 import type { Midia } from "../../type/type";
@@ -42,7 +42,6 @@ const Midias = () => {
 							{data.itens.map((item, index) => (
 								<Button
 									type="button"
-									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 									key={index}
 									theme="green-dark"
 									onClick={() => {
