@@ -1,15 +1,26 @@
-import type { Gatilho, Mensagem, Midia } from "../type/type";
+import type { Audio, Gatilho, Mensagem, Midia } from "../type/type";
 
 window.addEventListener("sendMessage", async (e: CustomEvent) => {
-	const activeChat = WPP.chat.getActiveChat();
-	if (!activeChat?.id?._serialized) return;
+	const { content, delay, chatId: eventChatId } = e.detail;
 
-	const chatId = activeChat.id._serialized;
-	const { content } = e.detail;
+	const activeChat = WPP.chat.getActiveChat();
+	const chatId = eventChatId || activeChat?.id?._serialized;
+
+	if (!chatId) return;
+
+	const calculatedDelay = delay ?? Math.min(content.length * 100, 5000);
 
 	try {
-		await WPP.chat.markIsComposing(chatId);
-		await WPP.chat.sendTextMessage(chatId, content);
+		WPP.chat
+			.markIsComposing(chatId, calculatedDelay)
+			.then(async () => {
+				await WPP.chat.sendTextMessage(chatId, content);
+			})
+			.finally(() => {
+				if (!delay) {
+					window.dispatchEvent(new CustomEvent("loadingEnd"));
+				}
+			});
 	} catch (e) {
 		console.error("Erro ao enviar a mensagem:", e);
 	}
@@ -17,40 +28,54 @@ window.addEventListener("sendMessage", async (e: CustomEvent) => {
 
 window.addEventListener("sendFile", async (e: CustomEvent) => {
 	try {
-		const { file, subtitle } = e.detail;
+		const { file, subtitle, delay, chatId: eventChatId } = e.detail;
+
 		const activeChat = WPP.chat.getActiveChat();
-		if (!activeChat?.id?._serialized) return;
+		const chatId = eventChatId || activeChat?.id?._serialized;
 
-		const chatId = activeChat.id._serialized;
+		if (!chatId) return;
 
-		await WPP.chat.sendFileMessage(chatId, file, {
-			type: "auto-detect",
-			caption: subtitle,
-		});
+		const sendFileMessage = async () => {
+			await WPP.chat.sendFileMessage(chatId, file, {
+				type: "auto-detect",
+				caption: subtitle,
+			});
+		};
+
+		if (delay) {
+			setTimeout(sendFileMessage, delay);
+		} else {
+			await sendFileMessage();
+		}
 	} catch (error) {
 		console.error("Erro ao enviar o arquivo:", error);
 	}
 });
 
 const sendFunil = async (
-	selectedItems: (Midia | Mensagem)[],
+	selectedItems: (Midia | Mensagem | Audio)[],
 	chatId: string,
 ) => {
-	for (let i = 0; i < selectedItems.length; i++) {
+	for (let i = 0; i < selectedItems?.length; i++) {
 		const funilItem = selectedItems[i];
 
-		if (i > 0) {
-			await new Promise((resolve) => setTimeout(resolve, funilItem.delay));
-		}
-
 		if (funilItem.type === "mensagens") {
-			await WPP.chat.markIsComposing(chatId);
-			await WPP.chat.sendTextMessage(chatId, funilItem.content);
-		}
-
-		if (funilItem.type === "midias") {
+			await new Promise((resolve) => {
+				window.dispatchEvent(
+					new CustomEvent("sendMessage", {
+						detail: {
+							content: funilItem.content,
+							delay: funilItem.delay,
+							chatId,
+						},
+					}),
+				);
+				setTimeout(resolve, funilItem.delay);
+			});
+		} else if (funilItem.type === "midias") {
 			const fileName = new Date().getTime().toString();
-			const file: File = await new Promise((resolve) => {
+
+			await new Promise((resolve) => {
 				const handler = (event: CustomEvent) => {
 					window.removeEventListener(
 						"saveFileResponse",
@@ -64,11 +89,50 @@ const sendFunil = async (
 						detail: { path: funilItem.image.url, fileName },
 					}),
 				);
+			}).then((file: File) => {
+				return new Promise((resolve) => {
+					window.dispatchEvent(
+						new CustomEvent("sendFile", {
+							detail: {
+								file,
+								subtitle: funilItem.image.subtitle,
+								delay: funilItem.delay,
+								chatId,
+							},
+						}),
+					);
+					setTimeout(resolve, funilItem.delay);
+				});
 			});
-
-			await WPP.chat.sendFileMessage(chatId, file, {
-				type: "auto-detect",
-				caption: funilItem.image.subtitle,
+		} else if (funilItem.type === "audios") {
+			const fileName = new Date().getTime().toString();
+			await new Promise((resolve) => {
+				const handler = (event: CustomEvent) => {
+					window.removeEventListener(
+						"saveFileResponse",
+						handler as EventListener,
+					);
+					resolve(event.detail);
+				};
+				window.addEventListener("saveFileResponse", handler as EventListener);
+				window.dispatchEvent(
+					new CustomEvent("saveFile", {
+						detail: { path: funilItem.audio.url, fileName },
+					}),
+				);
+			}).then((file: File) => {
+				return new Promise((resolve) => {
+					window.dispatchEvent(
+						new CustomEvent("sendFile", {
+							detail: {
+								file,
+								delay: funilItem.delay,
+								chatId,
+							},
+						}),
+					);
+					setTimeout(resolve, funilItem.delay);
+				});
 			});
 		}
 	}
@@ -76,6 +140,18 @@ const sendFunil = async (
 
 window.addEventListener("initGatilho", () => {
 	WPP.on("chat.new_message", async (msg) => {
+		// const expiredLicense = await new Promise((resolve) => {
+		// 	const handler = (event) => {
+		// 		window.removeEventListener("expiredLicense", handler);
+		// 		resolve(event.detail);
+		// 	};
+
+		// 	window.addEventListener("expiredLicense", handler);
+		// 	window.dispatchEvent(new CustomEvent("expiredLicenseRequest"));
+		// });
+
+		// if (expiredLicense) return;
+
 		if (msg.type !== "chat") return;
 		if (msg.attributes.id.fromMe === true) return;
 		const message = msg.body;
@@ -91,11 +167,11 @@ window.addEventListener("initGatilho", () => {
 			window.dispatchEvent(new CustomEvent("getGatilhosRequest"));
 		});
 
-		const selectedGatilhos = gatilhos.filter(
-			(gatilho) => gatilho.active && gatilho.keywords.key.length > 0,
+		const selectedGatilhos = gatilhos?.filter(
+			(gatilho) => gatilho.active && gatilho.keywords.key?.length > 0,
 		);
 
-		for (let i = 0; i < selectedGatilhos.length; i++) {
+		for (let i = 0; i < selectedGatilhos?.length; i++) {
 			const gatilho = selectedGatilhos[i];
 
 			if (gatilho.saveContacts && !msg.attributes.senderObj.isMyContact) {
@@ -106,7 +182,7 @@ window.addEventListener("initGatilho", () => {
 				continue;
 			}
 
-			for (let j = 0; j < gatilho.keywords.key.length; j++) {
+			for (let j = 0; j < gatilho.keywords.key?.length; j++) {
 				const type = gatilho.keywords.type.value;
 				const key = gatilho.keywords.key[j];
 				const chatId = msg.attributes.id.remote._serialized;
@@ -114,7 +190,7 @@ window.addEventListener("initGatilho", () => {
 				const {
 					selectedItems,
 				}: {
-					selectedItems: Mensagem[] | Midia[];
+					selectedItems: Mensagem[] | Midia[] | Audio[];
 				} = await new Promise((resolve) => {
 					const handler = (event: CustomEvent) => {
 						window.removeEventListener(

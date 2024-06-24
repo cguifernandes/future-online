@@ -84,3 +84,7 @@
 .button-funis-future-online {
   @apply bg-yellow-500 hover:bg-yellow-600
 }
+
+.expired-license-text {
+  @apply text-lg font-bold !text-white
+}

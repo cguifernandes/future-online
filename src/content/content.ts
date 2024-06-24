@@ -91,17 +91,13 @@ const loadItens = (
 			window.dispatchEvent(new CustomEvent("loadingStart"));
 
 			if (item.type === "mensagens") {
-				try {
-					window.dispatchEvent(
-						new CustomEvent("sendMessage", {
-							detail: {
-								content: item.content,
-							},
-						}),
-					);
-				} finally {
-					window.dispatchEvent(new CustomEvent("loadingEnd"));
-				}
+				window.dispatchEvent(
+					new CustomEvent("sendMessage", {
+						detail: {
+							content: item.content,
+						},
+					}),
+				);
 			}
 
 			if (item.type === "audios") {
@@ -145,84 +141,105 @@ const loadItens = (
 
 				window.dispatchEvent(new CustomEvent("funilStart"));
 
+				const loadStorageData = async (key) => {
+					return new Promise((resolve, reject) => {
+						chrome.storage.sync.get(key, (result) => {
+							if (chrome.runtime.lastError) {
+								reject(chrome.runtime.lastError);
+							} else {
+								resolve(result[key] || []);
+							}
+						});
+					});
+				};
+
+				const itemTypes = [...new Set(item.item.map((i) => i.type))];
+				const storageData = {};
+
+				for (const type of itemTypes) {
+					const normalizedType = type
+						.toLocaleLowerCase()
+						.normalize("NFD")
+						.replace(/[\u0300-\u036f]/g, "");
+					storageData[normalizedType] = await loadStorageData(normalizedType);
+				}
+
 				let setTimeoutCount = 0;
 
 				const processItem = async () => {
 					for (const i of item.item) {
 						const delayInMilliseconds =
 							(i.delay.minutes * 60 + i.delay.seconds) * 1000;
-						let selectedItem: Audio | Midia | Mensagem = null;
+						let selectedItem = null;
+
 						try {
 							const selectedType = i.type
 								.toLocaleLowerCase()
 								.normalize("NFD")
 								.replace(/[\u0300-\u036f]/g, "");
 
-							const getStorageData = (key: string): Promise<any[]> => {
-								return new Promise((resolve, reject) => {
-									chrome.storage.sync.get(key, (result) => {
-										if (chrome.runtime.lastError) {
-											reject(chrome.runtime.lastError);
-										} else {
-											resolve(result[key] || []);
-										}
-									});
-								});
-							};
-
-							const itens = await getStorageData(selectedType);
+							const itens = storageData[selectedType];
 							selectedItem = itens.find((item) => item.id === i.selectedId);
-						} finally {
-							setTimeout(() => {
-								if (selectedItem.type === "mensagens") {
+
+							if (selectedItem.type === "mensagens") {
+								await new Promise((resolve) => {
 									window.dispatchEvent(
 										new CustomEvent("sendMessage", {
 											detail: {
 												content: selectedItem.content,
+												delay: delayInMilliseconds,
 											},
 										}),
 									);
-								}
+									setTimeout(resolve, delayInMilliseconds);
+								});
+							} else if (selectedItem.type === "midias") {
+								const fileName = new Date().getTime().toString();
 
-								if (selectedItem.type === "midias") {
-									const fileName = new Date().getTime().toString();
-									saveFile(selectedItem.image.url, fileName).then((file) => {
-										window.dispatchEvent(
-											new CustomEvent("sendFile", {
-												detail: {
-													file,
-													subtitle:
-														selectedItem.type === "midias" &&
-														selectedItem.image.subtitle,
-												},
-											}),
-										);
-									});
-								}
+								await saveFile(selectedItem.image.url, fileName).then(
+									(file) => {
+										return new Promise((resolve) => {
+											window.dispatchEvent(
+												new CustomEvent("sendFile", {
+													detail: {
+														file,
+														subtitle:
+															selectedItem.type === "midias" &&
+															selectedItem.image.subtitle,
+														delay: delayInMilliseconds,
+													},
+												}),
+											);
+											setTimeout(resolve, delayInMilliseconds);
+										});
+									},
+								);
+							} else if (selectedItem.type === "audios") {
+								const fileName = new Date().getTime().toString();
+								await saveFile(selectedItem.audio.url, fileName).then(
+									(file) => {
+										return new Promise((resolve) => {
+											window.dispatchEvent(
+												new CustomEvent("sendFile", {
+													detail: {
+														file,
+														delay: delayInMilliseconds,
+													},
+												}),
+											);
+											setTimeout(resolve, delayInMilliseconds);
+										});
+									},
+								);
+							}
 
-								if (selectedItem.type === "audios") {
-									const fileName = new Date().getTime().toString();
-									saveFile(selectedItem.audio.url, fileName).then((file) => {
-										window.dispatchEvent(
-											new CustomEvent("sendFile", {
-												detail: {
-													file,
-												},
-											}),
-										);
-									});
-								}
-
-								setTimeoutCount++;
-								if (setTimeoutCount === item.item.length) {
-									window.dispatchEvent(new CustomEvent("funilEnd"));
-								}
-							}, delayInMilliseconds);
+							setTimeoutCount++;
+							if (setTimeoutCount === item.item.length) {
+								window.dispatchEvent(new CustomEvent("funilEnd"));
+							}
+						} catch (error) {
+							console.error("Erro ao processar o item:", error);
 						}
-
-						await new Promise((resolve) =>
-							setTimeout(resolve, delayInMilliseconds),
-						);
 					}
 				};
 
@@ -382,6 +399,136 @@ window.addEventListener("loadWpp", async () => {
 		});
 	});
 });
+
+// window.addEventListener("loadWpp", async () => {
+// 	if (!window.location.href.includes("web.whatsapp.com")) return;
+
+// 	waitForElement("span.x1okw0bk", () => {
+// 		loadButton();
+// 	});
+
+// let expiredLicense = false;
+// const data = (await chrome.storage.sync.get()) as {
+// 	mensagens: Mensagem[];
+// 	midias: Midia[];
+// 	funis: Funil[];
+// 	audios: Audio[];
+// 	expiredLicense: boolean;
+// };
+
+// expiredLicense = data.expiredLicense;
+
+// if (expiredLicense) {
+// 	waitForElement("div#main", () => {
+// 		const observer = new MutationObserver(() => {
+// 			const main = document.querySelector("div#main");
+// 			if (!main) return;
+
+// 			const footer = main.querySelector("footer");
+// 			const pattern = footer.querySelector(".item-pattern-future-online");
+// 			const existingText = pattern.querySelector(".expired-license-text");
+
+// 			if (!existingText) {
+// 				const text = document.createElement("span");
+// 				text.className = "expired-license-text";
+// 				text.textContent =
+// 					"Sua licença expirou 🥹, chame nosso suporte ou contrate um novo plano!";
+// 				pattern.appendChild(text);
+// 			}
+
+// 			observer.disconnect();
+// 		});
+
+// 		observer.observe(document, {
+// 			childList: true,
+// 			subtree: true,
+// 		});
+// 	});
+// }
+
+// const isNonEmptyArray = (arr) => Array.isArray(arr) && arr.length > 0;
+
+// waitForElement("div#main", () => {
+// 	const observer = new MutationObserver(() => {
+// 		const main = document.querySelector("div#main");
+// 		if (!main) return;
+
+// 		const footer = main.querySelector("footer");
+
+// 		const existingPattern = footer.querySelector(
+// 			".item-pattern-future-online",
+// 		) as HTMLDivElement;
+
+// 		if (!existingPattern) {
+// 			const pattern = document.createElement("div");
+// 			pattern.className = "item-pattern-future-online";
+// 			footer.appendChild(pattern);
+// 		}
+
+// 		if (
+// 			!isNonEmptyArray(data.funis) &&
+// 			!isNonEmptyArray(data.mensagens) &&
+// 			!isNonEmptyArray(data.midias) &&
+// 			!isNonEmptyArray(data.audios)
+// 		) {
+// 			observer.disconnect();
+// 			return;
+// 		}
+
+// 		if (data.mensagens?.length > 0) {
+// 			loadItens(
+// 				"Mensagens",
+// 				data.mensagens.map((message) => ({ type: "mensagens", ...message })),
+// 				existingPattern,
+// 				"button-message-future-online",
+// 			);
+// 		}
+
+// 		if (data.audios?.length > 0) {
+// 			loadItens(
+// 				"Áudios",
+// 				data.audios.map((midia) => ({ type: "audios", ...midia })),
+// 				existingPattern,
+// 				"button-audios-future-online",
+// 			);
+// 		}
+
+// 		if (data.midias?.length > 0) {
+// 			loadItens(
+// 				"Mídias",
+// 				data.midias.map((midia) => ({ type: "midias", ...midia })),
+// 				existingPattern,
+// 				"button-midias-future-online",
+// 			);
+// 		}
+
+// 		if (data.funis?.length > 0) {
+// 			loadItens(
+// 				"Funis",
+// 				data.funis.map((funil) => ({ type: "funis", ...funil })),
+// 				existingPattern,
+// 				"button-funis-future-online",
+// 			);
+// 		}
+
+// 		observer.disconnect();
+// 	});
+
+// 	observer.observe(document, {
+// 		childList: true,
+// 		subtree: true,
+// 	});
+// });
+
+// const checkExpiredLicense = async () => {
+// 	setInterval(async () => {
+// 		const licenseData = await chrome.storage.sync.get("expiredLicense");
+// 		expiredLicense = licenseData.expiredLicense;
+// 	}, 1000);
+// };
+
+// checkExpiredLicense();
+// });
 
 window.addEventListener("saveFile", async (e: CustomEvent) => {
 	const { path, fileName } = e.detail;

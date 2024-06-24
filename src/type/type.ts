@@ -19,6 +19,7 @@ export interface Audio {
 		url: string;
 		fileName: string;
 	};
+	delay?: number;
 }
 
 export interface Mensagem {

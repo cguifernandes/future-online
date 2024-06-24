@@ -121,25 +121,23 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				.finally(() => {
 					setIsLoading(false);
 				});
-		}
-	}, [contentItem]);
 
-	useEffect(() => {
-		reset({
-			title: contentItem.title,
-			delay: contentItem.delay,
-			saveContacts: contentItem.saveContacts,
-			sendGroups: contentItem.sendGroups,
-			ignoreCase: contentItem.ignoreCase,
-			funil: { id: contentItem.funil.id, name: contentItem.funil.name },
-			keywords: {
-				key: contentItem.keywords.key,
-				type: {
-					value: contentItem.keywords.type.value,
-					name: contentItem.keywords.type.name,
+			reset({
+				title: contentItem.title,
+				delay: contentItem.delay,
+				saveContacts: contentItem.saveContacts,
+				sendGroups: contentItem.sendGroups,
+				ignoreCase: contentItem.ignoreCase,
+				funil: { id: contentItem.funil.id, name: contentItem.funil.name },
+				keywords: {
+					key: contentItem.keywords.key,
+					type: {
+						value: contentItem.keywords.type.value,
+						name: contentItem.keywords.type.name,
+					},
 				},
-			},
-		});
+			});
+		}
 	}, [contentItem, reset]);
 
 	const handlerSubmit = (data: z.infer<typeof schema>) => {
@@ -155,10 +153,14 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				chrome.storage.sync.set({ gatilhos: updatedItems }, () => {
 					setData({ itens: updatedItems });
 					setContentItem(updatedItem);
-					toast.success("Alterações salvas com sucesso!", {
-						position: "bottom-right",
-						className: "text-base ring-2 ring-[#1F2937]",
-					});
+					toast.success(
+						"Alterações salvas. Por favor, atualize a página do WhatsApp para vê-las",
+						{
+							position: "bottom-right",
+							className: "text-base ring-2 ring-[#1F2937]",
+							duration: 5000,
+						},
+					);
 				});
 			});
 		}

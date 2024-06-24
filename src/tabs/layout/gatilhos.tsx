@@ -55,10 +55,14 @@ const Gatilhos = () => {
 											chrome.storage.sync.set(
 												{ gatilhos: updatedItems },
 												() => {
-													toast.success("Alterações salvas com sucesso!", {
-														position: "bottom-right",
-														className: "text-base ring-2 ring-[#1F2937]",
-													});
+													toast.success(
+														"Alterações salvas. Por favor, atualize a página do WhatsApp para vê-las",
+														{
+															position: "bottom-right",
+															className: "text-base ring-2 ring-[#1F2937]",
+															duration: 5000,
+														},
+													);
 													setContentItem(updatedItem);
 													setData({ itens: updatedItems });
 												},

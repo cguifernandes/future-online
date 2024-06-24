@@ -1,5 +1,4 @@
-// biome-ignore lint/style/useImportType: <explanation>
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import type { UseFormSetValue } from "react-hook-form";
 import { type VariantProps, tv } from "tailwind-variants";
@@ -19,7 +18,6 @@ const select = tv({
 interface Props extends VariantProps<typeof select> {
 	options: {
 		title: string;
-		// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 		[key: string]: any;
 	}[];
 	label?: string;
@@ -29,9 +27,7 @@ interface Props extends VariantProps<typeof select> {
 	isLoading?: boolean;
 	name?: string;
 	defaultValue?: string;
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	setValue?: UseFormSetValue<any>;
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	handleOnClick?: (option: any) => void;
 	className?: string;
 	zIndex?: number;
@@ -52,9 +48,15 @@ const Select = ({
 	zIndex = 40,
 	size = "base",
 }: Props) => {
-	const [selectedValue, setSelectedValue] = useState(defaultValue ?? "");
+	const [selectedValue, setSelectedValue] = useState("");
 	const [localVisibleDropdown, setLocalVisibleDropdown] = useState(false);
 	const sizeClass = select({ size });
+
+	useEffect(() => {
+		if (defaultValue) {
+			setSelectedValue(defaultValue);
+		}
+	}, [defaultValue]);
 
 	return (
 		<>
@@ -62,7 +64,6 @@ const Select = ({
 				{label && (
 					<label className={clsx("text-white", sizeClass)}>{label}</label>
 				)}
-				{/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
 				<div
 					onClick={() => {
 						if (setVisibleDropdown) {
@@ -113,7 +114,6 @@ const Select = ({
 						) : (
 							options.map((option, index) => (
 								<li
-									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 									key={index}
 									className={clsx(
 										"cursor-pointer text-white rounded-lg transition-all hover:bg-[#202020]",
@@ -157,7 +157,6 @@ const Select = ({
 			</div>
 			{visibleDropdown ||
 				(localVisibleDropdown && (
-					// biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 					<div
 						onClick={() => {
 							if (setVisibleDropdown) {
