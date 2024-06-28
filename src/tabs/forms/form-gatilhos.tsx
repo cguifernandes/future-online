@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -175,8 +175,9 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				<Input
 					placeholder="Título do item"
 					{...register("title")}
-					className="w-full"
+					className="w-full flex-1"
 					name="title"
+					patternClassName="flex-1"
 					theme="orange"
 					error={errors.title?.message}
 					maxLength={24}

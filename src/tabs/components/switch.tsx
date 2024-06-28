@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React, { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { useController, type UseControllerProps } from "react-hook-form";
 
 interface Props extends Partial<UseControllerProps> {
@@ -35,6 +35,7 @@ const Switch = ({
 	let fieldProps = {};
 
 	if (control && name) {
+		// biome-ignore lint/correctness/useHookAtTopLevel: <explanation>
 		const { field } = useController({
 			name,
 			control,

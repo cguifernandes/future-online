@@ -1,5 +1,4 @@
-// biome-ignore lint/correctness/noUnusedImports: <explanation>
-import React, { useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Item from "../components/item";
 import Messages from "../layout/messages";
 import Midias from "../layout/midias";
@@ -54,7 +53,7 @@ const Dashboard = () => {
 	return (
 		<main className="min-h-[calc(100vh_-_96px)] max-w-7xl w-full mx-auto px-8">
 			<div className="flex flex-col gap-y-px py-6">
-				<h1 className="text-xl font-semibold">
+				<h1 className="text-2xl font-bold">
 					Bem vindo(a) ao Painel de Controle
 				</h1>
 				<span className="text-base">

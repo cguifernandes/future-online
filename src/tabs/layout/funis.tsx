@@ -1,5 +1,4 @@
-// biome-ignore lint/correctness/noUnusedImports: <explanation>
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Form from "../forms/form-funis";
 import Button from "../components/button";
 import clsx from "clsx";

@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../components/button";
-import { v4 as uuidv4 } from "uuid";
 import clsx from "clsx";
 import Form from "../forms/form-messages";
 import type { Mensagem } from "../../type/type";
@@ -42,7 +41,6 @@ const Messages = () => {
 							{data.itens.map((item, index) => (
 								<Button
 									type="button"
-									// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 									key={index}
 									onClick={() => {
 										setContentItem(item);

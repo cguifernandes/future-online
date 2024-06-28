@@ -1,5 +1,4 @@
-// biome-ignore lint/correctness/noUnusedImports: <explanation>
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../components/button";
 import { addItem, getItem } from "../../utils/utils";
 import { Audio } from "../../type/type";

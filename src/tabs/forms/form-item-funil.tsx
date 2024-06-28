@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Item from "../components/item";
 import Select from "../components/select";
 import type { Audio, Funil, Mensagem, Midia } from "../../type/type";
@@ -126,8 +126,6 @@ const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 			});
 		});
 	};
-
-	console.log(errors);
 
 	useEffect(() => {
 		chrome.storage.sync

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Input from "../components/input";
 import { Trash2 } from "lucide-react";
 import Button from "../components/button";
@@ -21,7 +21,7 @@ interface Props {
 }
 
 const Form = ({ contentItem, setContentItem, setData }: Props) => {
-	const [isLoading, setIsLoading] = React.useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const schema = z.object({
 		title: z.string(),
@@ -122,6 +122,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					{...register("title")}
 					placeholder="Título do item"
 					className="w-full"
+					patternClassName="flex-1 h-12"
 					name="title"
 					theme="blue"
 					maxLength={24}

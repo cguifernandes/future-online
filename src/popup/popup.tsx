@@ -1,4 +1,3 @@
-import React from "react";
 import "./popup.css";
 import Button from "../tabs/components/button";
 

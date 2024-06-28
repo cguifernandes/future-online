@@ -1,5 +1,4 @@
-import type { TextareaHTMLAttributes } from "react";
-import React from "react";
+import { forwardRef, type TextareaHTMLAttributes } from "react";
 import { type VariantProps, tv } from "tailwind-variants";
 
 const textarea = tv({
@@ -12,7 +11,7 @@ const textarea = tv({
 	},
 });
 
-const Textarea = React.forwardRef<
+const Textarea = forwardRef<
 	HTMLTextAreaElement,
 	TextareaHTMLAttributes<HTMLTextAreaElement> & VariantProps<typeof textarea>
 >(({ theme, className, ...rest }, ref) => {

@@ -11,6 +11,8 @@ export const FILES_TYPE = [
 	"video/x-m4v",
 ];
 
+export const url = "http://localhost:3333";
+
 export const AUDIOS_TYPE = [
 	"audio/mpeg",
 	"audio/aac",

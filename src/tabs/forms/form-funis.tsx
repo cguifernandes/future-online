@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Input from "../components/input";
 import type { Funil, Mensagem, Midia } from "../../type/type";
 import Button from "../components/button";
@@ -142,9 +142,10 @@ const Form = ({
 			<div className="flex gap-x-3 w-full">
 				<Input
 					placeholder="Título do item"
-					className="w-full"
+					className="w-full flex-1"
 					name="title"
 					theme="yellow"
+					patternClassName="flex-1"
 					maxLength={24}
 					{...register("title")}
 				/>

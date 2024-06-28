@@ -1,5 +1,5 @@
-import type { InputHTMLAttributes } from "react";
-import React from "react";
+import clsx from "clsx";
+import { forwardRef, type InputHTMLAttributes } from "react";
 import { type VariantProps, tv } from "tailwind-variants";
 
 const input = tv({
@@ -11,18 +11,43 @@ const input = tv({
 			yellow: "focus:ring-yellow-500",
 			orange: "focus:ring-orange-500",
 			blue: "focus:ring-blue-500",
+			"dark-blue": "focus:ring-dark-blue-600 !bg-dark-blue-500",
 		},
 	},
 });
 
-const Input = React.forwardRef<
+interface Props {
+	error?: string;
+	label?: string;
+	labelClassName?: string;
+	patternClassName?: string;
+}
+
+const Input = forwardRef<
 	HTMLInputElement,
-	InputHTMLAttributes<HTMLInputElement> &
-		VariantProps<typeof input> & { error?: string }
->(({ theme, className, error, ...rest }, ref) => {
-	if (error) {
+	InputHTMLAttributes<HTMLInputElement> & VariantProps<typeof input> & Props
+>(
+	(
+		{
+			theme,
+			className,
+			label,
+			error,
+			patternClassName,
+			labelClassName,
+			...rest
+		},
+		ref,
+	) => {
 		return (
-			<div className="flex flex-col gap-y-2">
+			<div
+				className={clsx("flex flex-col", label && "gap-y-1", patternClassName)}
+			>
+				{label && (
+					<label className={clsx("text-sm text-white", labelClassName)}>
+						{label}
+					</label>
+				)}
 				<input
 					ref={ref}
 					className={input({
@@ -34,18 +59,7 @@ const Input = React.forwardRef<
 				{error && <span className="text-red-600 text-sm">{error}</span>}
 			</div>
 		);
-	}
-
-	return (
-		<input
-			ref={ref}
-			className={input({
-				theme,
-				className,
-			})}
-			{...rest}
-		/>
-	);
-});
+	},
+);
 
 export default Input;

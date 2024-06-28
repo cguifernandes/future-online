@@ -66,7 +66,7 @@
 
 .item-title-future-online {
   font-family: "Poppins", sans-serif !important;
-  @apply text-white text-base font-bold
+  @apply text-white text-lg font-bold
 }
 
 .button-message-future-online {
@@ -75,6 +75,10 @@
 
 .button-midias-future-online {
   @apply bg-green-500 hover:bg-green-600
+}
+
+.error-message-future-online {
+  @apply h-full text-sm
 }
 
 .button-audios-future-online {

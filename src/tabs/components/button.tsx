@@ -1,5 +1,3 @@
-// biome-ignore lint/correctness/noUnusedImports: <explanation>
-import React from "react";
 import type { ButtonHTMLAttributes, ChangeEvent, ReactNode } from "react";
 import { type VariantProps, tv } from "tailwind-variants";
 import Switch from "./switch";
@@ -19,6 +17,7 @@ const button = tv({
 			"blue-dark": "bg-blue-800/90",
 			"blue-light": "bg-blue-500",
 			danger: "bg-red-600 hover:bg-red-700",
+			solid: "bg-aqua-100 hover:bg-aqua-200",
 		},
 	},
 });

@@ -139,137 +139,110 @@ const sendFunil = async (
 };
 
 window.addEventListener("initGatilho", () => {
-	WPP.on("chat.new_message", async (msg) => {
-		// const expiredLicense = await new Promise((resolve) => {
-		// 	const handler = (event) => {
-		// 		window.removeEventListener("expiredLicense", handler);
-		// 		resolve(event.detail);
-		// 	};
-
-		// 	window.addEventListener("expiredLicense", handler);
-		// 	window.dispatchEvent(new CustomEvent("expiredLicenseRequest"));
-		// });
-
-		// if (expiredLicense) return;
-
-		if (msg.type !== "chat") return;
-		if (msg.attributes.id.fromMe === true) return;
-		const message = msg.body;
-		const isGroup = msg.from.server === "g.us";
-
-		const gatilhos: Gatilho[] = await new Promise((resolve) => {
-			const handler = (event) => {
-				window.removeEventListener("getGatilhos", handler);
-				resolve(event.detail);
-			};
-
-			window.addEventListener("getGatilhos", handler);
-			window.dispatchEvent(new CustomEvent("getGatilhosRequest"));
-		});
-
-		const selectedGatilhos = gatilhos?.filter(
-			(gatilho) => gatilho.active && gatilho.keywords.key?.length > 0,
-		);
-
-		for (let i = 0; i < selectedGatilhos?.length; i++) {
-			const gatilho = selectedGatilhos[i];
-
-			if (gatilho.saveContacts && !msg.attributes.senderObj.isMyContact) {
-				continue;
-			}
-
-			if (gatilho.sendGroups && isGroup) {
-				continue;
-			}
-
-			for (let j = 0; j < gatilho.keywords.key?.length; j++) {
-				const type = gatilho.keywords.type.value;
-				const key = gatilho.keywords.key[j];
-				const chatId = msg.attributes.id.remote._serialized;
-
-				const {
-					selectedItems,
-				}: {
-					selectedItems: Mensagem[] | Midia[] | Audio[];
-				} = await new Promise((resolve) => {
-					const handler = (event: CustomEvent) => {
-						window.removeEventListener(
-							"getFunilWithIdResponse",
-							handler as EventListener,
-						);
-						resolve(event.detail);
-					};
-
-					window.addEventListener(
-						"getFunilWithIdResponse",
-						handler as EventListener,
-					);
-
-					window.dispatchEvent(
-						new CustomEvent("getFunilWithIdRequest", {
-							detail: { id: gatilho.funil.id },
-						}),
-					);
-				});
-
-				if (type === "equals") {
-					let isMatch = false;
-					if (gatilho.ignoreCase) {
-						isMatch = message.toLowerCase() === key.toLowerCase();
-
-						if (isMatch) {
-							sendFunil(selectedItems, chatId);
-							return;
-						}
-					} else {
-						isMatch = message === key;
-
-						if (isMatch) {
-							sendFunil(selectedItems, chatId);
-							return;
-						}
-					}
-				}
-
-				if (type === "contains") {
-					let isMatch = false;
-					if (gatilho.ignoreCase) {
-						isMatch = message.toLowerCase().includes(key.toLowerCase());
-					} else {
-						isMatch = message.includes(key);
-					}
-					if (isMatch) {
-						sendFunil(selectedItems, chatId);
-						return;
-					}
-				}
-
-				if (type === "startsWith") {
-					let isMatch = false;
-					if (gatilho.ignoreCase) {
-						isMatch = message.toLowerCase().startsWith(key.toLowerCase());
-					} else {
-						isMatch = message.startsWith(key);
-					}
-					if (isMatch) {
-						sendFunil(selectedItems, chatId);
-						return;
-					}
-				}
-
-				if (type === "notContains") {
-					let isMatch = false;
-					if (gatilho.ignoreCase) {
-						isMatch = !message.toLowerCase().includes(key.toLowerCase());
-					} else {
-						isMatch = !message.includes(key);
-					}
-					if (isMatch) {
-						sendFunil(selectedItems, chatId);
-						return;
-					}
-				}
-			}
-		}
-	});
+	// WPP.on("chat.new_message", async (msg) => {
+	// 	if (msg.type !== "chat") return;
+	// 	if (msg.attributes.id.fromMe === true) return;
+	// 	const message = msg.body;
+	// 	const isGroup = msg.from.server === "g.us";
+	// 	const gatilhos: Gatilho[] = await new Promise((resolve) => {
+	// 		const handler = (event) => {
+	// 			window.removeEventListener("getGatilhos", handler);
+	// 			resolve(event.detail);
+	// 		};
+	// 		window.addEventListener("getGatilhos", handler);
+	// 		window.dispatchEvent(new CustomEvent("getGatilhosRequest"));
+	// 	});
+	// 	if (!gatilhos) return;
+	// 	const selectedGatilhos = gatilhos?.filter(
+	// 		(gatilho) => gatilho.active && gatilho.keywords.key?.length > 0,
+	// 	);
+	// 	for (let i = 0; i < selectedGatilhos?.length; i++) {
+	// 		const gatilho = selectedGatilhos[i];
+	// 		if (gatilho.saveContacts && !msg.attributes.senderObj.isMyContact) {
+	// 			continue;
+	// 		}
+	// 		if (gatilho.sendGroups && isGroup) {
+	// 			continue;
+	// 		}
+	// 		for (let j = 0; j < gatilho.keywords.key?.length; j++) {
+	// 			const type = gatilho.keywords.type.value;
+	// 			const key = gatilho.keywords.key[j];
+	// 			const chatId = msg.attributes.id.remote._serialized;
+	// 			const {
+	// 				selectedItems,
+	// 			}: {
+	// 				selectedItems: Mensagem[] | Midia[] | Audio[];
+	// 			} = await new Promise((resolve) => {
+	// 				const handler = (event: CustomEvent) => {
+	// 					window.removeEventListener(
+	// 						"getFunilWithIdResponse",
+	// 						handler as EventListener,
+	// 					);
+	// 					resolve(event.detail);
+	// 				};
+	// 				window.addEventListener(
+	// 					"getFunilWithIdResponse",
+	// 					handler as EventListener,
+	// 				);
+	// 				window.dispatchEvent(
+	// 					new CustomEvent("getFunilWithIdRequest", {
+	// 						detail: { id: gatilho.funil.id },
+	// 					}),
+	// 				);
+	// 			});
+	// 			if (type === "equals") {
+	// 				let isMatch = false;
+	// 				if (gatilho.ignoreCase) {
+	// 					isMatch = message.toLowerCase() === key.toLowerCase();
+	// 					if (isMatch) {
+	// 						sendFunil(selectedItems, chatId);
+	// 						return;
+	// 					}
+	// 				} else {
+	// 					isMatch = message === key;
+	// 					if (isMatch) {
+	// 						sendFunil(selectedItems, chatId);
+	// 						return;
+	// 					}
+	// 				}
+	// 			}
+	// 			if (type === "contains") {
+	// 				let isMatch = false;
+	// 				if (gatilho.ignoreCase) {
+	// 					isMatch = message.toLowerCase().includes(key.toLowerCase());
+	// 				} else {
+	// 					isMatch = message.includes(key);
+	// 				}
+	// 				if (isMatch) {
+	// 					sendFunil(selectedItems, chatId);
+	// 					return;
+	// 				}
+	// 			}
+	// 			if (type === "startsWith") {
+	// 				let isMatch = false;
+	// 				if (gatilho.ignoreCase) {
+	// 					isMatch = message.toLowerCase().startsWith(key.toLowerCase());
+	// 				} else {
+	// 					isMatch = message.startsWith(key);
+	// 				}
+	// 				if (isMatch) {
+	// 					sendFunil(selectedItems, chatId);
+	// 					return;
+	// 				}
+	// 			}
+	// 			if (type === "notContains") {
+	// 				let isMatch = false;
+	// 				if (gatilho.ignoreCase) {
+	// 					isMatch = !message.toLowerCase().includes(key.toLowerCase());
+	// 				} else {
+	// 					isMatch = !message.includes(key);
+	// 				}
+	// 				if (isMatch) {
+	// 					sendFunil(selectedItems, chatId);
+	// 					return;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// });
 });

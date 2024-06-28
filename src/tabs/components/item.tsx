@@ -1,5 +1,3 @@
-// biome-ignore lint/style/useImportType: <explanation>
-import React from "react";
 import type { ReactNode } from "react";
 import clsx from "clsx";
 import type { UseFormSetValue } from "react-hook-form";
@@ -15,7 +13,6 @@ interface Props {
 			title?: string;
 		}>
 	>;
-	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
 	setValue?: UseFormSetValue<any>;
 	name?: string;
 	content?: ReactNode;

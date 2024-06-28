@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Input from "../components/input";
 import Button from "../components/button";
 import File from "../components/file";
@@ -26,7 +26,7 @@ interface Props {
 }
 
 const Form = ({ setContentItem, setData, contentItem }: Props) => {
-	const [isLoading, setIsLoading] = React.useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const schema = z.object({
 		title: z.string(),
@@ -138,8 +138,9 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 				<Input
 					{...register("title")}
 					placeholder="Título do item"
-					className="w-full"
+					className="w-full flex-1"
 					name="title"
+					patternClassName="flex-1"
 					theme="green"
 					maxLength={24}
 				/>

@@ -1,5 +1,4 @@
-// biome-ignore lint/correctness/noUnusedImports: <explanation>
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { type InputHTMLAttributes, useState, type ChangeEvent } from "react";
 import clsx from "clsx";
 import {

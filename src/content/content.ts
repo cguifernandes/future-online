@@ -51,7 +51,7 @@ const loadButton = () => {
 	popup.style.display = "none";
 
 	buttonPopup.addEventListener("click", () => {
-		chrome.runtime.sendMessage({ action: "openDashboard" });
+		chrome.runtime.sendMessage({ target: "new", url: "/dashboard.html" });
 	});
 
 	closeButton.addEventListener("click", () => {
@@ -75,6 +75,8 @@ const loadItens = (
 	itens: Midia[] | Mensagem[] | Funil[] | Audio[],
 	pattern: HTMLDivElement,
 	buttonClassName: string,
+	patternClassName: string,
+	clickCount: number,
 ) => {
 	const content = document.createElement("div");
 	const title = document.createElement("h1");
@@ -83,14 +85,54 @@ const loadItens = (
 	content.appendChild(title);
 	content.className = "item-content-future-online";
 
+	const displayErrorMessage = (messageText: string, index: number) => {
+		const message = document.createElement("p");
+		message.textContent = messageText;
+		message.className = "error-message-future-online";
+
+		const buttons = content.querySelectorAll("button");
+		buttons.forEach((button) => {
+			content.removeChild(button);
+		});
+
+		content.appendChild(message);
+		content.className = patternClassName;
+	};
+
+	if (titleText === "Mensagens" && clickCount > 0) {
+		displayErrorMessage("Você já atingiu o limite de mensagens", 0);
+		return;
+	}
+
+	if (titleText === "Mídias" && clickCount > 0) {
+		displayErrorMessage("Você já atingiu o limite de mídias", 1);
+		return;
+	}
+
+	if (titleText === "Áudios" && clickCount > 0) {
+		displayErrorMessage("Você já atingiu o limite de áudios", 2);
+		return;
+	}
+
+	if (titleText === "Funis" && clickCount > 0) {
+		displayErrorMessage("Você já atingiu o limite de funis", 3);
+		return;
+	}
+
 	for (const item of itens) {
 		const button = document.createElement("button");
 		button.textContent = item.title;
 		button.className = buttonClassName;
+
 		button.addEventListener("click", async () => {
 			window.dispatchEvent(new CustomEvent("loadingStart"));
 
 			if (item.type === "mensagens") {
+				chrome.storage.sync.get(null, (result) => {
+					const updatedItens = { ...result, countClickMensagens: 1 };
+					chrome.storage.sync.set({ ...updatedItens });
+				});
+
 				window.dispatchEvent(
 					new CustomEvent("sendMessage", {
 						detail: {
@@ -98,10 +140,22 @@ const loadItens = (
 						},
 					}),
 				);
+
+				displayErrorMessage("Você já atingiu o limite de mensagens", 0);
+				return;
 			}
 
 			if (item.type === "audios") {
+				if (item.audio.url === "") {
+					return window.dispatchEvent(new CustomEvent("loadingEnd"));
+				}
+
 				try {
+					chrome.storage.sync.get(null, (result) => {
+						const updatedItens = { ...result, countClickAudios: 1 };
+						chrome.storage.sync.set({ ...updatedItens });
+					});
+
 					const fileName = new Date().getTime().toString();
 					const file = await saveFile(item.audio.url, fileName);
 
@@ -115,10 +169,22 @@ const loadItens = (
 				} finally {
 					window.dispatchEvent(new CustomEvent("loadingEnd"));
 				}
+
+				displayErrorMessage("Você já atingiu o limite de áudios", 2);
+				return;
 			}
 
-			if (item.type === "midias" && item.image.url !== "" && item.image.url) {
+			if (item.type === "midias") {
+				if (item.image.url === "" && !item.image.url) {
+					return window.dispatchEvent(new CustomEvent("loadingEnd"));
+				}
+
 				try {
+					chrome.storage.sync.get(null, (result) => {
+						const updatedItens = { ...result, countClickMidias: 1 };
+						chrome.storage.sync.set({ ...updatedItens });
+					});
+
 					const fileName = new Date().getTime().toString();
 					const file = await saveFile(item.image.url, fileName);
 
@@ -133,11 +199,19 @@ const loadItens = (
 				} finally {
 					window.dispatchEvent(new CustomEvent("loadingEnd"));
 				}
+
+				displayErrorMessage("Você já atingiu o limite de mídias", 1);
+				return;
 			}
 
 			if (item.type === "funis") {
 				window.dispatchEvent(new CustomEvent("loadingEnd"));
 				if (!item.item) return;
+
+				chrome.storage.sync.get(null, (result) => {
+					const updatedItens = { ...result, countClickFunis: 1 };
+					chrome.storage.sync.set({ ...updatedItens });
+				});
 
 				window.dispatchEvent(new CustomEvent("funilStart"));
 
@@ -244,13 +318,16 @@ const loadItens = (
 				};
 
 				processItem();
+
+				displayErrorMessage("Você já atingiu o limite de funis", 3);
+				return;
 			}
 		});
 
 		content.appendChild(button);
 	}
 
-	content.className = "item-message-future-online";
+	content.className = patternClassName;
 	pattern.appendChild(content);
 };
 
@@ -312,6 +389,10 @@ window.addEventListener("loadWpp", async () => {
 		midias: Midia[];
 		funis: Funil[];
 		audios: Audio[];
+		countClickMidias: number;
+		countClickMensagens: number;
+		countClickAudios: number;
+		countClickFunis: number;
 	};
 
 	waitForElement("span.x1okw0bk", () => {
@@ -350,6 +431,7 @@ window.addEventListener("loadWpp", async () => {
 			footer.appendChild(pattern);
 
 			if (data.mensagens?.length > 0) {
+				console.log("pasou");
 				const mensagens: Mensagem[] = data.mensagens.map((message) => ({
 					type: "mensagens",
 					...message,
@@ -360,6 +442,8 @@ window.addEventListener("loadWpp", async () => {
 					mensagens,
 					pattern,
 					"button-message-future-online",
+					"item-message-future-online message",
+					data.countClickMensagens,
 				);
 			}
 
@@ -369,7 +453,14 @@ window.addEventListener("loadWpp", async () => {
 					...midia,
 				}));
 
-				loadItens("Áudios", audios, pattern, "button-audios-future-online");
+				loadItens(
+					"Áudios",
+					audios,
+					pattern,
+					"button-audios-future-online",
+					"item-message-future-online audios",
+					data.countClickAudios,
+				);
 			}
 
 			if (data.midias?.length > 0) {
@@ -378,7 +469,14 @@ window.addEventListener("loadWpp", async () => {
 					...midia,
 				}));
 
-				loadItens("Mídias", midias, pattern, "button-midias-future-online");
+				loadItens(
+					"Mídias",
+					midias,
+					pattern,
+					"button-midias-future-online",
+					"item-message-future-online midias",
+					data.countClickMidias,
+				);
 			}
 
 			if (data.funis?.length > 0) {
@@ -387,7 +485,14 @@ window.addEventListener("loadWpp", async () => {
 					...funil,
 				}));
 
-				loadItens("Funis", funis, pattern, "button-funis-future-online");
+				loadItens(
+					"Funis",
+					funis,
+					pattern,
+					"button-funis-future-online",
+					"item-message-future-online funis",
+					data.countClickFunis,
+				);
 			}
 
 			return;
@@ -399,136 +504,6 @@ window.addEventListener("loadWpp", async () => {
 		});
 	});
 });
-
-// window.addEventListener("loadWpp", async () => {
-// 	if (!window.location.href.includes("web.whatsapp.com")) return;
-
-// 	waitForElement("span.x1okw0bk", () => {
-// 		loadButton();
-// 	});
-
-// let expiredLicense = false;
-// const data = (await chrome.storage.sync.get()) as {
-// 	mensagens: Mensagem[];
-// 	midias: Midia[];
-// 	funis: Funil[];
-// 	audios: Audio[];
-// 	expiredLicense: boolean;
-// };
-
-// expiredLicense = data.expiredLicense;
-
-// if (expiredLicense) {
-// 	waitForElement("div#main", () => {
-// 		const observer = new MutationObserver(() => {
-// 			const main = document.querySelector("div#main");
-// 			if (!main) return;
-
-// 			const footer = main.querySelector("footer");
-// 			const pattern = footer.querySelector(".item-pattern-future-online");
-// 			const existingText = pattern.querySelector(".expired-license-text");
-
-// 			if (!existingText) {
-// 				const text = document.createElement("span");
-// 				text.className = "expired-license-text";
-// 				text.textContent =
-// 					"Sua licença expirou 🥹, chame nosso suporte ou contrate um novo plano!";
-// 				pattern.appendChild(text);
-// 			}
-
-// 			observer.disconnect();
-// 		});
-
-// 		observer.observe(document, {
-// 			childList: true,
-// 			subtree: true,
-// 		});
-// 	});
-// }
-
-// const isNonEmptyArray = (arr) => Array.isArray(arr) && arr.length > 0;
-
-// waitForElement("div#main", () => {
-// 	const observer = new MutationObserver(() => {
-// 		const main = document.querySelector("div#main");
-// 		if (!main) return;
-
-// 		const footer = main.querySelector("footer");
-
-// 		const existingPattern = footer.querySelector(
-// 			".item-pattern-future-online",
-// 		) as HTMLDivElement;
-
-// 		if (!existingPattern) {
-// 			const pattern = document.createElement("div");
-// 			pattern.className = "item-pattern-future-online";
-// 			footer.appendChild(pattern);
-// 		}
-
-// 		if (
-// 			!isNonEmptyArray(data.funis) &&
-// 			!isNonEmptyArray(data.mensagens) &&
-// 			!isNonEmptyArray(data.midias) &&
-// 			!isNonEmptyArray(data.audios)
-// 		) {
-// 			observer.disconnect();
-// 			return;
-// 		}
-
-// 		if (data.mensagens?.length > 0) {
-// 			loadItens(
-// 				"Mensagens",
-// 				data.mensagens.map((message) => ({ type: "mensagens", ...message })),
-// 				existingPattern,
-// 				"button-message-future-online",
-// 			);
-// 		}
-
-// 		if (data.audios?.length > 0) {
-// 			loadItens(
-// 				"Áudios",
-// 				data.audios.map((midia) => ({ type: "audios", ...midia })),
-// 				existingPattern,
-// 				"button-audios-future-online",
-// 			);
-// 		}
-
-// 		if (data.midias?.length > 0) {
-// 			loadItens(
-// 				"Mídias",
-// 				data.midias.map((midia) => ({ type: "midias", ...midia })),
-// 				existingPattern,
-// 				"button-midias-future-online",
-// 			);
-// 		}
-
-// 		if (data.funis?.length > 0) {
-// 			loadItens(
-// 				"Funis",
-// 				data.funis.map((funil) => ({ type: "funis", ...funil })),
-// 				existingPattern,
-// 				"button-funis-future-online",
-// 			);
-// 		}
-
-// 		observer.disconnect();
-// 	});
-
-// 	observer.observe(document, {
-// 		childList: true,
-// 		subtree: true,
-// 	});
-// });
-
-// const checkExpiredLicense = async () => {
-// 	setInterval(async () => {
-// 		const licenseData = await chrome.storage.sync.get("expiredLicense");
-// 		expiredLicense = licenseData.expiredLicense;
-// 	}, 1000);
-// };
-
-// checkExpiredLicense();
-// });
 
 window.addEventListener("saveFile", async (e: CustomEvent) => {
 	const { path, fileName } = e.detail;

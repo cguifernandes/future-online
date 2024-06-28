@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import Input from "../components/input";
 import Textarea from "../components/textarea";
 import Button from "../components/button";
@@ -77,7 +77,8 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				<Input
 					placeholder="Título do item"
 					{...register("title")}
-					className="w-full"
+					className="w-full flex-1"
+					patternClassName="flex-1"
 					name="title"
 					theme="purple"
 					maxLength={24}

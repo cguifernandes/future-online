@@ -1,5 +1,4 @@
-// biome-ignore lint/correctness/noUnusedImports: <explanation>
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../components/button";
 import type { Gatilho } from "../../type/type";
 import clsx from "clsx";
