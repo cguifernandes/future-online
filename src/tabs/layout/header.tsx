@@ -15,7 +15,7 @@ const Header = () => {
 				>
 					<img src="https://i.imgur.com/L43iCAC.png" alt="Logo" />
 				</button>
-				{/* <Button
+				<Button
 					onClick={() =>
 						chrome.runtime.sendMessage({
 							target: "current",
@@ -27,7 +27,7 @@ const Header = () => {
 					type="button"
 				>
 					Login
-				</Button> */}
+				</Button>
 			</nav>
 		</header>
 	);

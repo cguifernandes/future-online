@@ -16,6 +16,7 @@ const Input = forwardRef<HTMLInputElement, Props>(
 			<input
 				{...props}
 				ref={ref}
+				maxLength={15}
 				placeholder="Digite o Telefone do cliente"
 				className="text-white bg-black/30 text-sm px-4 rounded-lg transition-all ring-transparent py-3 ring-2 focus:ring-dark-blue-600 !bg-dark-blue-500"
 			/>

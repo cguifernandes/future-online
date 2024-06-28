@@ -31,7 +31,8 @@ const Form = () => {
 				.nullable()
 				.refine((date) => date !== null, {
 					message: "Este campo é obrigatório",
-				}),
+				})
+				.refine((date) => date?.getFullYear() <= 9999, "Data inválida"),
 		),
 	});
 
@@ -43,13 +44,15 @@ const Form = () => {
 	} = useForm<z.infer<typeof schema>>({
 		reValidateMode: "onSubmit",
 		resolver: zodResolver(schema),
+		defaultValues: {
+			name: null,
+		},
 	});
 
 	const handlerSubmitNewLicense = async (formData: z.infer<typeof schema>) => {
 		try {
-			console.log(JSON.stringify(formData));
 			setIsLoading(true);
-			const response = await fetch(`${url}/client`, {
+			const response = await fetch(`${url}/api/client`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -59,7 +62,27 @@ const Form = () => {
 
 			const data = await response.json();
 
-			console.log(data);
+			if (response.status >= 400 && response.status < 600) {
+				toast.error(data.message, {
+					position: "bottom-right",
+					className: "text-base ring-2 ring-[#1F2937]",
+					duration: 5000,
+				});
+				return;
+			}
+
+			toast.success(data.message, {
+				position: "bottom-right",
+				className: "text-base ring-2 ring-[#1F2937]",
+				duration: 5000,
+			});
+
+			setTimeout(() => {
+				chrome.runtime.sendMessage({
+					target: "current",
+					url: "/panel.html",
+				});
+			}, 2500);
 		} catch (error) {
 			console.log(error);
 			toast.error("Ocorreu um erro ao enviar o formulário", {
