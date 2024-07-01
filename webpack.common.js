@@ -10,7 +10,7 @@ module.exports = {
 	entry: {
 		popup: path.resolve("./src/popup/index.tsx"),
 		dashboard: path.resolve("./src/tabs/dashboard/index.tsx"),
-		login: path.resolve("./src/tabs/admin/index.tsx"),
+		login: path.resolve("./src/tabs/login/index.tsx"),
 		panel: path.resolve("./src/tabs/panel-control/index.tsx"),
 		content: path.resolve("./src/content/content.ts"),
 		background: path.resolve("./src/background/background.ts"),

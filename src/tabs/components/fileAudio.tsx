@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { type InputHTMLAttributes, useState, type ChangeEvent } from "react";
 import clsx from "clsx";
-import { ACCEPT_AUDIOS_TYPE, AUDIOS_TYPE } from "../../utils/utils";
 import type { Audio } from "../../type/type";
 import type { UseFormSetError, UseFormSetValue } from "react-hook-form";
 import { Image, Mic } from "lucide-react";
@@ -12,6 +11,8 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
 	setError?: UseFormSetError<any>;
 	error?: string;
 	contentItem: Audio;
+	FILES_TYPE: string[];
+	ACCEPT_FILES_TYPE: string[];
 }
 
 const Audios = ({
@@ -19,6 +20,8 @@ const Audios = ({
 	error,
 	setValue,
 	name,
+	ACCEPT_FILES_TYPE,
+	FILES_TYPE,
 	contentItem,
 	...rest
 }: Props) => {
@@ -41,7 +44,7 @@ const Audios = ({
 		const fileInput = e.target;
 		const file = fileInput.files[0];
 
-		if (!AUDIOS_TYPE.includes(file.type)) {
+		if (!FILES_TYPE.includes(file.type)) {
 			if (setError) {
 				setError(name, {
 					message: "Formato de arquivo inválido",
@@ -102,7 +105,7 @@ const Audios = ({
 				</div>
 				<input
 					{...rest}
-					accept={ACCEPT_AUDIOS_TYPE.join(",")}
+					accept={ACCEPT_FILES_TYPE.join(",")}
 					onChange={handlerChangeValue}
 					id="input-file"
 					name="file"

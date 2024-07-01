@@ -1,12 +1,7 @@
 import { useEffect } from "react";
 import { type InputHTMLAttributes, useState, type ChangeEvent } from "react";
 import clsx from "clsx";
-import {
-	ACCEPT_FILES_TYPE,
-	FILES_TYPE,
-	generateThumbnail,
-	loadingImage,
-} from "../../utils/utils";
+import { generateThumbnail, loadingImage } from "../../utils/utils";
 import type { Audio, Midia } from "../../type/type";
 import type { UseFormSetError, UseFormSetValue } from "react-hook-form";
 import { Image } from "lucide-react";
@@ -17,6 +12,8 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
 	setError?: UseFormSetError<any>;
 	error?: string;
 	contentItem: Midia | Audio;
+	FILES_TYPE: string[];
+	ACCEPT_FILES_TYPE: string[];
 }
 
 const File = ({
@@ -25,6 +22,8 @@ const File = ({
 	setValue,
 	name,
 	contentItem,
+	FILES_TYPE,
+	ACCEPT_FILES_TYPE,
 	...rest
 }: Props) => {
 	const [imagePreview, setImagePreview] = useState<string | null>(null);

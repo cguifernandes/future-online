@@ -15,6 +15,7 @@ const Header = () => {
 				>
 					<img src="https://i.imgur.com/L43iCAC.png" alt="Logo" />
 				</button>
+				ADICIONAR MIDDLEWARE NO BACKEND
 				<Button
 					onClick={() =>
 						chrome.runtime.sendMessage({

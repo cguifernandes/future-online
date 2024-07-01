@@ -4,6 +4,8 @@ import Button from "../components/button";
 import File from "../components/file";
 import Textarea from "../components/textarea";
 import {
+	ACCEPT_FILES_TYPE,
+	FILES_TYPE,
 	generateThumbnail,
 	removeItem,
 	uploadAndSign,
@@ -157,6 +159,8 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 			</div>
 			<div className="flex gap-x-3 w-full flex-1">
 				<File
+					FILES_TYPE={FILES_TYPE}
+					ACCEPT_FILES_TYPE={ACCEPT_FILES_TYPE}
 					contentItem={contentItem}
 					setValue={setValue}
 					name="image.file"

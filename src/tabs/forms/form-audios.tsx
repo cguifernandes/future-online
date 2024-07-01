@@ -6,7 +6,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Audio } from "../../type/type";
-import { removeItem, uploadAndSign } from "../../utils/utils";
+import {
+	ACCEPT_AUDIOS_TYPE,
+	AUDIOS_TYPE,
+	removeItem,
+	uploadAndSign,
+} from "../../utils/utils";
 import Audios from "../components/fileAudio";
 import toast from "react-hot-toast";
 
@@ -142,6 +147,8 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				contentItem={contentItem}
 				setValue={setValue}
 				name="audio.file"
+				ACCEPT_FILES_TYPE={ACCEPT_AUDIOS_TYPE}
+				FILES_TYPE={AUDIOS_TYPE}
 				setError={setError}
 				error={errors.audio?.file.message.toString()}
 			/>

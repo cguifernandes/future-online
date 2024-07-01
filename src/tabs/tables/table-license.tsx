@@ -1,5 +1,5 @@
 import Button from "../components/button";
-import { Pencil, Plus, Trash } from "lucide-react";
+import { Plus } from "lucide-react";
 import Input from "../components/input";
 import { Dispatch, useEffect, useState } from "react";
 import { Client } from "../../type/type";
@@ -181,27 +181,20 @@ const Table = ({ setVisibleForm }: Props) => {
 								key={index}
 								className="border-b border-gray-100/50 last:border-none"
 							>
-								<td className="text-white text-sm p-3 max-w-36">
+								<td className="p-3 max-w-36">
 									<div className="h-[18px] bg-gray-200 rounded-full dark:bg-gray-700 w-48" />
 								</td>
-								<td className="text-white text-sm p-3 max-w-36">
+								<td className="p-3 max-w-36">
 									<div className="h-[18px] bg-gray-200 rounded-full dark:bg-gray-700 w-48" />
 								</td>
-								<td className="text-white text-sm p-3 max-w-36">
+								<td className="p-3 max-w-36">
 									<div className="h-[18px] bg-gray-200 rounded-full dark:bg-gray-700 w-48" />
 								</td>
-								<td className="text-white text-sm p-3 max-w-36">
+								<td className="p-3 max-w-36">
 									<div className="h-[18px] bg-gray-200 rounded-full dark:bg-gray-700 w-48" />
 								</td>
-								<td>
-									<div className="flex items-center p-3 gap-x-3">
-										<button type="button">
-											<div className="h-[18px] bg-gray-200 rounded-full dark:bg-gray-700 w-48" />
-										</button>
-										<button type="button">
-											<div className="h-[18px] bg-gray-200 rounded-full dark:bg-gray-700 w-48" />
-										</button>
-									</div>
+								<td className="p-3 max-w-36">
+									<div className="h-[18px] bg-gray-200 rounded-full dark:bg-gray-700 w-48" />
 								</td>
 							</tr>
 						))}
@@ -234,20 +227,14 @@ const Table = ({ setVisibleForm }: Props) => {
 							<td className="text-white text-sm p-3 max-w-36">
 								<time className="truncate">{formatDate(client.date)}</time>
 							</td>
-							<td>
-								<div className="flex items-center p-3 gap-x-1">
-									<button className="text-white text-sm" type="button">
-										Editar
-									</button>
-									<span className="text-white">/</span>
-									<button
-										onClick={() => handlerRemoveClient(client.id)}
-										type="button"
-										className="text-white text-sm"
-									>
-										Excluir
-									</button>
-								</div>
+							<td className="p-3 max-w-36">
+								<button
+									onClick={() => handlerRemoveClient(client.id)}
+									type="button"
+									className="text-white text-sm"
+								>
+									Excluir
+								</button>
 							</td>
 						</tr>
 					))
