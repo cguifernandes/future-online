@@ -12,12 +12,18 @@ const Form = () => {
 	const [isLoading, setIsLoading] = useState(false);
 
 	const schema = z.object({
-		name: z.string().nullable(),
+		name: z
+			.string()
+			.nullable()
+			.transform((value) => (value === "" ? null : value)),
 		email: z
 			.string()
 			.min(1, "Este campo é obrigatório")
 			.email("E-mail inválido, por favor digite um e-mail válido"),
-		phone: z.string().min(1, "Este campo é obrigatório"),
+		phone: z
+			.string()
+			.min(1, "Este campo é obrigatório")
+			.min(14, "Campo de telefone inválido"),
 		date: z.preprocess(
 			(arg) => {
 				if (typeof arg === "string" || arg instanceof Date) {
@@ -82,7 +88,7 @@ const Form = () => {
 					target: "current",
 					url: "/panel.html",
 				});
-			}, 2500);
+			}, 1000);
 		} catch (error) {
 			console.log(error);
 			toast.error("Ocorreu um erro ao enviar o formulário", {
@@ -103,6 +109,7 @@ const Form = () => {
 			<Input
 				error={errors?.name?.message}
 				theme="dark-blue"
+				maxLength={48}
 				label="Nome"
 				labelClassName="!text-black"
 				placeholder="Digite o nome do cliente"

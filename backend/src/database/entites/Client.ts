@@ -14,8 +14,8 @@ class Client {
 	@Column("varchar", { nullable: false })
 	phone: string;
 
-	@Column("date", { nullable: false })
-	date: Date;
+	@Column("varchar", { nullable: false })
+	date: string;
 }
 
 export default Client;

@@ -36,7 +36,6 @@ const Mask = ({ label, labelClassName, control, name, error }: Props) => {
 				inputComponent={Input}
 				country="BR"
 				defaultCountry="BR"
-				withCountryCallingCode
 				control={control}
 				name={name}
 			/>

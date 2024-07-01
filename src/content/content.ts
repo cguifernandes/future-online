@@ -431,7 +431,6 @@ window.addEventListener("loadWpp", async () => {
 			footer.appendChild(pattern);
 
 			if (data.mensagens?.length > 0) {
-				console.log("pasou");
 				const mensagens: Mensagem[] = data.mensagens.map((message) => ({
 					type: "mensagens",
 					...message,
