@@ -1,6 +1,8 @@
 import { ILike } from "typeorm";
 import { AppDataSource } from "../data-source";
 import Client from "../entites/Client";
+import bcrypt from "bcrypt";
+import * as jwt from "jsonwebtoken";
 
 const clientRepository = AppDataSource.getRepository(Client);
 
@@ -113,8 +115,29 @@ export const setClient = async (newClient: Client) => {
 			};
 		}
 
+		const existClient = await clientRepository.findOne({
+			where: {
+				email: newClient.email,
+			},
+		});
+
+		if (existClient) {
+			return {
+				status: 409,
+				data: undefined,
+				message: "Já existe um cliente com este email",
+			};
+		}
+
+		const password = `${newClient.email.substring(
+			0,
+			3,
+		)}${newClient.phone.substring(newClient.phone.length - 3)}`;
+		const hash = await bcrypt.hash(password, 10);
+
 		const client = clientRepository.create({
 			...newClient,
+			password: hash,
 		});
 
 		await clientRepository.save(client);
@@ -129,6 +152,75 @@ export const setClient = async (newClient: Client) => {
 		return {
 			status: 500,
 			message: "Erro ao cadastrar cliente",
+		};
+	}
+};
+
+export const authenticateClient = async (email: string, password: string) => {
+	try {
+		if (!email || !password) {
+			return {
+				status: 204,
+				data: undefined,
+				message: "Usuário inválido",
+			};
+		}
+
+		let token = "";
+
+		if (
+			email === process.env.ADMIN_EMAIL &&
+			password === process.env.ADMIN_PASSWORD
+		) {
+			token = jwt.sign({ role: "admin" }, process.env.JWT_SECRET ?? "", {
+				expiresIn: "7d",
+			});
+
+			return {
+				status: 200,
+				message: "Cliente autenticado com sucesso",
+				data: undefined,
+				token,
+			};
+		} else {
+			const client = await clientRepository.findOneBy({
+				email,
+			});
+
+			if (!client) {
+				return {
+					status: 404,
+					data: undefined,
+					message: "E-mail ou senha incorreto, por favor tente novamente",
+				};
+			}
+
+			const isValid = await bcrypt.compare(password, client.password);
+
+			if (!isValid) {
+				return {
+					status: 401,
+					data: undefined,
+					message: "Senha inválida",
+				};
+			}
+
+			token = jwt.sign({ role: "user" }, process.env.JWT_SECRET ?? "", {
+				expiresIn: "7d",
+			});
+
+			return {
+				status: 200,
+				message: "Cliente autenticado com sucesso",
+				data: client,
+				token,
+			};
+		}
+	} catch (err) {
+		console.error(err);
+		return {
+			status: 500,
+			message: "Erro ao autenticar cliente",
 		};
 	}
 };

@@ -8,11 +8,14 @@ class Client {
 	@Column("varchar", { nullable: true })
 	name?: string;
 
-	@Column("varchar", { nullable: false })
+	@Column("varchar", { nullable: false, unique: true })
 	email: string;
 
 	@Column("varchar", { nullable: false })
 	phone: string;
+
+	@Column("varchar", { nullable: false })
+	password: string;
 
 	@Column("varchar", { nullable: false })
 	date: string;
