@@ -1,4 +1,4 @@
-import { saveFile } from "../background/background";
+import { backgroundConvertUrlToFile } from "../background/background";
 import type { Mensagem, Midia, Funil, Audio } from "../type/type";
 import "./whatsapp.css";
 
@@ -76,7 +76,6 @@ const loadItens = (
 	pattern: HTMLDivElement,
 	buttonClassName: string,
 	patternClassName: string,
-	clickCount: number,
 ) => {
 	const content = document.createElement("div");
 	const title = document.createElement("h1");
@@ -84,40 +83,6 @@ const loadItens = (
 	title.className = "item-title-future-online";
 	content.appendChild(title);
 	content.className = "item-content-future-online";
-
-	const displayErrorMessage = (messageText: string, index: number) => {
-		const message = document.createElement("p");
-		message.textContent = messageText;
-		message.className = "error-message-future-online";
-
-		const buttons = content.querySelectorAll("button");
-		buttons.forEach((button) => {
-			content.removeChild(button);
-		});
-
-		content.appendChild(message);
-		content.className = patternClassName;
-	};
-
-	if (titleText === "Mensagens" && clickCount > 0) {
-		displayErrorMessage("Você já atingiu o limite de mensagens", 0);
-		return;
-	}
-
-	if (titleText === "Mídias" && clickCount > 0) {
-		displayErrorMessage("Você já atingiu o limite de mídias", 1);
-		return;
-	}
-
-	if (titleText === "Áudios" && clickCount > 0) {
-		displayErrorMessage("Você já atingiu o limite de áudios", 2);
-		return;
-	}
-
-	if (titleText === "Funis" && clickCount > 0) {
-		displayErrorMessage("Você já atingiu o limite de funis", 3);
-		return;
-	}
 
 	for (const item of itens) {
 		const button = document.createElement("button");
@@ -128,11 +93,6 @@ const loadItens = (
 			window.dispatchEvent(new CustomEvent("loadingStart"));
 
 			if (item.type === "mensagens") {
-				chrome.storage.sync.get(null, (result) => {
-					const updatedItens = { ...result, countClickMensagens: 1 };
-					chrome.storage.sync.set({ ...updatedItens });
-				});
-
 				window.dispatchEvent(
 					new CustomEvent("sendMessage", {
 						detail: {
@@ -141,7 +101,6 @@ const loadItens = (
 					}),
 				);
 
-				displayErrorMessage("Você já atingiu o limite de mensagens", 0);
 				return;
 			}
 
@@ -151,13 +110,11 @@ const loadItens = (
 				}
 
 				try {
-					chrome.storage.sync.get(null, (result) => {
-						const updatedItens = { ...result, countClickAudios: 1 };
-						chrome.storage.sync.set({ ...updatedItens });
-					});
-
 					const fileName = new Date().getTime().toString();
-					const file = await saveFile(item.audio.url, fileName);
+					const file = await backgroundConvertUrlToFile(
+						item.audio.url,
+						fileName,
+					);
 
 					window.dispatchEvent(
 						new CustomEvent("sendFile", {
@@ -170,48 +127,35 @@ const loadItens = (
 					window.dispatchEvent(new CustomEvent("loadingEnd"));
 				}
 
-				displayErrorMessage("Você já atingiu o limite de áudios", 2);
 				return;
 			}
 
 			if (item.type === "midias") {
-				if (item.image.url === "" && !item.image.url) {
+				if (item.file.url === "" && !item.file.url) {
 					return window.dispatchEvent(new CustomEvent("loadingEnd"));
 				}
 
-				try {
-					chrome.storage.sync.get(null, (result) => {
-						const updatedItens = { ...result, countClickMidias: 1 };
-						chrome.storage.sync.set({ ...updatedItens });
-					});
+				console.log(item);
 
-					const fileName = new Date().getTime().toString();
-					const file = await saveFile(item.image.url, fileName);
+				// try {
+				// 	window.dispatchEvent(
+				// 		new CustomEvent("sendFile", {
+				// 			detail: {
+				// 				file: item.file.url,
+				// 				subtitle: item.file.subtitle,
+				// 			},
+				// 		}),
+				// 	);
+				// } finally {
+				// 	window.dispatchEvent(new CustomEvent("loadingEnd"));
+				// }
 
-					window.dispatchEvent(
-						new CustomEvent("sendFile", {
-							detail: {
-								file: file,
-								subtitle: item.image.subtitle,
-							},
-						}),
-					);
-				} finally {
-					window.dispatchEvent(new CustomEvent("loadingEnd"));
-				}
-
-				displayErrorMessage("Você já atingiu o limite de mídias", 1);
 				return;
 			}
 
 			if (item.type === "funis") {
 				window.dispatchEvent(new CustomEvent("loadingEnd"));
 				if (!item.item) return;
-
-				chrome.storage.sync.get(null, (result) => {
-					const updatedItens = { ...result, countClickFunis: 1 };
-					chrome.storage.sync.set({ ...updatedItens });
-				});
 
 				window.dispatchEvent(new CustomEvent("funilStart"));
 
@@ -270,41 +214,43 @@ const loadItens = (
 							} else if (selectedItem.type === "midias") {
 								const fileName = new Date().getTime().toString();
 
-								await saveFile(selectedItem.image.url, fileName).then(
-									(file) => {
-										return new Promise((resolve) => {
-											window.dispatchEvent(
-												new CustomEvent("sendFile", {
-													detail: {
-														file,
-														subtitle:
-															selectedItem.type === "midias" &&
-															selectedItem.image.subtitle,
-														delay: delayInMilliseconds,
-													},
-												}),
-											);
-											setTimeout(resolve, delayInMilliseconds);
-										});
-									},
-								);
+								await backgroundConvertUrlToFile(
+									selectedItem.image.url,
+									fileName,
+								).then((file) => {
+									return new Promise((resolve) => {
+										window.dispatchEvent(
+											new CustomEvent("sendFile", {
+												detail: {
+													file,
+													subtitle:
+														selectedItem.type === "midias" &&
+														selectedItem.image.subtitle,
+													delay: delayInMilliseconds,
+												},
+											}),
+										);
+										setTimeout(resolve, delayInMilliseconds);
+									});
+								});
 							} else if (selectedItem.type === "audios") {
 								const fileName = new Date().getTime().toString();
-								await saveFile(selectedItem.audio.url, fileName).then(
-									(file) => {
-										return new Promise((resolve) => {
-											window.dispatchEvent(
-												new CustomEvent("sendFile", {
-													detail: {
-														file,
-														delay: delayInMilliseconds,
-													},
-												}),
-											);
-											setTimeout(resolve, delayInMilliseconds);
-										});
-									},
-								);
+								await backgroundConvertUrlToFile(
+									selectedItem.audio.url,
+									fileName,
+								).then((file) => {
+									return new Promise((resolve) => {
+										window.dispatchEvent(
+											new CustomEvent("sendFile", {
+												detail: {
+													file,
+													delay: delayInMilliseconds,
+												},
+											}),
+										);
+										setTimeout(resolve, delayInMilliseconds);
+									});
+								});
 							}
 
 							setTimeoutCount++;
@@ -319,7 +265,6 @@ const loadItens = (
 
 				processItem();
 
-				displayErrorMessage("Você já atingiu o limite de funis", 3);
 				return;
 			}
 		});
@@ -389,10 +334,6 @@ window.addEventListener("loadWpp", async () => {
 		midias: Midia[];
 		funis: Funil[];
 		audios: Audio[];
-		countClickMidias: number;
-		countClickMensagens: number;
-		countClickAudios: number;
-		countClickFunis: number;
 	};
 
 	waitForElement("span.x1okw0bk", () => {
@@ -442,7 +383,6 @@ window.addEventListener("loadWpp", async () => {
 					pattern,
 					"button-message-future-online",
 					"item-message-future-online message",
-					data.countClickMensagens,
 				);
 			}
 
@@ -458,7 +398,6 @@ window.addEventListener("loadWpp", async () => {
 					pattern,
 					"button-audios-future-online",
 					"item-message-future-online audios",
-					data.countClickAudios,
 				);
 			}
 
@@ -474,7 +413,6 @@ window.addEventListener("loadWpp", async () => {
 					pattern,
 					"button-midias-future-online",
 					"item-message-future-online midias",
-					data.countClickMidias,
 				);
 			}
 
@@ -490,7 +428,6 @@ window.addEventListener("loadWpp", async () => {
 					pattern,
 					"button-funis-future-online",
 					"item-message-future-online funis",
-					data.countClickFunis,
 				);
 			}
 

@@ -86,7 +86,7 @@ const sendFunil = async (
 				window.addEventListener("saveFileResponse", handler as EventListener);
 				window.dispatchEvent(
 					new CustomEvent("saveFile", {
-						detail: { path: funilItem.image.url, fileName },
+						detail: { path: funilItem.file.url, fileName },
 					}),
 				);
 			}).then((file: File) => {
@@ -95,7 +95,7 @@ const sendFunil = async (
 						new CustomEvent("sendFile", {
 							detail: {
 								file,
-								subtitle: funilItem.image.subtitle,
+								subtitle: funilItem.file.subtitle,
 								delay: funilItem.delay,
 								chatId,
 							},
@@ -137,6 +137,10 @@ const sendFunil = async (
 		}
 	}
 };
+
+window.addEventListener("downloadMedia", () => {
+	console.log("po");
+});
 
 window.addEventListener("initGatilho", () => {
 	WPP.on("chat.new_message", async (msg) => {

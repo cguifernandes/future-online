@@ -3,7 +3,9 @@ import { type InputHTMLAttributes, useState, type ChangeEvent } from "react";
 import clsx from "clsx";
 import type { Audio } from "../../type/type";
 import type { UseFormSetError, UseFormSetValue } from "react-hook-form";
-import { Image, Mic } from "lucide-react";
+import { Image } from "lucide-react";
+import { getBlobFromIndexedDB } from "../../utils/utils";
+import toast from "react-hot-toast";
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
 	setValue?: UseFormSetValue<any>;
@@ -25,24 +27,40 @@ const Audios = ({
 	contentItem,
 	...rest
 }: Props) => {
-	const [visiblePreview, setVisiblePreview] = useState(false);
-	const [fileName, setFileName] = useState("");
-	const [isLoadingImage, setIsLoadingImage] = useState(false);
+	const [audioPreview, setAudioPreview] = useState<string | null>(null);
+	const [isLoadingAudio, setIsLoadingAudio] = useState(false);
 
 	useEffect(() => {
-		if (contentItem.audio.url !== "") {
-			setVisiblePreview(true);
-			setFileName(contentItem.audio.fileName);
+		if (contentItem.audio.preview) {
+			setIsLoadingAudio(true);
+
+			getBlobFromIndexedDB(contentItem.audio.preview)
+				.then(async (blob) => {
+					const blobUrl = URL.createObjectURL(blob);
+					setAudioPreview(blobUrl);
+				})
+				.catch((error) => {
+					console.log(error);
+					toast.error("Ocorreu um erro ao carregar a imagem", {
+						position: "bottom-right",
+						className: "text-base ring-2 ring-[#1F2937]",
+						duration: 5000,
+					});
+				})
+				.finally(() => {
+					setIsLoadingAudio(false);
+				});
 		} else {
-			setVisiblePreview(false);
-			setFileName("");
+			setAudioPreview(null);
+			setIsLoadingAudio(false);
 		}
 	}, [contentItem]);
 
 	const handlerChangeValue = async (e: ChangeEvent<HTMLInputElement>) => {
-		setIsLoadingImage(true);
+		setIsLoadingAudio(true);
 		const fileInput = e.target;
 		const file = fileInput.files[0];
+		if (!file) return;
 
 		if (!FILES_TYPE.includes(file.type)) {
 			if (setError) {
@@ -50,21 +68,38 @@ const Audios = ({
 					message: "Formato de arquivo inválido",
 				});
 			}
-			setIsLoadingImage(false);
+			setIsLoadingAudio(false);
 			return;
 		}
 
 		if (file) {
+			const blob = new Blob([file], { type: file.type });
+			const reader = new FileReader();
+
+			reader.onloadend = () => {
+				const base64String = reader.result as string;
+
+				setAudioPreview(base64String);
+			};
+
+			reader.onerror = () => {
+				if (setError) {
+					setError(name, {
+						message: "Erro ao ler o arquivo",
+					});
+				}
+				setIsLoadingAudio(false);
+			};
+
+			reader.readAsDataURL(file);
+
 			if (setValue && name) {
-				setValue(name, file);
+				setValue(name, blob);
 			}
 
-			setIsLoadingImage(false);
-			setFileName(file.name);
-			setVisiblePreview(true);
+			setIsLoadingAudio(false);
 		} else {
-			setVisiblePreview(false);
-			setIsLoadingImage(false);
+			setIsLoadingAudio(false);
 		}
 	};
 
@@ -79,22 +114,20 @@ const Audios = ({
 				</div>
 				<div
 					className={clsx(
-						"flex flex-col gap-1",
-						isLoadingImage && "items-center justify-center",
-						visiblePreview ? "h-[72px]" : "h-auto",
+						"flex flex-col gap-1 relative",
+						isLoadingAudio && "items-center justify-center",
 					)}
 				>
-					{isLoadingImage ? (
+					{isLoadingAudio ? (
 						<span className="text-base text-white">Carregando...</span>
 					) : (
 						<>
-							{visiblePreview && (
-								<div className="max-w-96 absolute left-1/2 -translate-x-1/2 w-full mx-auto flex items-center p-3 bg-blue-500/50 backdrop-blur-md rounded-lg">
-									<span className="text-base max-w-fit line-clamp-2 text-white">
-										{fileName}
-									</span>
-									<Mic className="min-w-6" color="#fff" size={24} />
-								</div>
+							{audioPreview !== null && (
+								<audio
+									className="absolute left-1/2 -translate-x-1/2"
+									src={audioPreview}
+									controls
+								/>
 							)}
 							<label htmlFor="input-file" className="text-white text-center">
 								Formatos aceitos: <br />

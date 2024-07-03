@@ -10,7 +10,7 @@ import {
 	ACCEPT_AUDIOS_TYPE,
 	AUDIOS_TYPE,
 	removeItem,
-	uploadAndSign,
+	storeBlobInIndexedDB,
 } from "../../utils/utils";
 import Audios from "../components/fileAudio";
 import toast from "react-hot-toast";
@@ -32,8 +32,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		title: z.string(),
 		audio: z.object({
 			url: z.string(),
-			file: z.any().optional(),
-			fileName: z.string(),
+			blob: z.instanceof(Blob).optional(),
 		}),
 	});
 
@@ -51,8 +50,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			title: "Novo contéudo" || contentItem.title,
 			audio: {
 				url: "" || contentItem.audio.url,
-				file: undefined,
-				fileName: "" || contentItem.audio.fileName,
+				blob: undefined,
 			},
 		},
 	});
@@ -62,33 +60,32 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			title: contentItem.title,
 			audio: {
 				url: contentItem.audio.url,
-				file: undefined,
-				fileName: contentItem.audio.fileName,
+				blob: undefined,
 			},
 		});
 	}, [contentItem, reset]);
 
-	const handlerSubmit = async ({ audio, title }: z.infer<typeof schema>) => {
+	const handlerSubmit = async (formData: z.infer<typeof schema>) => {
 		try {
 			setIsLoading(true);
-			const promises = [];
 
-			if (audio?.file) {
-				const sanitizedFileName = audio.file.name
-					.replace(/\s+/g, "_")
-					.replace(/[^\w.-]/g, "");
-				const fileName = `${new Date().getTime()}_${sanitizedFileName}`;
-				promises.push(uploadAndSign(fileName, audio.file));
+			let url = "";
+			let preview = undefined;
+
+			if (formData.audio?.blob) {
+				const blobId = await storeBlobInIndexedDB(formData.audio.blob);
+				const signedUrl = URL.createObjectURL(formData.audio.blob);
+
+				preview = blobId;
+				url = signedUrl;
 			}
-
-			const [url] = await Promise.all(promises);
 
 			const updatedItem: Audio = {
 				...contentItem,
-				title,
+				title: formData.title,
 				audio: {
-					url: audio.file ? url : contentItem.audio.url,
-					fileName: audio.file ? audio.file.name : contentItem.audio.fileName,
+					url,
+					preview,
 				},
 			};
 
@@ -146,11 +143,11 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			<Audios
 				contentItem={contentItem}
 				setValue={setValue}
-				name="audio.file"
+				name="audio.blob"
 				ACCEPT_FILES_TYPE={ACCEPT_AUDIOS_TYPE}
 				FILES_TYPE={AUDIOS_TYPE}
 				setError={setError}
-				error={errors.audio?.file.message.toString()}
+				error={errors.audio?.blob.message.toString()}
 			/>
 			<div className="flex items-center gap-x-3 justify-end w-full">
 				<Button

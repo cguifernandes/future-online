@@ -148,7 +148,7 @@ const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 							.map(({ id, title }) => ({ id, title }));
 					} else if (selectedItem.title === "Mídias" && result.midias) {
 						options = result.midias
-							.filter((value) => value.image.preview !== "")
+							.filter((value) => value.file.preview !== "")
 							.map(({ id, title }) => ({ id, title }));
 					} else if (selectedItem.title === "Áudios" && result.audios) {
 						options = result.audios

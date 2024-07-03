@@ -7,7 +7,6 @@ import ProtectedRoutes from "../layout/protectedRoutes";
 
 const init = () => {
 	const appContainer = document.createElement("div");
-	if (!appContainer) throw new Error("Can not find AppContainer");
 
 	document.body.appendChild(appContainer);
 	const root = createRoot(appContainer);

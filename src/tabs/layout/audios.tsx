@@ -67,7 +67,7 @@ const Audios = () => {
 												title: "Novo conteúdo",
 												audio: {
 													url: "",
-													fileName: "",
+													preview: "",
 												},
 												type: "audios",
 											},
@@ -98,7 +98,7 @@ const Audios = () => {
 												title: "Novo conteúdo",
 												audio: {
 													url: "",
-													fileName: "",
+													preview: "",
 												},
 												type: "audios",
 											},

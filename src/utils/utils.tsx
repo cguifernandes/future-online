@@ -1,4 +1,4 @@
-import { saveFile } from "../background/background";
+import toast from "react-hot-toast";
 import { supabase } from "../lib/supabase";
 import type { Audio, Funil, Gatilho, Mensagem, Midia } from "../type/type";
 import { v4 as uuidv4 } from "uuid";
@@ -20,6 +20,23 @@ export const AUDIOS_TYPE = [
 	"audio/flac",
 ];
 
+export const convertUrlToFile = async (path: string, fileName: string) => {
+	try {
+		const response = await fetch(path, {
+			cache: "force-cache",
+		});
+
+		const blob = await response.blob();
+		const filetype = blob.type;
+
+		const file = new File([blob], fileName, { type: filetype });
+
+		return file;
+	} catch (error) {
+		console.error("Erro ao baixar o arquivo:", error);
+	}
+};
+
 export const ACCEPT_FILES_TYPE = [".jpeg", ".png", ".svg+xml", ".mp4", ".m4v"];
 export const ACCEPT_AUDIOS_TYPE = [".mp3", ".aac", ".aiff", ".flac"];
 
@@ -39,10 +56,116 @@ export const loadingImage = (file: File): Promise<string> => {
 	});
 };
 
+export const storeBlobInIndexedDB = (blob: Blob): Promise<string> => {
+	return new Promise((resolve, reject) => {
+		const dbName = "blobDB";
+		const dbVersion = 2;
+		const storeName = "blobs";
+
+		const dbRequest = indexedDB.open(dbName, dbVersion);
+
+		dbRequest.onupgradeneeded = (event) => {
+			const db = (event.target as IDBOpenDBRequest).result;
+			if (!db.objectStoreNames.contains(storeName)) {
+				db.createObjectStore(storeName, { keyPath: "id", autoIncrement: true });
+			}
+		};
+
+		dbRequest.onsuccess = async (event) => {
+			try {
+				const db = (event.target as IDBOpenDBRequest).result;
+
+				const { quota, usage } = await navigator.storage.estimate();
+				const remainingSpace = quota - usage;
+				const blobSize = blob.size;
+
+				if (remainingSpace < blobSize) {
+					toast.error(
+						"Espaço insuficiente para armazenar este arquivo, apague mídias para conseguir salvar novas mídias",
+						{
+							position: "bottom-right",
+							className: "text-base ring-2 ring-[#1F2937]",
+							duration: 5000,
+						},
+					);
+					throw new Error(
+						"Espaço insuficiente para armazenar este arquivo, apague mídias para conseguir salvar novas mídias.",
+					);
+				}
+
+				const transaction = db.transaction(storeName, "readwrite");
+				const objectStore = transaction.objectStore(storeName);
+				const request = objectStore.add({ blob });
+
+				request.onsuccess = () => {
+					resolve(request.result.toString());
+				};
+
+				request.onerror = (event) => {
+					reject((event.target as IDBRequest).error);
+				};
+			} catch (error) {
+				reject(error);
+			}
+		};
+
+		dbRequest.onerror = (event) => {
+			reject((event.target as IDBRequest).error);
+		};
+	});
+};
+
+export const getBlobFromIndexedDB = (id: string): Promise<Blob> => {
+	return new Promise((resolve, reject) => {
+		const dbName = "blobDB";
+		const dbVersion = 2;
+		const storeName = "blobs";
+
+		const dbRequest = indexedDB.open(dbName, dbVersion);
+
+		dbRequest.onsuccess = (event) => {
+			const db = (event.target as IDBOpenDBRequest).result;
+			const transaction = db.transaction(storeName, "readonly");
+			const objectStore = transaction.objectStore(storeName);
+
+			const request = objectStore.get(Number(id));
+
+			request.onsuccess = () => {
+				if (request.result) {
+					resolve(request.result.blob);
+				} else {
+					reject("Arquivo não encontrado");
+				}
+			};
+
+			request.onerror = (event) => {
+				reject((event.target as IDBRequest).error);
+			};
+		};
+
+		dbRequest.onerror = (event) => {
+			reject((event.target as IDBRequest).error);
+		};
+	});
+};
+
 export const delay = (minutes: number, seconds: number) =>
 	new Promise((resolve) =>
 		setTimeout(resolve, (minutes * 60 + seconds) * 1000),
 	);
+
+export const blobToFile = (
+	blob: Blob,
+	fileName: string,
+	fileType?: string,
+): File => {
+	const type = fileType || blob.type;
+	const name = fileName;
+
+	const file = new File([blob], name, { type });
+
+	return file;
+};
 
 export const generateThumbnail = (
 	videoFile: File,
@@ -73,14 +196,14 @@ export const generateThumbnail = (
 					if (blob) {
 						resolve(blob);
 					} else {
-						reject(new Error("Failed to generate thumbnail"));
+						reject(new Error("Erro ao gerar a preview do arquivo"));
 					}
 				}, "image/png");
 			}
 		};
 
 		video.onerror = (event) => {
-			reject(new Error(`Failed to load video: ${event}`));
+			reject(new Error(`Erro ao carregar o vídeo: ${event}`));
 		};
 
 		video.src = URL.createObjectURL(videoFile);
@@ -274,11 +397,11 @@ export const sendFunil = async (item: Funil) => {
 
 					if (selectedItem.type === "midias") {
 						const fileName = new Date().getTime().toString();
-						saveFile(selectedItem.image.url, fileName).then((file) => {
+						convertUrlToFile(selectedItem.image.url, fileName).then((file) => {
 							window.dispatchEvent(
 								new CustomEvent("sendFile", {
 									detail: {
-										file: file,
+										file,
 										subtitle:
 											selectedItem.type === "midias" &&
 											selectedItem.image.subtitle,

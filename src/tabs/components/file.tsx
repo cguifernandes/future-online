@@ -1,17 +1,24 @@
 import { useEffect } from "react";
 import { type InputHTMLAttributes, useState, type ChangeEvent } from "react";
 import clsx from "clsx";
-import { generateThumbnail, loadingImage } from "../../utils/utils";
-import type { Audio, Midia } from "../../type/type";
+import {
+	blobToFile,
+	generateThumbnail,
+	getBlobFromIndexedDB,
+	loadingImage,
+} from "../../utils/utils";
+import type { Midia } from "../../type/type";
 import type { UseFormSetError, UseFormSetValue } from "react-hook-form";
 import { Image } from "lucide-react";
+import { eventNames } from "@wppconnect/wa-js";
+import toast from "react-hot-toast";
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
 	setValue?: UseFormSetValue<any>;
 	name?: string;
 	setError?: UseFormSetError<any>;
 	error?: string;
-	contentItem: Midia | Audio;
+	contentItem: Midia;
 	FILES_TYPE: string[];
 	ACCEPT_FILES_TYPE: string[];
 }
@@ -23,6 +30,7 @@ const File = ({
 	name,
 	contentItem,
 	FILES_TYPE,
+	onChange,
 	ACCEPT_FILES_TYPE,
 	...rest
 }: Props) => {
@@ -30,18 +38,35 @@ const File = ({
 	const [isLoadingImage, setIsLoadingImage] = useState(false);
 
 	useEffect(() => {
-		if (contentItem.type === "midias") {
-			if (contentItem.image.preview || contentItem.image.url) {
-				setImagePreview(contentItem.image.preview || contentItem.image.url);
-			} else {
-				setImagePreview(null);
-			}
+		if (contentItem.file.preview) {
+			setIsLoadingImage(true);
+
+			getBlobFromIndexedDB(contentItem.file.preview)
+				.then(async (blob) => {
+					if (blob.type.includes("video")) {
+						const file = blobToFile(blob, `file_${blob.size}${blob.type}`);
+						const preview = (await generateThumbnail(file, true)) as string;
+						setImagePreview(preview);
+						return;
+					}
+
+					const blobUrl = URL.createObjectURL(blob);
+					setImagePreview(blobUrl);
+				})
+				.catch((error) => {
+					console.log(error);
+					toast.error("Ocorreu um erro ao carregar a imagem", {
+						position: "bottom-right",
+						className: "text-base ring-2 ring-[#1F2937]",
+						duration: 5000,
+					});
+				})
+				.finally(() => {
+					setIsLoadingImage(false);
+				});
 		} else {
-			if (contentItem.audio.url) {
-				setImagePreview(contentItem.audio.url);
-			} else {
-				setImagePreview(null);
-			}
+			setImagePreview(null);
+			setIsLoadingImage(false);
 		}
 	}, [contentItem]);
 
@@ -50,9 +75,18 @@ const File = ({
 		const file = fileInput.files[0];
 
 		if (!FILES_TYPE.includes(file.type)) {
-			if (setError) {
+			if (setError && eventNames) {
 				setError(name, {
 					message: "Formato de arquivo inválido",
+				});
+			}
+			return;
+		}
+
+		if (file.size > 3 * 1024 * 1024 * 1024) {
+			if (setError && eventNames) {
+				setError(name, {
+					message: "O arquivo não pode ser maior que 3 GB",
 				});
 			}
 			return;
@@ -61,10 +95,6 @@ const File = ({
 		if (file) {
 			setIsLoadingImage(true);
 			setImagePreview(null);
-
-			if (setValue && name) {
-				setValue(name, file);
-			}
 
 			let preview = "";
 			if (file.type.includes("video")) {
@@ -75,7 +105,12 @@ const File = ({
 				setIsLoadingImage(false);
 			}
 
+			if (setValue && name) {
+				setValue(name, file);
+			}
+
 			setImagePreview(preview);
+			onChange(e);
 		} else {
 			setImagePreview(null);
 		}

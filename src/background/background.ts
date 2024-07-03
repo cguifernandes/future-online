@@ -9,7 +9,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	}
 });
 
-export const saveFile = async (path: string, fileName: string) => {
+export const backgroundConvertUrlToFile = async (
+	path: string,
+	fileName: string,
+) => {
 	try {
 		const response = await fetch(path, {
 			cache: "force-cache",

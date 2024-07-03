@@ -65,7 +65,7 @@ const Midias = () => {
 										itens: addItem<Midia>(
 											{
 												title: "Novo conteúdo",
-												image: { url: "", subtitle: "", preview: "", type: "" },
+												file: { url: "", subtitle: "", preview: "", type: "" },
 												type: "midias",
 											},
 											data,
@@ -93,7 +93,7 @@ const Midias = () => {
 										itens: addItem<Midia>(
 											{
 												title: "Novo conteúdo",
-												image: { url: "", subtitle: "", preview: "", type: "" },
+												file: { url: "", subtitle: "", preview: "", type: "" },
 												type: "midias",
 											},
 											data,

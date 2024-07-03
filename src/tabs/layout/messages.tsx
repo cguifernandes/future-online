@@ -18,6 +18,7 @@ const Messages = () => {
 
 		getItem<Mensagem>("mensagens")
 			.then((data) => {
+				console.log(data);
 				setData({ itens: data });
 			})
 			.finally(() => {

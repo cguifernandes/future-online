@@ -2,10 +2,10 @@ export interface Midia {
 	type?: "midias";
 	title: string;
 	id?: string;
-	image: {
+	file: {
 		url: string;
 		subtitle: string;
-		preview: string;
+		preview: string | undefined;
 		type: "Imagem" | "Vídeo" | "";
 	};
 	delay?: number;
@@ -17,7 +17,7 @@ export interface Audio {
 	id?: string;
 	audio: {
 		url: string;
-		fileName: string;
+		preview: string;
 	};
 	delay?: number;
 }

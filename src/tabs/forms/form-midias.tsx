@@ -6,9 +6,8 @@ import Textarea from "../components/textarea";
 import {
 	ACCEPT_FILES_TYPE,
 	FILES_TYPE,
-	generateThumbnail,
 	removeItem,
-	uploadAndSign,
+	storeBlobInIndexedDB,
 } from "../../utils/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Midia } from "../../type/type";
@@ -32,9 +31,10 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 
 	const schema = z.object({
 		title: z.string(),
-		image: z.object({
-			subtitle: z.string(),
-			file: z.any().optional(),
+		file: z.object({
+			subtitle: z.string().optional(),
+			blob: z.instanceof(Blob).optional(),
+			type: z.enum(["", "Imagem", "Vídeo"]).optional(),
 		}),
 	});
 
@@ -50,9 +50,10 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 		resolver: zodResolver(schema),
 		defaultValues: {
 			title: "Novo contéudo" || contentItem.title,
-			image: {
-				subtitle: contentItem.image.subtitle,
-				file: undefined,
+			file: {
+				blob: undefined,
+				subtitle: "" || contentItem.file.subtitle,
+				type: "" || contentItem.file.type,
 			},
 		},
 	});
@@ -60,49 +61,37 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 	useEffect(() => {
 		reset({
 			title: contentItem.title,
-			image: {
-				subtitle: contentItem.image.subtitle,
-				file: undefined,
+			file: {
+				blob: undefined,
+				subtitle: "" || contentItem.file.subtitle,
+				type: "" || contentItem.file.type,
 			},
 		});
 	}, [contentItem, reset]);
 
-	const handlerSubmit = async ({ image, title }: z.infer<typeof schema>) => {
+	const handlerSubmit = async (formData: z.infer<typeof schema>) => {
 		try {
 			setIsLoading(true);
 
-			const promises = [];
+			let url = "";
+			let preview = undefined;
 
-			if (image?.file) {
-				const sanitizedFileName = image.file.name
-					.replace(/\s+/g, "_")
-					.replace(/[^\w.-]/g, "");
-				const fileName = `${new Date().getTime()}_${sanitizedFileName}`;
+			if (formData.file && formData.file.blob) {
+				const blobId = await storeBlobInIndexedDB(formData.file.blob);
+				const blobUrl = URL.createObjectURL(formData.file.blob);
 
-				if (image.file.type.includes("video")) {
-					const thumbnailBlob = await generateThumbnail(image.file);
-
-					promises.push(uploadAndSign(`preview-${fileName}`, thumbnailBlob));
-				}
-
-				promises.push(uploadAndSign(fileName, image.file));
+				url = blobUrl;
+				preview = blobId;
 			}
-
-			const [preview, url] = await Promise.all(promises);
-			const hasImage = preview === undefined && url === undefined;
 
 			const updatedItem: Midia = {
 				...contentItem,
-				title,
-				image: {
-					subtitle: image.subtitle,
-					url: hasImage ? contentItem.image.url : url || preview,
-					preview: hasImage ? contentItem.image.preview : preview,
-					type: image.file
-						? image.file.type.includes("video")
-							? "Vídeo"
-							: "Imagem"
-						: contentItem.image.type,
+				title: formData.title,
+				file: {
+					subtitle: formData.file.subtitle,
+					url,
+					preview,
+					type: formData.file.type,
 				},
 			};
 
@@ -162,17 +151,32 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					FILES_TYPE={FILES_TYPE}
 					ACCEPT_FILES_TYPE={ACCEPT_FILES_TYPE}
 					contentItem={contentItem}
-					setValue={setValue}
-					name="image.file"
+					onChange={(e) => {
+						const file = e.target.files[0];
+						if (!file) return;
+
+						const blob = new Blob([file], { type: file.type });
+
+						setValue("file.blob", blob);
+						setValue(
+							"file.type",
+							file
+								? file.type.includes("video")
+									? "Vídeo"
+									: "Imagem"
+								: contentItem.file.type,
+						);
+					}}
+					name="file.blobUrl"
 					setError={setError}
-					error={errors.image?.file.message.toString()}
+					error={errors.file?.blob.message}
 				/>
 				<Textarea
 					name="subtitle"
 					theme="green"
 					className="resize-none"
 					placeholder="Insira uma legenda para a mídia (Opcional)"
-					{...register("image.subtitle")}
+					{...register("file.subtitle")}
 				/>
 			</div>
 			<div className="flex items-center gap-x-3 justify-end w-full">
