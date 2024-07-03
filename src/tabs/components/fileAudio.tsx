@@ -25,6 +25,7 @@ const Audios = ({
 	ACCEPT_FILES_TYPE,
 	FILES_TYPE,
 	contentItem,
+	onChange,
 	...rest
 }: Props) => {
 	const [audioPreview, setAudioPreview] = useState<string | null>(null);
@@ -57,20 +58,9 @@ const Audios = ({
 	}, [contentItem]);
 
 	const handlerChangeValue = async (e: ChangeEvent<HTMLInputElement>) => {
-		setIsLoadingAudio(true);
-		const fileInput = e.target;
-		const file = fileInput.files[0];
+		const file = e.target.files[0];
 		if (!file) return;
-
-		if (!FILES_TYPE.includes(file.type)) {
-			if (setError) {
-				setError(name, {
-					message: "Formato de arquivo inválido",
-				});
-			}
-			setIsLoadingAudio(false);
-			return;
-		}
+		setIsLoadingAudio(true);
 
 		if (file) {
 			const blob = new Blob([file], { type: file.type });
@@ -78,12 +68,11 @@ const Audios = ({
 
 			reader.onloadend = () => {
 				const base64String = reader.result as string;
-
 				setAudioPreview(base64String);
 			};
 
 			reader.onerror = () => {
-				if (setError) {
+				if (setError && name) {
 					setError(name, {
 						message: "Erro ao ler o arquivo",
 					});
@@ -97,6 +86,7 @@ const Audios = ({
 				setValue(name, blob);
 			}
 
+			onChange(e);
 			setIsLoadingAudio(false);
 		} else {
 			setIsLoadingAudio(false);
@@ -131,7 +121,7 @@ const Audios = ({
 							)}
 							<label htmlFor="input-file" className="text-white text-center">
 								Formatos aceitos: <br />
-								'.mp3', '.aac', '.aiff', '.flac'
+								'.mp3'
 							</label>
 						</>
 					)}

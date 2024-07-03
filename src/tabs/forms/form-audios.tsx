@@ -11,6 +11,7 @@ import {
 	AUDIOS_TYPE,
 	removeItem,
 	storeBlobInIndexedDB,
+	uploadFileOnS3,
 } from "../../utils/utils";
 import Audios from "../components/fileAudio";
 import toast from "react-hot-toast";
@@ -32,7 +33,18 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		title: z.string(),
 		audio: z.object({
 			url: z.string(),
-			blob: z.instanceof(Blob).optional(),
+			blob: z
+				.instanceof(Blob, { message: "O arquivo deve ser um áudio" })
+				.refine(
+					(value) => value.type.startsWith("audio"),
+					"O arquivo deve ser um áudio",
+				)
+				.refine(
+					(value) => value.size < 3 * 1024 * 1024 * 1024,
+					"Tamanho do arquivo excedeu 3 GB",
+				)
+				.optional(),
+			fileName: z.string().optional(),
 		}),
 	});
 
@@ -70,22 +82,26 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			setIsLoading(true);
 
 			let url = "";
-			let preview = undefined;
+			let preview = "";
 
 			if (formData.audio?.blob) {
 				const blobId = await storeBlobInIndexedDB(formData.audio.blob);
-				const signedUrl = URL.createObjectURL(formData.audio.blob);
+				const fileUrl = await uploadFileOnS3(
+					formData.audio.blob,
+					formData.audio.fileName,
+					"teste/",
+				);
 
 				preview = blobId;
-				url = signedUrl;
+				url = fileUrl;
 			}
 
 			const updatedItem: Audio = {
 				...contentItem,
 				title: formData.title,
 				audio: {
-					url,
-					preview,
+					url: url !== "" ? url : contentItem.audio.url,
+					preview: preview !== "" ? preview : contentItem.audio.preview,
 				},
 			};
 
@@ -146,8 +162,14 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				name="audio.blob"
 				ACCEPT_FILES_TYPE={ACCEPT_AUDIOS_TYPE}
 				FILES_TYPE={AUDIOS_TYPE}
+				onChange={(e) => {
+					const file = e.target.files[0];
+
+					if (!file) return;
+					setValue("audio.fileName", file.name);
+				}}
 				setError={setError}
-				error={errors.audio?.blob.message.toString()}
+				error={errors.audio?.blob?.message.toString()}
 			/>
 			<div className="flex items-center gap-x-3 justify-end w-full">
 				<Button

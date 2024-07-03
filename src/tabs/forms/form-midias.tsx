@@ -8,6 +8,7 @@ import {
 	FILES_TYPE,
 	removeItem,
 	storeBlobInIndexedDB,
+	uploadFileOnS3,
 } from "../../utils/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Midia } from "../../type/type";
@@ -33,7 +34,22 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 		title: z.string(),
 		file: z.object({
 			subtitle: z.string().optional(),
-			blob: z.instanceof(Blob).optional(),
+			blob: z
+				.instanceof(Blob, {
+					message: "O arquivo deve ser um vídeo ou uma imagem",
+				})
+				.refine(
+					(value) =>
+						value.type.startsWith("image") || value.type.startsWith("video"),
+					{
+						message: "O arquivo deve ser um vídeo ou uma imagem",
+					},
+				)
+				.refine((value) => value.size < 3 * 1024 * 1024 * 1024, {
+					message: "Tamanho do arquivo excedeu 3 GB",
+				})
+				.optional(),
+			fileName: z.string().optional(),
 			type: z.enum(["", "Imagem", "Vídeo"]).optional(),
 		}),
 	});
@@ -74,13 +90,17 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 			setIsLoading(true);
 
 			let url = "";
-			let preview = undefined;
+			let preview = "";
 
 			if (formData.file && formData.file.blob) {
 				const blobId = await storeBlobInIndexedDB(formData.file.blob);
-				const blobUrl = URL.createObjectURL(formData.file.blob);
+				const fileUrl = await uploadFileOnS3(
+					formData.file.blob,
+					formData.file.fileName,
+					"teste/",
+				);
 
-				url = blobUrl;
+				url = fileUrl;
 				preview = blobId;
 			}
 
@@ -89,8 +109,8 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 				title: formData.title,
 				file: {
 					subtitle: formData.file.subtitle,
-					url,
-					preview,
+					url: url !== "" ? url : contentItem.file.url,
+					preview: preview !== "" ? preview : contentItem.file.preview,
 					type: formData.file.type,
 				},
 			};
@@ -158,6 +178,7 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 						const blob = new Blob([file], { type: file.type });
 
 						setValue("file.blob", blob);
+						setValue("file.fileName", file.name);
 						setValue(
 							"file.type",
 							file

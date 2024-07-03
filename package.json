@@ -39,7 +39,6 @@
 	"dependencies": {
 		"@hookform/resolvers": "^3.4.2",
 		"@prisma/client": "^5.16.0",
-		"@supabase/supabase-js": "^2.43.2",
 		"@types/jsonwebtoken": "^9.0.6",
 		"autoprefixer": "^10.4.7",
 		"clsx": "^2.1.1",

@@ -26,27 +26,55 @@ window.addEventListener("sendMessage", async (e: CustomEvent) => {
 	}
 });
 
+const sendFileMessage = async (
+	chatId: string,
+	file: Blob | File,
+	delay: number,
+	subtitle?: string,
+) => {
+	if (file.type.startsWith("audio")) {
+		await WPP.chat.sendFileMessage(chatId, file, {
+			type: "audio",
+			mimetype: file.type,
+			isPtt: true,
+			delay,
+		});
+
+		return;
+	}
+
+	await WPP.chat.sendFileMessage(chatId, file, {
+		type: "auto-detect",
+		caption: subtitle,
+		mimetype: file.type,
+		delay,
+	});
+};
+
 window.addEventListener("sendFile", async (e: CustomEvent) => {
 	try {
-		const { file, subtitle, delay, chatId: eventChatId } = e.detail;
-
+		const { file, subtitle, delay, type, chatId: eventChatId } = e.detail;
 		const activeChat = WPP.chat.getActiveChat();
 		const chatId = eventChatId || activeChat?.id?._serialized;
 
 		if (!chatId) return;
 
-		const sendFileMessage = async () => {
-			await WPP.chat.sendFileMessage(chatId, file, {
-				type: "auto-detect",
-				caption: subtitle,
-			});
-		};
+		if (type === "audios") {
+			WPP.chat
+				.markIsRecording(chatId, delay ?? 30000)
+				.then(async () => {
+					await sendFileMessage(chatId, file, subtitle, delay);
+				})
+				.finally(() => {
+					window.dispatchEvent(new CustomEvent("loadingEnd"));
+				});
 
-		if (delay) {
-			setTimeout(sendFileMessage, delay);
-		} else {
-			await sendFileMessage();
+			return;
 		}
+
+		await sendFileMessage(chatId, file, subtitle, delay).finally(() => {
+			window.dispatchEvent(new CustomEvent("loadingEnd"));
+		});
 	} catch (error) {
 		console.error("Erro ao enviar o arquivo:", error);
 	}
@@ -138,115 +166,111 @@ const sendFunil = async (
 	}
 };
 
-window.addEventListener("downloadMedia", () => {
-	console.log("po");
-});
-
 window.addEventListener("initGatilho", () => {
-	WPP.on("chat.new_message", async (msg) => {
-		if (msg.type !== "chat") return;
-		if (msg.attributes.id.fromMe === true) return;
-		const message = msg.body;
-		const isGroup = msg.from.server === "g.us";
-		const gatilhos: Gatilho[] = await new Promise((resolve) => {
-			const handler = (event) => {
-				window.removeEventListener("getGatilhos", handler);
-				resolve(event.detail);
-			};
-			window.addEventListener("getGatilhos", handler);
-			window.dispatchEvent(new CustomEvent("getGatilhosRequest"));
-		});
-		if (!gatilhos) return;
-		const selectedGatilhos = gatilhos?.filter(
-			(gatilho) => gatilho.active && gatilho.keywords.key?.length > 0,
-		);
-		for (let i = 0; i < selectedGatilhos?.length; i++) {
-			const gatilho = selectedGatilhos[i];
-			if (gatilho.saveContacts && !msg.attributes.senderObj.isMyContact) {
-				continue;
-			}
-			if (gatilho.sendGroups && isGroup) {
-				continue;
-			}
-			for (let j = 0; j < gatilho.keywords.key?.length; j++) {
-				const type = gatilho.keywords.type.value;
-				const key = gatilho.keywords.key[j];
-				const chatId = msg.attributes.id.remote._serialized;
-				const {
-					selectedItems,
-				}: {
-					selectedItems: Mensagem[] | Midia[] | Audio[];
-				} = await new Promise((resolve) => {
-					const handler = (event: CustomEvent) => {
-						window.removeEventListener(
-							"getFunilWithIdResponse",
-							handler as EventListener,
-						);
-						resolve(event.detail);
-					};
-					window.addEventListener(
-						"getFunilWithIdResponse",
-						handler as EventListener,
-					);
-					window.dispatchEvent(
-						new CustomEvent("getFunilWithIdRequest", {
-							detail: { id: gatilho.funil.id },
-						}),
-					);
-				});
-				if (type === "equals") {
-					let isMatch = false;
-					if (gatilho.ignoreCase) {
-						isMatch = message.toLowerCase() === key.toLowerCase();
-						if (isMatch) {
-							sendFunil(selectedItems, chatId);
-							return;
-						}
-					} else {
-						isMatch = message === key;
-						if (isMatch) {
-							sendFunil(selectedItems, chatId);
-							return;
-						}
-					}
-				}
-				if (type === "contains") {
-					let isMatch = false;
-					if (gatilho.ignoreCase) {
-						isMatch = message.toLowerCase().includes(key.toLowerCase());
-					} else {
-						isMatch = message.includes(key);
-					}
-					if (isMatch) {
-						sendFunil(selectedItems, chatId);
-						return;
-					}
-				}
-				if (type === "startsWith") {
-					let isMatch = false;
-					if (gatilho.ignoreCase) {
-						isMatch = message.toLowerCase().startsWith(key.toLowerCase());
-					} else {
-						isMatch = message.startsWith(key);
-					}
-					if (isMatch) {
-						sendFunil(selectedItems, chatId);
-						return;
-					}
-				}
-				if (type === "notContains") {
-					let isMatch = false;
-					if (gatilho.ignoreCase) {
-						isMatch = !message.toLowerCase().includes(key.toLowerCase());
-					} else {
-						isMatch = !message.includes(key);
-					}
-					if (isMatch) {
-						sendFunil(selectedItems, chatId);
-						return;
-					}
-				}
-			}
-		}
-	});
+	// WPP.on("chat.new_message", async (msg) => {
+	// 	if (msg.type !== "chat") return;
+	// 	if (msg.attributes.id.fromMe === true) return;
+	// 	const message = msg.body;
+	// 	const isGroup = msg.from.server === "g.us";
+	// 	const gatilhos: Gatilho[] = await new Promise((resolve) => {
+	// 		const handler = (event) => {
+	// 			window.removeEventListener("getGatilhos", handler);
+	// 			resolve(event.detail);
+	// 		};
+	// 		window.addEventListener("getGatilhos", handler);
+	// 		window.dispatchEvent(new CustomEvent("getGatilhosRequest"));
+	// 	});
+	// 	if (!gatilhos) return;
+	// 	const selectedGatilhos = gatilhos?.filter(
+	// 		(gatilho) => gatilho.active && gatilho.keywords.key?.length > 0,
+	// 	);
+	// 	for (let i = 0; i < selectedGatilhos?.length; i++) {
+	// 		const gatilho = selectedGatilhos[i];
+	// 		if (gatilho.saveContacts && !msg.attributes.senderObj.isMyContact) {
+	// 			continue;
+	// 		}
+	// 		if (gatilho.sendGroups && isGroup) {
+	// 			continue;
+	// 		}
+	// 		for (let j = 0; j < gatilho.keywords.key?.length; j++) {
+	// 			const type = gatilho.keywords.type.value;
+	// 			const key = gatilho.keywords.key[j];
+	// 			const chatId = msg.attributes.id.remote._serialized;
+	// 			const {
+	// 				selectedItems,
+	// 			}: {
+	// 				selectedItems: Mensagem[] | Midia[] | Audio[];
+	// 			} = await new Promise((resolve) => {
+	// 				const handler = (event: CustomEvent) => {
+	// 					window.removeEventListener(
+	// 						"getFunilWithIdResponse",
+	// 						handler as EventListener,
+	// 					);
+	// 					resolve(event.detail);
+	// 				};
+	// 				window.addEventListener(
+	// 					"getFunilWithIdResponse",
+	// 					handler as EventListener,
+	// 				);
+	// 				window.dispatchEvent(
+	// 					new CustomEvent("getFunilWithIdRequest", {
+	// 						detail: { id: gatilho.funil.id },
+	// 					}),
+	// 				);
+	// 			});
+	// 			if (type === "equals") {
+	// 				let isMatch = false;
+	// 				if (gatilho.ignoreCase) {
+	// 					isMatch = message.toLowerCase() === key.toLowerCase();
+	// 					if (isMatch) {
+	// 						sendFunil(selectedItems, chatId);
+	// 						return;
+	// 					}
+	// 				} else {
+	// 					isMatch = message === key;
+	// 					if (isMatch) {
+	// 						sendFunil(selectedItems, chatId);
+	// 						return;
+	// 					}
+	// 				}
+	// 			}
+	// 			if (type === "contains") {
+	// 				let isMatch = false;
+	// 				if (gatilho.ignoreCase) {
+	// 					isMatch = message.toLowerCase().includes(key.toLowerCase());
+	// 				} else {
+	// 					isMatch = message.includes(key);
+	// 				}
+	// 				if (isMatch) {
+	// 					sendFunil(selectedItems, chatId);
+	// 					return;
+	// 				}
+	// 			}
+	// 			if (type === "startsWith") {
+	// 				let isMatch = false;
+	// 				if (gatilho.ignoreCase) {
+	// 					isMatch = message.toLowerCase().startsWith(key.toLowerCase());
+	// 				} else {
+	// 					isMatch = message.startsWith(key);
+	// 				}
+	// 				if (isMatch) {
+	// 					sendFunil(selectedItems, chatId);
+	// 					return;
+	// 				}
+	// 			}
+	// 			if (type === "notContains") {
+	// 				let isMatch = false;
+	// 				if (gatilho.ignoreCase) {
+	// 					isMatch = !message.toLowerCase().includes(key.toLowerCase());
+	// 				} else {
+	// 					isMatch = !message.includes(key);
+	// 				}
+	// 				if (isMatch) {
+	// 					sendFunil(selectedItems, chatId);
+	// 					return;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// });
 });

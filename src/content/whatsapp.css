@@ -61,7 +61,7 @@
 }
 
 .item-message-future-online {
-  @apply flex flex-col gap-y-2 h-full
+  @apply flex flex-col gap-y-2 h-full min-w-[20%]
 }
 
 .item-title-future-online {

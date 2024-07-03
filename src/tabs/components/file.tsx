@@ -10,7 +10,6 @@ import {
 import type { Midia } from "../../type/type";
 import type { UseFormSetError, UseFormSetValue } from "react-hook-form";
 import { Image } from "lucide-react";
-import { eventNames } from "@wppconnect/wa-js";
 import toast from "react-hot-toast";
 
 interface Props extends InputHTMLAttributes<HTMLInputElement> {
@@ -73,47 +72,25 @@ const File = ({
 	const handlerChangeValue = async (e: ChangeEvent<HTMLInputElement>) => {
 		const fileInput = e.target;
 		const file = fileInput.files[0];
+		if (!file) return;
+		setIsLoadingImage(true);
+		setImagePreview(null);
 
-		if (!FILES_TYPE.includes(file.type)) {
-			if (setError && eventNames) {
-				setError(name, {
-					message: "Formato de arquivo inválido",
-				});
-			}
-			return;
-		}
-
-		if (file.size > 3 * 1024 * 1024 * 1024) {
-			if (setError && eventNames) {
-				setError(name, {
-					message: "O arquivo não pode ser maior que 3 GB",
-				});
-			}
-			return;
-		}
-
-		if (file) {
-			setIsLoadingImage(true);
-			setImagePreview(null);
-
-			let preview = "";
-			if (file.type.includes("video")) {
-				preview = (await generateThumbnail(file, true)) as string;
-				setIsLoadingImage(false);
-			} else {
-				preview = await loadingImage(file);
-				setIsLoadingImage(false);
-			}
-
-			if (setValue && name) {
-				setValue(name, file);
-			}
-
-			setImagePreview(preview);
-			onChange(e);
+		let preview = "";
+		if (file.type.includes("video")) {
+			preview = (await generateThumbnail(file, true)) as string;
+			setIsLoadingImage(false);
 		} else {
-			setImagePreview(null);
+			preview = await loadingImage(file);
+			setIsLoadingImage(false);
 		}
+
+		if (setValue && name) {
+			setValue(name, file);
+		}
+
+		setImagePreview(preview);
+		onChange(e);
 	};
 
 	return (

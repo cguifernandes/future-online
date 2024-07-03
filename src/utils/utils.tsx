@@ -1,5 +1,4 @@
 import toast from "react-hot-toast";
-import { supabase } from "../lib/supabase";
 import type { Audio, Funil, Gatilho, Mensagem, Midia } from "../type/type";
 import { v4 as uuidv4 } from "uuid";
 
@@ -149,6 +148,42 @@ export const getBlobFromIndexedDB = (id: string): Promise<Blob> => {
 	});
 };
 
+export const uploadFileOnS3 = (
+	blob: Blob,
+	fileName: string,
+	folderName: string,
+): Promise<string | undefined> => {
+	return new Promise((resolve, reject) => {
+		const file = new File(
+			[blob],
+			`${folderName}${new Date().getTime().toString()}-${fileName}`,
+			{
+				type: blob.type,
+			},
+		);
+
+		const formData = new FormData();
+		formData.append("file", file);
+
+		fetch(`${url}/api/upload?folderName=${folderName}`, {
+			method: "POST",
+			body: formData,
+		})
+			.then(async (response) => {
+				if (!response.ok) {
+					reject(`Erro ao fazer upload do arquivo: ${response.statusText}`);
+				}
+
+				const data = await response.json();
+				resolve(data.data);
+			})
+			.catch((error) => {
+				console.log(error);
+				reject("Erro ao fazer upload do arquivo:");
+			});
+	});
+};
+
 export const delay = (minutes: number, seconds: number) =>
 	new Promise((resolve) =>
 		setTimeout(resolve, (minutes * 60 + seconds) * 1000),
@@ -220,32 +255,6 @@ export const formatDate = (dateString: string): string => {
 	const year = dateObj.getFullYear().toString();
 	return `${day}/${month}/${year}`;
 };
-
-export const uploadAndSign = async (
-	path: string,
-	content: File | Blob | string,
-) => {
-	const uploadResponse = await supabase.storage
-		.from("future-online")
-		.upload(path, content);
-
-	if (uploadResponse.error) {
-		console.log(uploadResponse.error);
-		return null;
-	}
-
-	const { data: signedData, error: signedError } = await supabase.storage
-		.from("future-online")
-		.createSignedUrl(uploadResponse.data.path, 30 * 24 * 60 * 60);
-
-	if (signedError) {
-		console.log(signedError);
-		return null;
-	}
-
-	return signedData.signedUrl;
-};
-
 export const getItemWithId = async (
 	id: string,
 	type: "midias" | "mensagens" | "funis" | "gatilhos",

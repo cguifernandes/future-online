@@ -109,23 +109,17 @@ const loadItens = (
 					return window.dispatchEvent(new CustomEvent("loadingEnd"));
 				}
 
-				try {
-					const fileName = new Date().getTime().toString();
-					const file = await backgroundConvertUrlToFile(
-						item.audio.url,
-						fileName,
-					);
+				const fileName = new Date().getTime().toString();
+				const file = await backgroundConvertUrlToFile(item.audio.url, fileName);
 
-					window.dispatchEvent(
-						new CustomEvent("sendFile", {
-							detail: {
-								file: file,
-							},
-						}),
-					);
-				} finally {
-					window.dispatchEvent(new CustomEvent("loadingEnd"));
-				}
+				window.dispatchEvent(
+					new CustomEvent("sendFile", {
+						detail: {
+							file: file,
+							type: "audios",
+						},
+					}),
+				);
 
 				return;
 			}
@@ -135,20 +129,21 @@ const loadItens = (
 					return window.dispatchEvent(new CustomEvent("loadingEnd"));
 				}
 
-				console.log(item);
+				const fileName = item.file.url.split("/").pop();
+				const file = await backgroundConvertUrlToFile(item.file.url, fileName);
 
-				// try {
-				// 	window.dispatchEvent(
-				// 		new CustomEvent("sendFile", {
-				// 			detail: {
-				// 				file: item.file.url,
-				// 				subtitle: item.file.subtitle,
-				// 			},
-				// 		}),
-				// 	);
-				// } finally {
-				// 	window.dispatchEvent(new CustomEvent("loadingEnd"));
-				// }
+				try {
+					window.dispatchEvent(
+						new CustomEvent("sendFile", {
+							detail: {
+								file,
+								subtitle: item.file.subtitle,
+							},
+						}),
+					);
+				} finally {
+					window.dispatchEvent(new CustomEvent("loadingEnd"));
+				}
 
 				return;
 			}
@@ -171,7 +166,7 @@ const loadItens = (
 					});
 				};
 
-				const itemTypes = [...new Set(item.item.map((i) => i.type))];
+				const itemTypes = [...new Set(item.item.map((i) => i?.type))];
 				const storageData = {};
 
 				for (const type of itemTypes) {
@@ -191,7 +186,7 @@ const loadItens = (
 						let selectedItem = null;
 
 						try {
-							const selectedType = i.type
+							const selectedType = i?.type
 								.toLocaleLowerCase()
 								.normalize("NFD")
 								.replace(/[\u0300-\u036f]/g, "");
@@ -199,7 +194,7 @@ const loadItens = (
 							const itens = storageData[selectedType];
 							selectedItem = itens.find((item) => item.id === i.selectedId);
 
-							if (selectedItem.type === "mensagens") {
+							if (selectedItem?.type === "mensagens") {
 								await new Promise((resolve) => {
 									window.dispatchEvent(
 										new CustomEvent("sendMessage", {
@@ -211,7 +206,7 @@ const loadItens = (
 									);
 									setTimeout(resolve, delayInMilliseconds);
 								});
-							} else if (selectedItem.type === "midias") {
+							} else if (selectedItem?.type === "midias") {
 								const fileName = new Date().getTime().toString();
 
 								await backgroundConvertUrlToFile(
@@ -233,7 +228,7 @@ const loadItens = (
 										setTimeout(resolve, delayInMilliseconds);
 									});
 								});
-							} else if (selectedItem.type === "audios") {
+							} else if (selectedItem?.type === "audios") {
 								const fileName = new Date().getTime().toString();
 								await backgroundConvertUrlToFile(
 									selectedItem.audio.url,
@@ -245,6 +240,7 @@ const loadItens = (
 												detail: {
 													file,
 													delay: delayInMilliseconds,
+													type: "audios",
 												},
 											}),
 										);
