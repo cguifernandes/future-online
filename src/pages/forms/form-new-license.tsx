@@ -26,8 +26,10 @@ const Form = () => {
 			.min(14, "Campo de telefone inválido"),
 		date: z.preprocess(
 			(arg) => {
-				if (typeof arg === "string" || arg instanceof Date) {
-					const date = new Date(arg);
+				if (typeof arg === "string") {
+					const [day, month, year] = arg.split("/");
+					const formattedDate = `${day}-${month}-${year}`;
+					const date = new Date(formattedDate);
 					return isNaN(date.getTime()) ? null : date;
 				}
 				return null;
@@ -52,6 +54,7 @@ const Form = () => {
 		resolver: zodResolver(schema),
 		defaultValues: {
 			name: null,
+			phone: "",
 		},
 	});
 
@@ -65,9 +68,7 @@ const Form = () => {
 				},
 				body: JSON.stringify(formData),
 			});
-
 			const data = await response.json();
-
 			if (response.status >= 400 && response.status < 600) {
 				toast.error(data.message, {
 					position: "bottom-right",
@@ -76,13 +77,11 @@ const Form = () => {
 				});
 				return;
 			}
-
 			toast.success(data.message, {
 				position: "bottom-right",
 				className: "text-base ring-2 ring-[#1F2937]",
 				duration: 5000,
 			});
-
 			setTimeout(() => {
 				chrome.runtime.sendMessage({
 					target: "current",
@@ -136,8 +135,15 @@ const Form = () => {
 				type="date"
 				theme="dark-blue"
 				label="Data final da licença *"
+				placeholder="dd/MM/yyyy"
 				{...register("date", {
-					valueAsDate: true,
+					setValueAs(value) {
+						if (value) {
+							const [year, month, day] = value.split("-");
+							const formattedDate = `${day}/${month}/${year}`;
+							return formattedDate;
+						}
+					},
 				})}
 			/>
 			<Button isLoading={isLoading} theme="solid" type="submit">

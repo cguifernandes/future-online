@@ -12,14 +12,26 @@ const ModalUser = ({ client }: { client: Client }) => {
 	};
 
 	const handleLogout = () => {
-		localStorage.removeItem("token");
-		toast.success("Você saiu da sua conta com sucesso!", {
-			position: "bottom-right",
-			className: "text-base ring-2 ring-[#1F2937]",
-			duration: 5000,
-		});
+		chrome.storage.sync.get(null, (result) => {
+			const updatedItem = { ...result, account: null };
 
-		window.location.reload();
+			localStorage.removeItem("token");
+			toast.success("Você saiu da sua conta com sucesso!", {
+				position: "bottom-right",
+				className: "text-base ring-2 ring-[#1F2937]",
+				duration: 5000,
+			});
+
+			setTimeout(() => {
+				chrome.runtime.sendMessage({
+					target: "current",
+					url: "/pages/dashboard.html",
+				});
+			}, 1000);
+
+			window.location.reload();
+			chrome.storage.sync.set(updatedItem);
+		});
 	};
 
 	useEffect(() => {

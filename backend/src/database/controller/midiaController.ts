@@ -10,7 +10,7 @@ const s3 = new AWS.S3({
 	},
 });
 
-export const UploadMidia = async (
+export const uploadMidia = async (
 	file: Express.Multer.File | undefined,
 	req: Request,
 	res: Response,
@@ -46,5 +46,27 @@ export const UploadMidia = async (
 	} catch (err) {
 		console.error("Erro ao fazer o upload da imagem:", err);
 		res.status(500).json({ error: "Erro ao fazer o upload da imagem" });
+	}
+};
+
+export const removeMidia = (req: Request, res: Response) => {
+	try {
+		const { fileName }: { fileName: string } = req.query as {
+			fileName: string;
+		};
+
+		if (!fileName) {
+			return res.status(400).json({ message: "Nome do arquivo inválido" });
+		}
+
+		s3.deleteObject({
+			Bucket: process.env.AWS_BUCKET_NAME,
+			Key: fileName,
+		}).then(() =>
+			res.status(200).json({ message: "Imagem removida com sucesso" }),
+		);
+	} catch (err) {
+		console.error("Erro ao removar a imagem:", err);
+		res.status(500).json({ error: "Erro ao remover a imagem" });
 	}
 };

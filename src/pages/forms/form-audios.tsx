@@ -15,6 +15,7 @@ import {
 } from "../../utils/utils";
 import Audios from "../components/fileAudio";
 import toast from "react-hot-toast";
+import Spinner from "../components/spinner";
 
 interface Props {
 	setData: React.Dispatch<
@@ -27,6 +28,7 @@ interface Props {
 }
 
 const Form = ({ contentItem, setContentItem, setData }: Props) => {
+	const [isLoadingRemove, setIsLoadingRemove] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const schema = z.object({
@@ -85,11 +87,12 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			let preview = "";
 
 			if (formData.audio?.blob) {
+				const { account } = await chrome.storage.sync.get("account");
 				const blobId = await storeBlobInIndexedDB(formData.audio.blob);
 				const fileUrl = await uploadFileOnS3(
 					formData.audio.blob,
 					formData.audio.fileName,
-					"teste/",
+					`${account ?? "guest"}/`,
 				);
 
 				preview = blobId;
@@ -148,12 +151,21 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				<button
 					type="button"
 					onClick={async () => {
-						setData({ itens: await removeItem(contentItem, "audios") });
-						setContentItem(undefined);
+						try {
+							setIsLoadingRemove(true);
+							setData({ itens: await removeItem(contentItem, "audios") });
+						} finally {
+							setContentItem(undefined);
+							setIsLoadingRemove(false);
+						}
 					}}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
-					<Trash2 color="#fff" size={24} strokeWidth={1.5} />
+					{isLoadingRemove ? (
+						<Spinner />
+					) : (
+						<Trash2 color="#fff" size={24} strokeWidth={1.5} />
+					)}
 				</button>
 			</div>
 			<Audios

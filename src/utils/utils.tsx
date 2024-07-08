@@ -113,6 +113,36 @@ export const storeBlobInIndexedDB = (blob: Blob): Promise<string> => {
 	});
 };
 
+export const removeStorage = (fileName: string) => {
+	return new Promise((resolve, reject) => {
+		fetch(`${url}/api/file?fileName=${fileName}`, {
+			method: "DELETE",
+		})
+			.then(async (response) => {
+				const data = await response.json();
+
+				if (response.status >= 400 && response.status < 600) {
+					toast.error(data.message ?? "Ocorreu um erro ao remover a imagem", {
+						position: "bottom-right",
+						className: "text-base ring-2 ring-[#1F2937]",
+						duration: 5000,
+					});
+					return;
+				}
+
+				resolve(data.message);
+			})
+			.catch((err) => {
+				toast.error("Ocorreu um erro ao excluir a imagem", {
+					position: "bottom-right",
+					className: "text-base ring-2 ring-[#1F2937]",
+					duration: 5000,
+				});
+				reject(err);
+			});
+	});
+};
+
 export const removeItemFromIndexedDB = (id: string): Promise<void> => {
 	return new Promise((resolve, reject) => {
 		const dbName = "blobDB";
@@ -192,7 +222,7 @@ export const uploadFileOnS3 = (
 		const formData = new FormData();
 		formData.append("file", file);
 
-		fetch(`${url}/api/upload?folderName=${folderName}`, {
+		fetch(`${url}/api/file?folderName=${folderName}`, {
 			method: "POST",
 			body: formData,
 		})
@@ -282,6 +312,7 @@ export const formatDate = (dateString: string): string => {
 	const year = dateObj.getFullYear().toString();
 	return `${day}/${month}/${year}`;
 };
+
 export const getItemWithId = async (
 	id: string,
 	type: "midias" | "mensagens" | "funis" | "gatilhos",
@@ -369,12 +400,31 @@ export const removeItem = async <
 	});
 
 	if (type === "midias" || type === "audios") {
-		const id =
-			removeItem.type === "midias"
-				? removeItem.file.preview
-				: removeItem.type === "audios" && removeItem.audio.preview;
+		const isMidias = type === "midias";
+		const isAudios = type === "audios";
 
-		await removeItemFromIndexedDB(id);
+		const url = isMidias
+			? (removeItem as Midia).file.url
+			: isAudios
+				? (removeItem as Audio).audio.url
+				: null;
+		const preview = isMidias
+			? (removeItem as Midia).file.preview
+			: isAudios
+				? (removeItem as Audio).audio.preview
+				: null;
+
+		if (preview) {
+			await removeItemFromIndexedDB(preview);
+		}
+
+		if (url) {
+			const match = url.match(/amazonaws\.com\/(.+)/);
+
+			if (match && match.length > 0) {
+				await removeStorage(match[1]);
+			}
+		}
 	}
 
 	return updatedItems;

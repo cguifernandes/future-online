@@ -13,7 +13,10 @@ const ProtectedRoutes = ({ children, clientId, isAuthor, isUser }: Props) => {
 		const token = localStorage.getItem("token");
 
 		if (!token) {
-			window.location.href = "/login.html";
+			chrome.runtime.sendMessage({
+				target: "current",
+				url: "/pages/login.html",
+			});
 			return;
 		}
 

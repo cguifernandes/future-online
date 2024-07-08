@@ -8,7 +8,10 @@ import {
 	setClientsController,
 } from "../database/controller/clientController";
 import multer from "multer";
-import { UploadMidia } from "../database/controller/midiaController";
+import {
+	removeMidia,
+	uploadMidia,
+} from "../database/controller/midiaController";
 import { DecodedToken } from "../database/controller/tokenController";
 const routers = Router();
 
@@ -24,11 +27,15 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 //MIDIAS
 routers.post(
-	"/api/upload",
+	"/api/file",
 	upload.single("file"),
 	async (req: Request, res: Response) => {
-		await UploadMidia(req.file, req, res);
+		await uploadMidia(req.file, req, res);
 	},
+);
+
+routers.delete("/api/file", (req: Request, res: Response) =>
+	removeMidia(req, res),
 );
 
 //CLIENTS

@@ -16,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
+import Spinner from "../components/spinner";
 
 interface Props {
 	setData: React.Dispatch<
@@ -28,6 +29,7 @@ interface Props {
 }
 
 const Form = ({ setContentItem, setData, contentItem }: Props) => {
+	const [isLoadingRemove, setIsLoadingRemove] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const schema = z.object({
@@ -93,11 +95,12 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 			let preview = "";
 
 			if (formData.file && formData.file.blob) {
+				const { account } = await chrome.storage.sync.get("account");
 				const blobId = await storeBlobInIndexedDB(formData.file.blob);
 				const fileUrl = await uploadFileOnS3(
 					formData.file.blob,
 					formData.file.fileName,
-					"teste/",
+					`${account ?? "guest"}/`,
 				);
 
 				url = fileUrl;
@@ -158,12 +161,21 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 				<button
 					type="button"
 					onClick={async () => {
-						setData({ itens: await removeItem(contentItem, "midias") });
-						setContentItem(undefined);
+						try {
+							setIsLoadingRemove(true);
+							setData({ itens: await removeItem(contentItem, "midias") });
+						} finally {
+							setContentItem(undefined);
+							setIsLoadingRemove(false);
+						}
 					}}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
-					<Trash2 color="#fff" size={24} strokeWidth={1.5} />
+					{isLoadingRemove ? (
+						<Spinner />
+					) : (
+						<Trash2 color="#fff" size={24} strokeWidth={1.5} />
+					)}
 				</button>
 			</div>
 			<div className="flex gap-x-3 w-full flex-1">

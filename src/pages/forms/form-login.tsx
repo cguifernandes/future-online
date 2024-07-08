@@ -53,20 +53,26 @@ const Form = () => {
 				return;
 			}
 
-			toast.success(data.message ?? "Login realizado com sucesso", {
-				position: "bottom-right",
-				className: "text-base ring-2 ring-[#1F2937]",
-				duration: 5000,
-			});
+			chrome.storage.sync.get(null, (result) => {
+				const updatedItem = { ...result, account: data.data.email };
 
-			localStorage.setItem("token", data.token);
-
-			setTimeout(() => {
-				chrome.runtime.sendMessage({
-					target: "current",
-					url: "/pages/dashboard.html",
+				toast.success(data.message ?? "Login realizado com sucesso", {
+					position: "bottom-right",
+					className: "text-base ring-2 ring-[#1F2937]",
+					duration: 5000,
 				});
-			}, 1000);
+
+				localStorage.setItem("token", data.token);
+
+				setTimeout(() => {
+					chrome.runtime.sendMessage({
+						target: "current",
+						url: "/pages/dashboard.html",
+					});
+				}, 1000);
+
+				chrome.storage.sync.set(updatedItem);
+			});
 		} catch (error) {
 			console.log(error);
 			toast.error("Ocorreu um erro ao enviar o formulário", {
