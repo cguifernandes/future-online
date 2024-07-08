@@ -3,7 +3,7 @@ import PanelControl from "./panel-control";
 import "../../assets/globals.css";
 import { Toaster } from "react-hot-toast";
 import Header from "../layout/header";
-import ProtectedRoutes from "../layout/protectedRoutes";
+import ProtectedRoutes from "../layout/protected-routes";
 
 const init = () => {
 	const appContainer = document.createElement("div");
@@ -12,13 +12,11 @@ const init = () => {
 	const root = createRoot(appContainer);
 	appContainer.id = "app";
 	root.render(
-		<>
-			<ProtectedRoutes>
-				<Toaster />
-				<Header />
-				<PanelControl />
-			</ProtectedRoutes>
-		</>,
+		<ProtectedRoutes isUser>
+			<Toaster />
+			<Header />
+			<PanelControl />
+		</ProtectedRoutes>,
 	);
 };
 

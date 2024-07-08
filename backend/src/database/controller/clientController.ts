@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
 	authenticateClient,
+	changePassword,
 	getClients,
 	removeClient,
 	searchClient,
@@ -19,13 +20,13 @@ export const getClientsController = async (req: Request, res: Response) => {
 };
 
 export const authenticateController = async (req: Request, res: Response) => {
-	const { email, password }: { email: string; password: string } =
+	const { identifier, password }: { identifier: string; password: string } =
 		req.query as {
-			email: string;
+			identifier: string;
 			password: string;
 		};
 
-	const client = await authenticateClient(email, password);
+	const client = await authenticateClient(identifier, password);
 
 	res.status(client.status).json(client);
 };
@@ -55,4 +56,19 @@ export const removeClientsController = async (req: Request, res: Response) => {
 	const instanceRemoveClient = await removeClient(id);
 
 	res.status(instanceRemoveClient.status).json(instanceRemoveClient);
+};
+
+export const changePasswordController = async (req: Request, res: Response) => {
+	const { password, newPassword } = req.body;
+	const { id }: { id: string } = req.query as {
+		id: string;
+	};
+
+	const instanceChangePassword = await changePassword(
+		password,
+		id,
+		newPassword,
+	);
+
+	res.status(instanceChangePassword.status).json(instanceChangePassword);
 };

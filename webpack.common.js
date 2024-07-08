@@ -1,4 +1,4 @@
-const path = require("node:path");
+const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 const HtmlPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
@@ -8,16 +8,20 @@ const Dotenv = require("dotenv-webpack");
 
 module.exports = {
 	entry: {
-		popup: path.resolve("./src/popup/index.tsx"),
-		dashboard: path.resolve("./src/tabs/dashboard/index.tsx"),
-		login: path.resolve("./src/tabs/login/index.tsx"),
-		panel: path.resolve("./src/tabs/panel-control/index.tsx"),
-		content: path.resolve("./src/content/content.ts"),
-		background: path.resolve("./src/background/background.ts"),
-		"wa-js": path.resolve("./src/content/wa-js.ts"),
-		wpp: path.resolve("./src/content/wpp.js"),
-		utils: path.resolve("./src/utils/utils.tsx"),
-		injector: path.resolve("./src/content/injector.ts"),
+		popup: path.resolve(__dirname, "src/popup/index.tsx"),
+		dashboard: path.resolve(__dirname, "src/pages/dashboard/index.tsx"),
+		login: path.resolve(__dirname, "src/pages/login/index.tsx"),
+		panel: path.resolve(__dirname, "src/pages/panel-control/index.tsx"),
+		config: path.resolve(__dirname, "src/pages/config/index.tsx"),
+		"content/content": path.resolve(__dirname, "src/content/content.ts"),
+		"background/background": path.resolve(
+			__dirname,
+			"src/background/background.ts",
+		),
+		"content/wa-js": path.resolve(__dirname, "src/content/wa-js.ts"),
+		"content/wpp": path.resolve(__dirname, "src/content/wpp.js"),
+		utils: path.resolve(__dirname, "src/utils/utils.tsx"),
+		"content/injector": path.resolve(__dirname, "src/content/injector.ts"),
 	},
 	module: {
 		rules: [
@@ -60,20 +64,31 @@ module.exports = {
 		new CopyPlugin({
 			patterns: [
 				{
-					from: path.resolve("src/static"),
-					to: path.resolve("dist"),
+					from: path.resolve(__dirname, "src/static"),
+					to: path.resolve(__dirname, "dist"),
 				},
 			],
 		}),
-		...getHtmlPlugins(["popup", "dashboard", "login", "panel"]),
+		...getHtmlPlugins(["popup", "dashboard", "login", "panel", "config"]),
 		new Dotenv(),
 	],
 	resolve: {
-		extensions: [".tsx", ".js", ".ts"],
+		extensions: [".tsx", ".ts", ".js"],
 	},
 	output: {
-		filename: "[name].js",
-		path: path.join(__dirname, "dist"),
+		filename: ({ chunk }) => {
+			if (chunk && chunk.name && chunk.name.startsWith("content/")) {
+				return `[name].js`;
+			}
+
+			if (chunk && chunk.name && chunk.name.startsWith("background/")) {
+				return `[name].js`;
+			}
+
+			return `chunks/[name].js`;
+		},
+		path: path.resolve(__dirname, "dist"),
+		assetModuleFilename: "misc/[name][ext][query]",
 	},
 	optimization: {
 		splitChunks: {
@@ -83,12 +98,15 @@ module.exports = {
 };
 
 function getHtmlPlugins(chunks) {
-	return chunks.map(
-		(chunk) =>
-			new HtmlPlugin({
-				title: chunk.charAt(0).toUpperCase() + chunk.slice(1),
-				filename: `${chunk}.html`,
-				chunks: [chunk],
-			}),
-	);
+	return chunks.map((chunk) => {
+		const filename =
+			chunk === "popup" ? `popup/${chunk}.html` : `pages/${chunk}.html`;
+
+		return new HtmlPlugin({
+			title: chunk.charAt(0).toUpperCase() + chunk.slice(1),
+			filename: filename,
+			chunks: [chunk],
+			scriptLoading: "blocking",
+		});
+	});
 }

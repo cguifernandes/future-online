@@ -1,13 +1,24 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	if (request.target === "new") {
-		chrome.tabs.create({ url: request.url });
+		const url = processDynamicUrl(request.url);
+		chrome.tabs.create({ url: chrome.runtime.getURL(url) });
 	} else if (request.target === "current") {
 		chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 			const currentTabId = tabs[0].id;
-			chrome.tabs.update(currentTabId, { url: request.url });
+			const url = processDynamicUrl(request.url);
+			chrome.tabs.update(currentTabId, { url: chrome.runtime.getURL(url) });
 		});
 	}
 });
+
+function processDynamicUrl(url: string) {
+	const clientIdMatch = url.match(/config.html\/(.+)/);
+	if (clientIdMatch) {
+		const clientId = clientIdMatch[1];
+		return `/pages/config.html?client_id=${clientId}`;
+	}
+	return url;
+}
 
 export const backgroundConvertUrlToFile = async (
 	path: string,

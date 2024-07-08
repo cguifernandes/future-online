@@ -86,7 +86,7 @@ const Form = () => {
 			setTimeout(() => {
 				chrome.runtime.sendMessage({
 					target: "current",
-					url: "/panel.html",
+					url: "/pages/panel.html",
 				});
 			}, 1000);
 		} catch (error) {

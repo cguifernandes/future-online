@@ -33,7 +33,7 @@ const Form = () => {
 			setIsLoading(true);
 
 			const response = await fetch(
-				`${url}/api/client/authenticate?password=${formData.password}&email=${formData.email}`,
+				`${url}/api/client/authenticate?password=${formData.password}&identifier=${formData.email}`,
 				{
 					method: "GET",
 					headers: {
@@ -60,8 +60,12 @@ const Form = () => {
 			});
 
 			localStorage.setItem("token", data.token);
+
 			setTimeout(() => {
-				window.location.href = "/dashboard.html";
+				chrome.runtime.sendMessage({
+					target: "current",
+					url: "/pages/dashboard.html",
+				});
 			}, 1000);
 		} catch (error) {
 			console.log(error);
@@ -92,6 +96,7 @@ const Form = () => {
 					error={errors?.password?.message}
 					{...register("password")}
 					type="password"
+					maxLength={11}
 					label="Senha"
 					placeholder="Digite a senha"
 				/>

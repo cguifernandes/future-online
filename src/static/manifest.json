@@ -4,7 +4,7 @@
 	"name": "Future Online",
 	"version": "1.0.0",
 	"action": {
-		"default_popup": "popup.html",
+		"default_popup": "./popup/popup.html",
 		"default_title": "Future Online",
 		"default_icon": "icon.png"
 	},
@@ -17,7 +17,7 @@
 	"content_scripts": [
 		{
 			"matches": ["https://web.whatsapp.com/*"],
-			"js": ["injector.js", "content.js"]
+			"js": ["./content/injector.js", "/content/content.js"]
 		}
 	],
 	"file_system_provider_capabilities": {
@@ -27,7 +27,7 @@
 		"source": "network"
 	},
 	"background": {
-		"service_worker": "background.js"
+		"service_worker": "./background/background.js"
 	},
 	"externally_connectable": {
 		"matches": ["*://*.whatsapp.com/*"]

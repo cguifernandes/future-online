@@ -58,10 +58,9 @@ export const loadingImage = (file: File): Promise<string> => {
 export const storeBlobInIndexedDB = (blob: Blob): Promise<string> => {
 	return new Promise((resolve, reject) => {
 		const dbName = "blobDB";
-		const dbVersion = 2;
 		const storeName = "blobs";
 
-		const dbRequest = indexedDB.open(dbName, dbVersion);
+		const dbRequest = indexedDB.open(dbName);
 
 		dbRequest.onupgradeneeded = (event) => {
 			const db = (event.target as IDBOpenDBRequest).result;
@@ -114,13 +113,41 @@ export const storeBlobInIndexedDB = (blob: Blob): Promise<string> => {
 	});
 };
 
+export const removeItemFromIndexedDB = (id: string): Promise<void> => {
+	return new Promise((resolve, reject) => {
+		const dbName = "blobDB";
+		const storeName = "blobs";
+
+		const dbRequest = indexedDB.open(dbName);
+
+		dbRequest.onsuccess = (event) => {
+			const db = (event.target as IDBOpenDBRequest).result;
+			const transaction = db.transaction(storeName, "readwrite");
+			const objectStore = transaction.objectStore(storeName);
+
+			const request = objectStore.delete(Number(id));
+
+			request.onsuccess = () => {
+				resolve();
+			};
+
+			request.onerror = (event) => {
+				reject((event.target as IDBRequest).error);
+			};
+		};
+
+		dbRequest.onerror = (event) => {
+			reject((event.target as IDBRequest).error);
+		};
+	});
+};
+
 export const getBlobFromIndexedDB = (id: string): Promise<Blob> => {
 	return new Promise((resolve, reject) => {
 		const dbName = "blobDB";
-		const dbVersion = 2;
 		const storeName = "blobs";
 
-		const dbRequest = indexedDB.open(dbName, dbVersion);
+		const dbRequest = indexedDB.open(dbName);
 
 		dbRequest.onsuccess = (event) => {
 			const db = (event.target as IDBOpenDBRequest).result;
@@ -340,6 +367,15 @@ export const removeItem = async <
 			resolve();
 		});
 	});
+
+	if (type === "midias" || type === "audios") {
+		const id =
+			removeItem.type === "midias"
+				? removeItem.file.preview
+				: removeItem.type === "audios" && removeItem.audio.preview;
+
+		await removeItemFromIndexedDB(id);
+	}
 
 	return updatedItems;
 };

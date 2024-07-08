@@ -51,7 +51,7 @@ const loadButton = () => {
 	popup.style.display = "none";
 
 	buttonPopup.addEventListener("click", () => {
-		chrome.runtime.sendMessage({ target: "new", url: "/dashboard.html" });
+		chrome.runtime.sendMessage({ target: "new", url: "/pages/dashboard.html" });
 	});
 
 	closeButton.addEventListener("click", () => {

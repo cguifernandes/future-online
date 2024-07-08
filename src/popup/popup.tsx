@@ -1,5 +1,5 @@
 import "./popup.css";
-import Button from "../tabs/components/button";
+import Button from "../pages/components/button";
 
 const Popup = () => {
 	return (
@@ -9,7 +9,12 @@ const Popup = () => {
 			<Button
 				type="button"
 				className="bg-black/30"
-				onClick={() => chrome.tabs.create({ url: "/dashboard.html" })}
+				onClick={() =>
+					chrome.runtime.sendMessage({
+						target: "new",
+						url: "/pages/dashboard.html",
+					})
+				}
 			>
 				Abrir dashboard
 			</Button>
