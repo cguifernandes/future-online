@@ -1,4 +1,3 @@
-import toast from "react-hot-toast";
 import type { Audio, Funil, Gatilho, Mensagem, Midia } from "../type/type";
 import { v4 as uuidv4 } from "uuid";
 
@@ -70,41 +69,29 @@ export const storeBlobInIndexedDB = (blob: Blob): Promise<string> => {
 		};
 
 		dbRequest.onsuccess = async (event) => {
-			try {
-				const db = (event.target as IDBOpenDBRequest).result;
+			const db = (event.target as IDBOpenDBRequest).result;
 
-				const { quota, usage } = await navigator.storage.estimate();
-				const remainingSpace = quota - usage;
-				const blobSize = blob.size;
+			const { quota, usage } = await navigator.storage.estimate();
+			const remainingSpace = quota - usage;
+			const blobSize = blob.size;
 
-				if (remainingSpace < blobSize) {
-					toast.error(
-						"Espaço insuficiente para armazenar este arquivo, apague mídias para conseguir salvar novas mídias",
-						{
-							position: "bottom-right",
-							className: "text-base ring-2 ring-[#1F2937]",
-							duration: 5000,
-						},
-					);
-					throw new Error(
-						"Espaço insuficiente para armazenar este arquivo, apague mídias para conseguir salvar novas mídias.",
-					);
-				}
-
-				const transaction = db.transaction(storeName, "readwrite");
-				const objectStore = transaction.objectStore(storeName);
-				const request = objectStore.add({ blob });
-
-				request.onsuccess = () => {
-					resolve(request.result.toString());
-				};
-
-				request.onerror = (event) => {
-					reject((event.target as IDBRequest).error);
-				};
-			} catch (error) {
-				reject(error);
+			if (remainingSpace < blobSize) {
+				reject(
+					"Espaço insuficiente para armazenar este arquivo, apague mídias para conseguir salvar novas mídias",
+				);
 			}
+
+			const transaction = db.transaction(storeName, "readwrite");
+			const objectStore = transaction.objectStore(storeName);
+			const request = objectStore.add({ blob });
+
+			request.onsuccess = () => {
+				resolve(request.result.toString());
+			};
+
+			request.onerror = (event) => {
+				reject((event.target as IDBRequest).error);
+			};
 		};
 
 		dbRequest.onerror = (event) => {
@@ -122,23 +109,15 @@ export const removeStorage = (fileName: string) => {
 				const data = await response.json();
 
 				if (response.status >= 400 && response.status < 600) {
-					toast.error(data.message ?? "Ocorreu um erro ao remover a imagem", {
-						position: "bottom-right",
-						className: "text-base ring-2 ring-[#1F2937]",
-						duration: 5000,
-					});
+					reject(data.message ?? "Ocorreu um erro ao remover a imagem");
 					return;
 				}
 
 				resolve(data.message);
 			})
 			.catch((err) => {
-				toast.error("Ocorreu um erro ao excluir a imagem", {
-					position: "bottom-right",
-					className: "text-base ring-2 ring-[#1F2937]",
-					duration: 5000,
-				});
-				reject(err);
+				console.log(err);
+				reject("Ocorreu um erro ao excluir a imagem");
 			});
 	});
 };
@@ -235,8 +214,7 @@ export const uploadFileOnS3 = (
 				resolve(data.data);
 			})
 			.catch((error) => {
-				console.log(error);
-				reject("Erro ao fazer upload do arquivo:");
+				reject(error);
 			});
 	});
 };

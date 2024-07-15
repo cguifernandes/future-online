@@ -22,6 +22,7 @@ module.exports = {
 		"content/wpp": path.resolve(__dirname, "src/content/wpp.js"),
 		utils: path.resolve(__dirname, "src/utils/utils.tsx"),
 		"content/injector": path.resolve(__dirname, "src/content/injector.ts"),
+		"content/utils": path.resolve(__dirname, "src/content/utils.ts"),
 	},
 	module: {
 		rules: [
@@ -69,7 +70,14 @@ module.exports = {
 				},
 			],
 		}),
-		...getHtmlPlugins(["popup", "dashboard", "login", "panel", "config"]),
+		...getHtmlPlugins([
+			"popup",
+			"dashboard",
+			"login",
+			"panel",
+			"config",
+			"button",
+		]),
 		new Dotenv(),
 	],
 	resolve: {

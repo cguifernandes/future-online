@@ -34,7 +34,7 @@
 }
 
 .loading-overlay {
-  @apply absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70 z-50
+  @apply absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/60 z-50
 }
 
 .loading-text {
@@ -52,16 +52,16 @@
 
 .item-pattern-future-online {
   background-color: #202C33;
-  @apply p-4 flex gap-x-3 relative z-50 max-h-40 overflow-y-auto;
+  @apply p-4 flex gap-x-3 relative z-50 max-h-40;
 }
 
 .item-pattern-future-online button {
   font-family: "Poppins", sans-serif !important;
-  @apply px-2 py-1 rounded-lg text-sm text-white w-fit truncate max-w-[140px]
+  @apply px-2 py-1 rounded-lg text-sm text-white w-fit truncate max-w-[120px]
 }
 
 .item-message-future-online {
-  @apply flex flex-col gap-y-2 h-full min-w-[20%]
+  @apply flex flex-col gap-y-2 min-w-[22.5%] overflow-y-auto
 }
 
 .item-title-future-online {
@@ -69,26 +69,30 @@
   @apply text-white text-lg font-bold
 }
 
-.button-message-future-online {
-  @apply bg-purple-500 hover:bg-purple-600
+.button-mensagens-future-online {
+  @apply bg-purple-500 hover:bg-purple-600 min-h-7
 }
 
 .button-midias-future-online {
-  @apply bg-green-500 hover:bg-green-600
-}
-
-.error-message-future-online {
-  @apply h-full text-sm
+  @apply bg-green-500 hover:bg-green-600 min-h-7
 }
 
 .button-audios-future-online {
-  @apply bg-blue-500 hover:bg-blue-600
+  @apply bg-blue-500 hover:bg-blue-600 min-h-7
 }
 
 .button-funis-future-online {
-  @apply bg-yellow-500 hover:bg-yellow-600
+  @apply bg-yellow-500 hover:bg-yellow-600 min-h-7
 }
 
-.expired-license-text {
-  @apply text-lg font-bold !text-white
+.error-message-future-online {
+  @apply flex flex-col gap-y-px
+}
+
+.error-message-future-online > span {
+  @apply text-lg text-white font-bold
+}
+
+.error-message-future-online > p {
+  @apply text-sm text-white/60
 }

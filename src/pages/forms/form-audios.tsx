@@ -87,16 +87,27 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			let preview = "";
 
 			if (formData.audio?.blob) {
-				const { account } = await chrome.storage.sync.get("account");
-				const blobId = await storeBlobInIndexedDB(formData.audio.blob);
-				const fileUrl = await uploadFileOnS3(
-					formData.audio.blob,
-					formData.audio.fileName,
-					`${account ?? "guest"}/`,
-				);
+				try {
+					const { account } = await chrome.storage.sync.get("account");
+					const blobId = await storeBlobInIndexedDB(formData.audio.blob);
+					const fileUrl = await uploadFileOnS3(
+						formData.audio.blob,
+						formData.audio.fileName,
+						`${account ?? "guest"}/`,
+					);
 
-				preview = blobId;
-				url = fileUrl;
+					preview = blobId;
+					url = fileUrl;
+				} catch (e) {
+					console.log(e);
+					toast.error("Ocorreu um erro ao fazer o upload do arquivo", {
+						position: "bottom-right",
+						className: "text-base ring-2 ring-[#1F2937]",
+						duration: 5000,
+					});
+
+					return;
+				}
 			}
 
 			const updatedItem: Audio = {

@@ -71,6 +71,14 @@ export interface Gatilho {
 	id?: string;
 }
 
+export interface StorageData {
+	mensagens: Mensagem[];
+	midias: Midia[];
+	funis: Funil[];
+	audios: Audio[];
+	account: string | null;
+}
+
 export interface Client {
 	id: string;
 	name?: string;
