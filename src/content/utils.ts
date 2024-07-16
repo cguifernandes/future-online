@@ -204,8 +204,6 @@ export const loadItens = async ({
 }) => {
 	if (type === "account") return;
 
-	const order = ["mensagens", "audios", "midias", "funis"];
-
 	const existPattern = pattern.querySelector(
 		`div.item-message-future-online.${type}`,
 	);
@@ -224,6 +222,7 @@ export const loadItens = async ({
 	});
 
 	content.className = `item-message-future-online ${type}`;
+	const order = ["mensagens", "midias", "audios", "funis"];
 
 	let insertBeforeElement: HTMLElement | null = null;
 	for (const t of order) {
@@ -387,7 +386,10 @@ export const loadStorageData = async (key: string): Promise<any[]> => {
 	});
 };
 
-export const showErrorMessage = () => {
+export const showErrorMessage = (
+	message: string,
+	subMessage = "Chame nosso suporte ou contrate um novo plano!",
+) => {
 	const pattern = document.querySelector(".item-pattern-future-online");
 	if (!pattern) return;
 
@@ -395,16 +397,26 @@ export const showErrorMessage = () => {
 		pattern.removeChild(pattern.firstChild);
 	}
 
-	const messagePattern = document.createElement("div");
-	messagePattern.className = "error-message-future-online";
+	let messagePattern = pattern.querySelector(
+		".error-message-future-online",
+	) as HTMLDivElement;
+
+	if (!messagePattern) {
+		messagePattern = document.createElement("div");
+		messagePattern.className = "error-message-future-online";
+		pattern.appendChild(messagePattern);
+	}
+
+	while (messagePattern.firstChild) {
+		messagePattern.removeChild(messagePattern.firstChild);
+	}
 
 	const primaryMessage = document.createElement("span");
-	primaryMessage.innerText = "Sua licença expirou 🥹";
+	primaryMessage.innerText = message;
 
 	const secondMessage = document.createElement("p");
-	secondMessage.innerText = "Chame nosso suporte ou contrate um novo plano!";
+	secondMessage.innerText = subMessage;
 
-	pattern.appendChild(messagePattern);
 	messagePattern.appendChild(primaryMessage);
 	messagePattern.appendChild(secondMessage);
 };
@@ -453,11 +465,14 @@ export const revalidateStorage = async (
 	};
 
 	differences.forEach(async (diff) => {
+		if (diff.type === "account") return;
+
 		const data = await loadStorageData(diff.type);
 		const pattern = document.querySelector(
 			".item-pattern-future-online",
 		) as HTMLDivElement;
-		const item: Midia | Audio | Funil | Mensagem = data.find(
+
+		const item: Midia | Audio | Funil | Mensagem = data?.find(
 			(item) => item.id === diff.id,
 		);
 		if (!pattern) return;
@@ -506,6 +521,10 @@ export const revalidateStorage = async (
 				while (content.firstChild) {
 					content.removeChild(content.firstChild);
 				}
+			}
+
+			if (content) {
+				content.remove();
 			}
 		} else if (diff.action === "changed") {
 			const content = pattern.querySelector(
@@ -600,7 +619,7 @@ const findDifferences = (
 					const item1Funil = item1 as Funil;
 					const item2Funil = item2 as Funil;
 
-					const itemChanged = item1Funil.item.some((item, index) => {
+					const itemChanged = item1Funil.item?.some((item, index) => {
 						const otherItem = item2Funil.item[index];
 						return (
 							item.selectedId !== otherItem.selectedId ||
@@ -612,7 +631,7 @@ const findDifferences = (
 
 					if (
 						item1Funil.title !== item2Funil.title ||
-						item1Funil.item.length !== item2Funil.item.length ||
+						item1Funil.item?.length !== item2Funil.item?.length ||
 						itemChanged
 					) {
 						differences.push({ id, type, action: "changed" });

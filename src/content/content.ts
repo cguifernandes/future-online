@@ -69,6 +69,26 @@ const loadButton = () => {
 	});
 };
 
+const createOrAppendPattern = (footer: HTMLElement): HTMLDivElement => {
+	let pattern = footer.querySelector(
+		".item-pattern-future-online",
+	) as HTMLDivElement;
+
+	if (!pattern) {
+		pattern = document.createElement("div");
+		pattern.className = "item-pattern-future-online";
+		footer.appendChild(pattern);
+
+		setTimeout(() => {
+			if (!footer.contains(pattern)) {
+				footer.appendChild(pattern);
+			}
+		}, 100);
+	}
+
+	return pattern;
+};
+
 const processDataType = (
 	dataType: "mensagens" | "audios" | "midias" | "funis",
 	data: Mensagem[] | Audio[] | Midia[] | Funil[],
@@ -99,6 +119,39 @@ const processDataType = (
 const validateData = async (data: StorageData) => {
 	const isNonEmptyArray = (arr: any[]) => Array.isArray(arr) && arr.length > 0;
 
+	const main = document.querySelector("div#main");
+	if (!main) return;
+
+	const footer = main.querySelector("footer");
+	if (!footer) return;
+
+	const pattern = createOrAppendPattern(footer);
+	if (!pattern) return;
+
+	const messagePattern = pattern.querySelector(
+		".error-message-future-online",
+	) as HTMLDivElement;
+
+	if (messagePattern) return;
+
+	if (!data.account.isLogin) {
+		showErrorMessage("Você precisa fazer login para usar o Future Online");
+		return;
+	}
+
+	if (data.account.isLogin && data.account.licenseDate) {
+		const licenseDate = data.account.licenseDate;
+		const [day, month, year] = licenseDate.split("/");
+		const convertDate = new Date(Number(year), Number(month) - 1, Number(day));
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		if (convertDate < today) {
+			showErrorMessage("A data de licença já expirou");
+			return;
+		}
+	}
+
 	if (
 		!data ||
 		(!isNonEmptyArray(data?.funis) &&
@@ -106,42 +159,16 @@ const validateData = async (data: StorageData) => {
 			!isNonEmptyArray(data?.midias) &&
 			!isNonEmptyArray(data?.audios))
 	) {
-		return;
-	}
-
-	const main = document.querySelector("div#main");
-	if (!main) return;
-
-	const footer = main.querySelector("footer");
-	if (!footer) return;
-
-	let pattern = footer.querySelector(
-		".item-pattern-future-online",
-	) as HTMLDivElement;
-
-	if (pattern) return;
-
-	pattern = document.createElement("div");
-	pattern.className = "item-pattern-future-online";
-	footer.appendChild(pattern);
-
-	setTimeout(() => {
-		if (!footer.contains(pattern)) {
-			footer.appendChild(pattern);
-		}
-	}, 100);
-
-	if (!data.account.isLogin) {
-		showErrorMessage();
+		showErrorMessage(
+			"Sem nenhum item criado",
+			"Crie uma conta e adiciona itens.",
+		);
 		return;
 	}
 
 	processDataType("mensagens", data.mensagens, pattern);
-
 	processDataType("audios", data.audios, pattern);
-
 	processDataType("midias", data.midias, pattern);
-
 	processDataType("funis", data.funis, pattern);
 };
 
@@ -151,16 +178,19 @@ window.addEventListener("loadWpp", async () => {
 	});
 
 	let data = (await chrome.storage.sync.get()) as StorageData;
-	const convertDate = new Date(data.account.licenseDate);
-
-	console.log(data);
 
 	waitForElement("div#main", () => {
-		const observer = new MutationObserver(() => {
-			validateData(data);
-		});
+		const observer = new MutationObserver(() => validateData(data));
 
 		setInterval(async () => {
+			const revalidateData = await revalidateStorage(data);
+			if (revalidateData.passDifference) {
+				data = revalidateData.data;
+			}
+
+			const isNonEmptyArray = (arr: any[]) =>
+				Array.isArray(arr) && arr.length > 0;
+
 			const main = document.querySelector("div#main");
 			if (!main) return;
 
@@ -171,38 +201,42 @@ window.addEventListener("loadWpp", async () => {
 				".item-pattern-future-online",
 			) as HTMLDivElement;
 
-			console.log(convertDate.getDay() < new Date().getDay());
+			if (!pattern) createOrAppendPattern(footer);
+
 			if (!data?.account.isLogin) {
-				data = (await chrome.storage.sync.get()) as StorageData;
-
-				if (!pattern) {
-					const pattern = document.createElement("div");
-					pattern.className = "item-pattern-future-online";
-					footer.appendChild(pattern);
-
-					setTimeout(() => {
-						if (!footer.contains(pattern)) {
-							footer.appendChild(pattern);
-						}
-					}, 100);
-				}
-
-				showErrorMessage();
+				showErrorMessage("Você precisa fazer login para usar o Future Online");
 				return;
 			}
 
-			while (pattern.firstChild) {
-				pattern.removeChild(pattern.firstChild);
+			if (data.account.isLogin && data.account.licenseDate) {
+				const licenseDate = data.account.licenseDate;
+				const [day, month, year] = licenseDate.split("/");
+				const convertDate = new Date(
+					Number(year),
+					Number(month) - 1,
+					Number(day),
+				);
+				const today = new Date();
+				today.setHours(0, 0, 0, 0);
+
+				if (convertDate < today) {
+					showErrorMessage("A data de licença já expirou");
+					return;
+				}
 			}
 
-			processDataType("mensagens", data.mensagens, pattern);
-			processDataType("audios", data.audios, pattern);
-			processDataType("midias", data.midias, pattern);
-			processDataType("funis", data.funis, pattern);
-
-			const revalidateData = await revalidateStorage(data);
-			if (revalidateData.passDifference) {
-				data = revalidateData.data;
+			if (
+				!data ||
+				(!isNonEmptyArray(data?.funis) &&
+					!isNonEmptyArray(data?.mensagens) &&
+					!isNonEmptyArray(data?.midias) &&
+					!isNonEmptyArray(data?.audios))
+			) {
+				showErrorMessage(
+					"Sem nenhum item criado",
+					"Crie uma conta e adiciona itens.",
+				);
+				return;
 			}
 		}, 2500);
 
