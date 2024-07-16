@@ -4,13 +4,20 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { Funil, Gatilho } from "../../type/type";
 import Input from "../components/input";
-import { getItem, removeItem } from "../../utils/utils";
+import {
+	deleteItemDatabase,
+	getItem,
+	getUserIdWithToken,
+	putItemDatabase,
+	removeItem,
+} from "../../utils/utils";
 import { Trash2 } from "lucide-react";
 import Button from "../components/button";
 import Select from "../components/select";
 import Switch from "../components/switch";
 import Keywords from "../components/keywords";
 import toast from "react-hot-toast";
+import Spinner from "../components/spinner";
 
 interface Props {
 	contentItem: Gatilho;
@@ -24,6 +31,7 @@ interface Props {
 
 const Form = ({ contentItem, setContentItem, setData }: Props) => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingRemove, setIsLoadingRemove] = useState(false);
 	const [funis, setFunis] = useState<{
 		itens: Funil[];
 	}>({ itens: [] });
@@ -140,9 +148,20 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		}
 	}, [contentItem, reset]);
 
-	const handlerSubmit = (data: z.infer<typeof schema>) => {
-		if (contentItem) {
-			const updatedItem: Gatilho = { ...contentItem, ...data };
+	const handlerSubmit = async (formData: z.infer<typeof schema>) => {
+		setIsLoading(true);
+		try {
+			const updatedItem: Gatilho = { ...contentItem, ...formData };
+			const clientId = await getUserIdWithToken();
+
+			await putItemDatabase(
+				"gatilho",
+				JSON.stringify({
+					id: contentItem.databaseId,
+					clientId: clientId.id,
+					newGatilho: formData,
+				}),
+			);
 
 			chrome.storage.sync.get("gatilhos", (result) => {
 				const gatilhos = result.gatilhos || [];
@@ -163,6 +182,15 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					);
 				});
 			});
+		} catch (e) {
+			console.log(e);
+			toast.error("Falha ao salvar alterações", {
+				position: "bottom-right",
+				className: "text-base ring-2 ring-[#E53E3E]",
+				duration: 5000,
+			});
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -185,12 +213,38 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				<button
 					type="button"
 					onClick={async () => {
-						setData({ itens: await removeItem(contentItem, "gatilhos") });
-						setContentItem(undefined);
+						try {
+							setIsLoading(true);
+							const clientId = await getUserIdWithToken();
+
+							deleteItemDatabase(
+								"gatilho",
+								clientId.id,
+								contentItem.databaseId,
+							).catch((e) => {
+								console.log(e);
+								toast.error("Falha ao salvar alterações", {
+									position: "bottom-right",
+									className: "text-base ring-2 ring-[#E53E3E]",
+									duration: 5000,
+								});
+								setIsLoadingRemove(false);
+								return;
+							});
+
+							setData({ itens: await removeItem(contentItem, "gatilhos") });
+							setContentItem(undefined);
+						} finally {
+							setIsLoadingRemove(false);
+						}
 					}}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
-					<Trash2 color="#fff" size={24} strokeWidth={1.5} />
+					{isLoadingRemove ? (
+						<Spinner />
+					) : (
+						<Trash2 color="#fff" size={24} strokeWidth={1.5} />
+					)}
 				</button>
 			</div>
 			<div className="flex-1 flex flex-col gap-y-2 h-full w-full">

@@ -5,7 +5,10 @@ import File from "../components/file";
 import Textarea from "../components/textarea";
 import {
 	ACCEPT_FILES_TYPE,
+	deleteItemDatabase,
 	FILES_TYPE,
+	getUserIdWithToken,
+	putItemDatabase,
 	removeItem,
 	storeBlobInIndexedDB,
 	uploadFileOnS3,
@@ -67,10 +70,10 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 		reValidateMode: "onSubmit",
 		resolver: zodResolver(schema),
 		defaultValues: {
-			title: "Novo contéudo" || contentItem.title,
+			title: "Novo conteúdo" || contentItem.title,
 			file: {
 				blob: undefined,
-				subtitle: "" || contentItem.file.subtitle,
+				subtitle: "" || contentItem.file?.subtitle,
 				type: "" || contentItem.file.type,
 			},
 		},
@@ -81,18 +84,36 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 			title: contentItem.title,
 			file: {
 				blob: undefined,
-				subtitle: "" || contentItem.file.subtitle,
+				subtitle: "" || contentItem.file?.subtitle,
 				type: "" || contentItem.file.type,
 			},
 		});
 	}, [contentItem, reset]);
 
 	const handlerSubmit = async (formData: z.infer<typeof schema>) => {
-		try {
-			setIsLoading(true);
+		setIsLoading(true);
 
+		try {
 			let url = "";
 			let preview = "";
+
+			const clientId = await getUserIdWithToken();
+			await putItemDatabase(
+				"midia",
+				JSON.stringify({
+					id: contentItem.databaseId,
+					clientId: clientId.id,
+					newMidia: {
+						title: formData.title,
+						file: {
+							subtitle: formData.file.subtitle,
+							url: url !== "" ? url : contentItem.file.url,
+							preview: preview !== "" ? preview : contentItem.file.preview,
+							type: formData.file.type,
+						},
+					},
+				}),
+			);
 
 			if (formData.file && formData.file.blob) {
 				const { account } = await chrome.storage.sync.get("account");
@@ -136,8 +157,14 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					);
 				});
 			});
-		} catch (error) {
-			console.log(error);
+		} catch (e) {
+			console.log(e);
+			toast.error("Falha ao salvar alterações", {
+				position: "bottom-right",
+				className: "text-base ring-2 ring-[#E53E3E]",
+				duration: 5000,
+			});
+			return;
 		} finally {
 			setIsLoading(false);
 		}
@@ -163,6 +190,23 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					onClick={async () => {
 						try {
 							setIsLoadingRemove(true);
+							const clientId = await getUserIdWithToken();
+
+							deleteItemDatabase(
+								"midia",
+								clientId.id,
+								contentItem.databaseId,
+							).catch((e) => {
+								console.log(e);
+								toast.error("Falha ao excluir um item", {
+									position: "bottom-right",
+									className: "text-base ring-2 ring-[#E53E3E]",
+									duration: 5000,
+								});
+								setIsLoadingRemove(false);
+								return;
+							});
+
 							setData({ itens: await removeItem(contentItem, "midias") });
 						} finally {
 							setContentItem(undefined);

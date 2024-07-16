@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
 import Button from "../components/button";
-import { addItem, getItem } from "../../utils/utils";
+import {
+	addItem,
+	getItem,
+	getUserIdWithToken,
+	postItemDatabase,
+} from "../../utils/utils";
 import { Audio } from "../../type/type";
 import clsx from "clsx";
 import { Plus } from "lucide-react";
 import Form from "../forms/form-audios";
+import toast from "react-hot-toast";
+import Spinner from "../components/spinner";
 
 const Audios = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingCreate, setIsLoadingCreate] = useState(false);
 	const [contentItem, setContentItem] = useState<Audio>(undefined);
 	const [data, setData] = useState<{
 		itens: Audio[];
@@ -24,6 +32,50 @@ const Audios = () => {
 				setIsLoading(false);
 			});
 	}, []);
+
+	const handlerClickAdd = async () => {
+		setIsLoadingCreate(true);
+		const clientId = await getUserIdWithToken();
+
+		postItemDatabase(
+			"audio",
+			clientId.id,
+			JSON.stringify({
+				title: "Novo conteúdo",
+				audio: {
+					url: "",
+					preview: "",
+				},
+			}),
+		)
+			.then((response) => {
+				setData({
+					itens: addItem<Audio>(
+						{
+							title: "Novo conteúdo",
+							audio: {
+								url: "",
+								preview: "",
+							},
+							type: "audios",
+						},
+						data,
+						response.data.id,
+					),
+				});
+			})
+			.catch((e) => {
+				console.log(e);
+				toast.error("Falha ao salvar alterações", {
+					position: "bottom-right",
+					className: "text-base ring-2 ring-[#E53E3E]",
+					duration: 5000,
+				});
+			})
+			.finally(() => {
+				setIsLoadingCreate(false);
+			});
+	};
 
 	return (
 		<>
@@ -59,25 +111,17 @@ const Audios = () => {
 							<Button
 								type="button"
 								theme="blue-dark"
-								className="hover:bg-blue-700"
-								onClick={() =>
-									setData({
-										itens: addItem<Audio>(
-											{
-												title: "Novo conteúdo",
-												audio: {
-													url: "",
-													preview: "",
-												},
-												type: "audios",
-											},
-											data,
-										),
-									})
+								className="hover:bg-blue-700 min-w-36 flex items-center justify-center"
+								onClick={handlerClickAdd}
+								icon={
+									isLoadingCreate ? undefined : <Plus size={18} color="#fff" />
 								}
-								icon={<Plus size={18} color="#fff" />}
 							>
-								Novo item
+								{isLoadingCreate ? (
+									<Spinner className="fill-purple-800" />
+								) : (
+									"Novo item"
+								)}
 							</Button>
 						</div>
 					</>
@@ -91,24 +135,17 @@ const Audios = () => {
 							<Button
 								type="button"
 								theme="blue-dark"
-								onClick={() =>
-									setData({
-										itens: addItem<Audio>(
-											{
-												title: "Novo conteúdo",
-												audio: {
-													url: "",
-													preview: "",
-												},
-												type: "audios",
-											},
-											data,
-										),
-									})
+								className="min-w-36 flex items-center justify-center"
+								onClick={handlerClickAdd}
+								icon={
+									isLoadingCreate ? undefined : <Plus size={18} color="#fff" />
 								}
-								icon={<Plus size={18} color="#fff" />}
 							>
-								Novo item
+								{isLoadingCreate ? (
+									<Spinner className="fill-purple-800" />
+								) : (
+									"Novo item"
+								)}
 							</Button>
 						</div>
 					</div>

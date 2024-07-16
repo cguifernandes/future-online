@@ -3,11 +3,20 @@ import Button from "../components/button";
 import clsx from "clsx";
 import Form from "../forms/form-messages";
 import type { Mensagem } from "../../type/type";
-import { addItem, getItem } from "../../utils/utils";
+import {
+	addItem,
+	getItem,
+	getUserIdWithToken,
+	postItemDatabase,
+	url,
+} from "../../utils/utils";
 import { Plus } from "lucide-react";
+import Spinner from "../components/spinner";
+import toast from "react-hot-toast";
 
 const Messages = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingCreate, setIsLoadingCreate] = useState(false);
 	const [contentItem, setContentItem] = useState<Mensagem>(undefined);
 	const [data, setData] = useState<{
 		itens: Mensagem[];
@@ -15,6 +24,13 @@ const Messages = () => {
 
 	useEffect(() => {
 		setIsLoading(true);
+
+		fetch(`${url}/api/client?limit=4&page=1`, {
+			method: "GET",
+		}).then(async (data) => {
+			const response = await data.json();
+			console.log(response);
+		});
 
 		getItem<Mensagem>("mensagens")
 			.then((data) => {
@@ -24,6 +40,45 @@ const Messages = () => {
 				setIsLoading(false);
 			});
 	}, []);
+
+	const handlerClickAdd = async () => {
+		setIsLoadingCreate(true);
+		const clientId = await getUserIdWithToken();
+
+		postItemDatabase(
+			"mensagem",
+			clientId.id,
+			JSON.stringify({
+				content: "Novo item",
+				title: "Novo conteúdo",
+			}),
+		)
+			.then((response) => {
+				setData({
+					itens: addItem<Mensagem>(
+						{
+							content: "Novo item",
+							title: "Novo conteúdo",
+							type: "mensagens",
+							id: "",
+						},
+						data,
+						response.data.id,
+					),
+				});
+			})
+			.catch((e) => {
+				console.log(e);
+				toast.error("Falha ao salvar alterações", {
+					position: "bottom-right",
+					className: "text-base ring-2 ring-[#E53E3E]",
+					duration: 5000,
+				});
+			})
+			.finally(() => {
+				setIsLoadingCreate(false);
+			});
+	};
 
 	return (
 		<>
@@ -61,23 +116,17 @@ const Messages = () => {
 							<Button
 								type="button"
 								theme="purple-dark"
-								className="hover:bg-purple-800"
-								onClick={() =>
-									setData({
-										itens: addItem<Mensagem>(
-											{
-												content: "Novo item",
-												title: "Novo conteúdo",
-												type: "mensagens",
-												id: "",
-											},
-											data,
-										),
-									})
+								className="hover:bg-purple-800 min-w-36 flex items-center justify-center"
+								onClick={handlerClickAdd}
+								icon={
+									isLoadingCreate ? undefined : <Plus size={18} color="#fff" />
 								}
-								icon={<Plus size={18} color="#fff" />}
 							>
-								Novo item
+								{isLoadingCreate ? (
+									<Spinner className="fill-purple-800" />
+								) : (
+									"Novo item"
+								)}
 							</Button>
 						</div>
 					</>
@@ -91,22 +140,17 @@ const Messages = () => {
 							<Button
 								type="button"
 								theme="purple-dark"
-								onClick={() =>
-									setData({
-										itens: addItem<Mensagem>(
-											{
-												content: "Novo item",
-												title: "Novo conteúdo",
-												type: "mensagens",
-												id: "",
-											},
-											data,
-										),
-									})
+								className="min-w-36 flex items-center justify-center"
+								onClick={handlerClickAdd}
+								icon={
+									isLoadingCreate ? undefined : <Plus size={18} color="#fff" />
 								}
-								icon={<Plus size={18} color="#fff" />}
 							>
-								Novo item
+								{isLoadingCreate ? (
+									<Spinner className="fill-purple-800" />
+								) : (
+									"Novo item"
+								)}
 							</Button>
 						</div>
 					</div>

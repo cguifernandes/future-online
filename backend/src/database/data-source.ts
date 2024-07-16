@@ -10,7 +10,7 @@ export const AppDataSource = new DataSource({
 	database: "future-online",
 	synchronize: true,
 	logging: false,
-	entities: ["src/database/entites/**/*.ts"],
+	entities: ["src/database/entities/**/*.ts"],
 	migrations: ["src/database/migrations/**/*.ts"],
 	subscribers: ["src/database/subscribers/**/*.ts"],
 });

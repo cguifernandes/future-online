@@ -1,9 +1,14 @@
-const Spinner = () => {
+import clsx from "clsx";
+
+const Spinner = ({ className }: { className?: string }) => {
 	return (
 		<div role="status">
 			<svg
 				aria-hidden="true"
-				className="w-6 h-6 text-white animate-spin  fill-aqua-100"
+				className={clsx(
+					"w-6 h-6 text-white animate-spin fill-white",
+					className,
+				)}
 				viewBox="0 0 100 101"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"

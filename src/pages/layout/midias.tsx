@@ -3,11 +3,19 @@ import Button from "../components/button";
 import clsx from "clsx";
 import Form from "../forms/form-midias";
 import type { Midia } from "../../type/type";
-import { addItem, getItem } from "../../utils/utils";
+import {
+	addItem,
+	getItem,
+	getUserIdWithToken,
+	postItemDatabase,
+} from "../../utils/utils";
 import { Plus } from "lucide-react";
+import Spinner from "../components/spinner";
+import toast from "react-hot-toast";
 
 const Midias = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingCreate, setIsLoadingCreate] = useState(false);
 	const [data, setData] = useState<{
 		itens: Midia[];
 	}>({ itens: [] });
@@ -24,6 +32,44 @@ const Midias = () => {
 				setIsLoading(false);
 			});
 	}, []);
+
+	const handlerClickAdd = async () => {
+		setIsLoadingCreate(true);
+		const clientId = await getUserIdWithToken();
+
+		postItemDatabase(
+			"midia",
+			clientId.id,
+			JSON.stringify({
+				title: "Novo conteúdo",
+				file: { url: "", subtitle: "", preview: "", type: "" },
+			}),
+		)
+			.then((response) => {
+				setData({
+					itens: addItem<Midia>(
+						{
+							title: "Novo conteúdo",
+							file: { url: "", subtitle: "", preview: "", type: "" },
+							type: "midias",
+						},
+						data,
+						response.data.id,
+					),
+				});
+			})
+			.catch((e) => {
+				console.log(e);
+				toast.error("Falha ao salvar alterações", {
+					position: "bottom-right",
+					className: "text-base ring-2 ring-[#E53E3E]",
+					duration: 5000,
+				});
+			})
+			.finally(() => {
+				setIsLoadingCreate(false);
+			});
+	};
 
 	return (
 		<>
@@ -59,22 +105,17 @@ const Midias = () => {
 							<Button
 								type="button"
 								theme="green-dark"
-								className="hover:bg-green-700"
-								onClick={() =>
-									setData({
-										itens: addItem<Midia>(
-											{
-												title: "Novo conteúdo",
-												file: { url: "", subtitle: "", preview: "", type: "" },
-												type: "midias",
-											},
-											data,
-										),
-									})
+								className="hover:bg-green-700 min-w-36 flex items-center justify-center"
+								onClick={handlerClickAdd}
+								icon={
+									isLoadingCreate ? undefined : <Plus size={18} color="#fff" />
 								}
-								icon={<Plus size={18} color="#fff" />}
 							>
-								Novo item
+								{isLoadingCreate ? (
+									<Spinner className="fill-purple-800" />
+								) : (
+									"Novo item"
+								)}
 							</Button>
 						</div>
 					</>
@@ -88,21 +129,17 @@ const Midias = () => {
 							<Button
 								type="button"
 								theme="green-dark"
-								onClick={() =>
-									setData({
-										itens: addItem<Midia>(
-											{
-												title: "Novo conteúdo",
-												file: { url: "", subtitle: "", preview: "", type: "" },
-												type: "midias",
-											},
-											data,
-										),
-									})
+								className="min-w-36 flex items-center justify-center"
+								onClick={handlerClickAdd}
+								icon={
+									isLoadingCreate ? undefined : <Plus size={18} color="#fff" />
 								}
-								icon={<Plus size={18} color="#fff" />}
 							>
-								Novo item
+								{isLoadingCreate ? (
+									<Spinner className="fill-purple-800" />
+								) : (
+									"Novo item"
+								)}
 							</Button>
 						</div>
 					</div>

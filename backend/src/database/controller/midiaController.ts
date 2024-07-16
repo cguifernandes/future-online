@@ -1,6 +1,11 @@
 import { Request, Response } from "express";
 import * as AWS from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
+import {
+	setMidia,
+	removeMidia as removeMidiaRepository,
+	updateMidia,
+} from "../repositories/midiaRepository";
 
 const s3 = new AWS.S3({
 	region: process.env.AWS_REGION ?? "",
@@ -69,4 +74,33 @@ export const removeMidia = (req: Request, res: Response) => {
 		console.error("Erro ao removar a imagem:", err);
 		res.status(500).json({ error: "Erro ao remover a imagem" });
 	}
+};
+
+export const setMidiaController = async (req: Request, res: Response) => {
+	const newMidia = req.body;
+	const { clientId }: { clientId: string } = req.query as {
+		clientId: string;
+	};
+	const client = await setMidia(newMidia, clientId);
+
+	res.status(client.status).json(client);
+};
+
+export const removeMidiaController = async (req: Request, res: Response) => {
+	const { id, clientId }: { id: string; clientId: string } = req.query as {
+		id: string;
+		clientId: string;
+	};
+
+	const removalResult = await removeMidiaRepository(id, clientId);
+
+	res.status(removalResult.status).json(removalResult);
+};
+
+export const updateMidiaController = async (req: Request, res: Response) => {
+	const { id, clientId, newMidia } = req.body;
+
+	const result = await updateMidia(id, clientId, newMidia);
+
+	res.status(result.status).json(result);
 };

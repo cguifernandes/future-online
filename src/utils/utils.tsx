@@ -280,6 +280,101 @@ export const generateThumbnail = (
 	});
 };
 
+export const getUserIdWithToken = async (): Promise<{ id: string }> => {
+	const token = localStorage.getItem("token");
+	const responseDecodedToken = await fetch(
+		`${url}/api/decoded-token?token=${token}`,
+	);
+
+	const decodedToken = await responseDecodedToken.json();
+
+	return decodedToken.data;
+};
+
+export const postItemDatabase = async (
+	item: "audio" | "funil" | "gatilho" | "midia" | "mensagem",
+	clientId: string,
+	body: any,
+): Promise<any> => {
+	return new Promise((resolve, reject) => {
+		try {
+			fetch(`${url}/api/client/${item}?clientId=${clientId}`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body,
+			}).then(async (response) => {
+				const data = await response.json();
+
+				if (response.status >= 400 && response.status < 600) {
+					reject(new Error("Falha ao criar um item"));
+				}
+
+				resolve(data);
+			});
+		} catch (error) {
+			console.error("Falha ao criar um item:", error);
+			reject(new Error("Falha ao criar um item"));
+		}
+	});
+};
+
+export const deleteItemDatabase = async (
+	item: "audio" | "funil" | "gatilho" | "midia" | "mensagem",
+	clientId: string,
+	id: string,
+): Promise<any> => {
+	return new Promise((resolve, reject) => {
+		try {
+			fetch(`${url}/api/client/${item}?id=${id}&clientId=${clientId}`, {
+				method: "DELETE",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			}).then(async (response) => {
+				const data = await response.json();
+
+				if (response.status >= 400 && response.status < 600) {
+					reject(new Error("Falha ao excluir um item"));
+				}
+				resolve(data);
+			});
+		} catch (error) {
+			console.error("Falha ao excluir um item:", error);
+			reject(new Error("Falha ao excluir um item"));
+		}
+	});
+};
+
+export const putItemDatabase = async (
+	item: "audio" | "funil" | "gatilho" | "midia" | "mensagem",
+	body: any,
+): Promise<any> => {
+	return new Promise((resolve, reject) => {
+		try {
+			fetch(`${url}/api/client/${item}`, {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body,
+			}).then(async (response) => {
+				const data = await response.json();
+
+				if (response.status >= 400 && response.status < 600) {
+					reject(new Error("Falha ao salvar alterações"));
+				}
+
+				resolve(data);
+			});
+		} catch (error) {
+			console.error("Erro ao salvar alterações:", error);
+			reject(new Error("Erro ao salvar alterações"));
+		}
+	});
+};
+
 export const getItemWithId = async (
 	id: string,
 	type: "midias" | "mensagens" | "funis" | "gatilhos",
@@ -337,8 +432,9 @@ type Item = Gatilho | Funil | Mensagem | Midia | Audio;
 export const addItem = <T extends Item>(
 	newItem: T,
 	data: { itens: T[] },
+	databaseId: string,
 ): T[] => {
-	const newItemWithId = { ...newItem, id: uuidv4() };
+	const newItemWithId = { ...newItem, databaseId, id: uuidv4() };
 	const newItens = [...data.itens, newItemWithId];
 
 	chrome.storage.sync.set({ [newItem.type.toLocaleLowerCase()]: newItens });

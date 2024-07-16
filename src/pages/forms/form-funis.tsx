@@ -5,10 +5,17 @@ import Button from "../components/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getFunilItem, removeItem } from "../../utils/utils";
+import {
+	deleteItemDatabase,
+	getFunilItem,
+	getUserIdWithToken,
+	putItemDatabase,
+	removeItem,
+} from "../../utils/utils";
 import { Image, Mail, Mic, Plus, Timer, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import toast from "react-hot-toast";
+import Spinner from "../components/spinner";
 
 interface Props {
 	contentItem: Funil;
@@ -29,6 +36,7 @@ const Form = ({
 }: Props) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isLoadingItem, setIsLoadingItem] = useState(false);
+	const [isLoadingRemove, setIsLoadingRemove] = useState(false);
 	const [dataItem, setDataItem] = useState<{
 		data: {
 			item: Midia | Mensagem;
@@ -85,9 +93,25 @@ const Form = ({
 		reset({ ...contentItem });
 	}, [contentItem, reset]);
 
-	const handlerSubmit = ({ title }: z.infer<typeof schema>) => {
+	const handlerSubmit = async (formData: z.infer<typeof schema>) => {
+		setIsLoading(true);
+
 		try {
-			const updatedItem: Funil = { ...contentItem, title };
+			const updatedItem: Funil = { ...contentItem, title: formData.title };
+			console.log(dataItem);
+
+			const clientId = await getUserIdWithToken();
+			await putItemDatabase(
+				"funil",
+				JSON.stringify({
+					id: contentItem.databaseId,
+					clientId: clientId.id,
+					newFunil: {
+						title: formData.title,
+						item: dataItem.data.map((item) => item),
+					},
+				}),
+			);
 
 			chrome.storage.sync.get("funis", (result) => {
 				const funis = result.funis || [];
@@ -108,20 +132,40 @@ const Form = ({
 					);
 				});
 			});
-		} catch (error) {
-			console.log(error);
+		} catch (e) {
+			console.log(e);
+			toast.error("Falha ao salvar alterações", {
+				position: "bottom-right",
+				className: "text-base ring-2 ring-[#E53E3E]",
+				duration: 5000,
+			});
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
 	const handlerRemoveFunilItem = (index: number) => {
-		chrome.storage.sync.get("funis", (result) => {
+		chrome.storage.sync.get("funis", async (result) => {
 			const funis: Funil[] = result.funis || [];
 			const funil = funis.find((i) => i.id === contentItem.id);
 
 			if (funil) {
 				funil.item.splice(index, 1);
+
+				const clientId = await getUserIdWithToken();
+
+				deleteItemDatabase("funil", clientId.id, contentItem.databaseId).catch(
+					(e) => {
+						console.log(e);
+						toast.error("Falha ao salvar alterações", {
+							position: "bottom-right",
+							className: "text-base ring-2 ring-[#E53E3E]",
+							duration: 5000,
+						});
+						setIsLoadingRemove(false);
+						return;
+					},
+				);
 
 				chrome.storage.sync.set({ funis }, () => {
 					setData({ itens: funis });
@@ -220,7 +264,11 @@ const Form = ({
 											onClick={() => handlerRemoveFunilItem(index)}
 											className="ml-auto flex items-center justify-center w-8 h-8 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 										>
-											<Trash2 color="#fff" size={20} strokeWidth={1.5} />
+											{isLoadingRemove ? (
+												<Spinner />
+											) : (
+												<Trash2 color="#fff" size={24} strokeWidth={1.5} />
+											)}
 										</button>
 									</div>
 								</div>

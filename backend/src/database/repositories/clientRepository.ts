@@ -1,6 +1,6 @@
 import { ILike } from "typeorm";
 import { AppDataSource } from "../data-source";
-import Client from "../entites/Client";
+import Client from "../entities/Client";
 import bcrypt from "bcrypt";
 import * as jwt from "jsonwebtoken";
 
@@ -26,6 +26,13 @@ export const getClients = async (limit: string, page: string) => {
 				date: "ASC",
 			},
 			skip: (currentPage - 1) * parsedLimit,
+			relations: {
+				audios: true,
+				gatilhos: true,
+				mensagens: true,
+				midias: true,
+				funis: true,
+			},
 		});
 
 		const count = await clientRepository.count({

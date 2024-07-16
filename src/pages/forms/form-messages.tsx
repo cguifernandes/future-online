@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Input from "../components/input";
 import Textarea from "../components/textarea";
 import Button from "../components/button";
@@ -7,8 +7,14 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
-import { removeItem } from "../../utils/utils";
+import {
+	deleteItemDatabase,
+	getUserIdWithToken,
+	putItemDatabase,
+	removeItem,
+} from "../../utils/utils";
 import toast from "react-hot-toast";
+import Spinner from "../components/spinner";
 
 interface Props {
 	contentItem: Mensagem;
@@ -21,6 +27,8 @@ interface Props {
 }
 
 const Form = ({ contentItem, setContentItem, setData }: Props) => {
+	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingRemove, setIsLoadingRemove] = useState(false);
 	const schema = z.object({
 		title: z.string(),
 		content: z.string(),
@@ -30,7 +38,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		reValidateMode: "onSubmit",
 		resolver: zodResolver(schema),
 		defaultValues: {
-			title: "Novo contéudo" || contentItem.title,
+			title: "Novo conteúdo" || contentItem.title,
 			content: "Novo item" || contentItem.content,
 		},
 	});
@@ -42,9 +50,25 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		});
 	}, [contentItem, reset]);
 
-	const handlerSubmit = ({ content, title }: z.infer<typeof schema>) => {
-		if (contentItem) {
-			const updatedItem = { ...contentItem, title, content };
+	const handlerSubmit = async (formData: z.infer<typeof schema>) => {
+		try {
+			setIsLoading(true);
+
+			const clientId = await getUserIdWithToken();
+			await putItemDatabase(
+				"mensagem",
+				JSON.stringify({
+					id: contentItem.databaseId,
+					clientId: clientId.id,
+					newMensagem: formData,
+				}),
+			);
+
+			const updatedItem = {
+				...contentItem,
+				title: formData.title,
+				content: formData.content,
+			};
 
 			chrome.storage.sync.get("mensagens", (result) => {
 				const mensagens = result.mensagens || [];
@@ -54,7 +78,10 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 
 				chrome.storage.sync.set({ mensagens: updatedItems }, () => {
 					setData({ itens: updatedItems });
-					setContentItem(updatedItem);
+					setContentItem((prev) => ({
+						...prev,
+						...updatedItem,
+					}));
 					toast.success(
 						"Alterações salvas. Por favor, atualize a página do WhatsApp para vê-las",
 						{
@@ -65,6 +92,16 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					);
 				});
 			});
+		} catch (e) {
+			console.log(e);
+			toast.error("Falha ao salvar alterações", {
+				position: "bottom-right",
+				className: "text-base ring-2 ring-[#E53E3E]",
+				duration: 5000,
+			});
+			return;
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -86,12 +123,38 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				<button
 					type="button"
 					onClick={async () => {
-						setData({ itens: await removeItem(contentItem, "mensagens") });
-						setContentItem(undefined);
+						try {
+							setIsLoading(true);
+							const clientId = await getUserIdWithToken();
+
+							deleteItemDatabase(
+								"mensagem",
+								clientId.id,
+								contentItem.databaseId,
+							).catch((e) => {
+								console.log(e);
+								toast.error("Falha ao salvar alterações", {
+									position: "bottom-right",
+									className: "text-base ring-2 ring-[#E53E3E]",
+									duration: 5000,
+								});
+								setIsLoadingRemove(false);
+								return;
+							});
+
+							setData({ itens: await removeItem(contentItem, "mensagens") });
+							setContentItem(undefined);
+						} finally {
+							setIsLoadingRemove(false);
+						}
 					}}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
-					<Trash2 color="#fff" size={24} strokeWidth={1.5} />
+					{isLoadingRemove ? (
+						<Spinner />
+					) : (
+						<Trash2 color="#fff" size={24} strokeWidth={1.5} />
+					)}
 				</button>
 			</div>
 			<Textarea
@@ -105,6 +168,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				<Button
 					type="submit"
 					theme="purple-light"
+					isLoading={isLoading}
 					className="hover:bg-purple-600 w-28"
 				>
 					Salvar

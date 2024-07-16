@@ -9,6 +9,9 @@ import { Audio } from "../../type/type";
 import {
 	ACCEPT_AUDIOS_TYPE,
 	AUDIOS_TYPE,
+	deleteItemDatabase,
+	getUserIdWithToken,
+	putItemDatabase,
 	removeItem,
 	storeBlobInIndexedDB,
 	uploadFileOnS3,
@@ -61,9 +64,9 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		reValidateMode: "onSubmit",
 		resolver: zodResolver(schema),
 		defaultValues: {
-			title: "Novo contéudo" || contentItem.title,
+			title: "Novo conteúdo" || contentItem.title,
 			audio: {
-				url: "" || contentItem.audio.url,
+				url: "" || contentItem.audio?.url,
 				blob: undefined,
 			},
 		},
@@ -73,41 +76,46 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		reset({
 			title: contentItem.title,
 			audio: {
-				url: contentItem.audio.url,
+				url: contentItem.audio?.url,
 				blob: undefined,
 			},
 		});
 	}, [contentItem, reset]);
 
 	const handlerSubmit = async (formData: z.infer<typeof schema>) => {
-		try {
-			setIsLoading(true);
+		setIsLoading(true);
 
+		try {
 			let url = "";
 			let preview = "";
 
+			const clientId = await getUserIdWithToken();
+			await putItemDatabase(
+				"audio",
+				JSON.stringify({
+					id: contentItem.databaseId,
+					clientId: clientId.id,
+					newAudio: {
+						title: formData.title,
+						audio: {
+							url: url !== "" ? url : contentItem.audio.url,
+							preview: preview !== "" ? preview : contentItem.audio.preview,
+						},
+					},
+				}),
+			);
+
 			if (formData.audio?.blob) {
-				try {
-					const { account } = await chrome.storage.sync.get("account");
-					const blobId = await storeBlobInIndexedDB(formData.audio.blob);
-					const fileUrl = await uploadFileOnS3(
-						formData.audio.blob,
-						formData.audio.fileName,
-						`${account.email ?? "guest"}/`,
-					);
+				const { account } = await chrome.storage.sync.get("account");
+				const blobId = await storeBlobInIndexedDB(formData.audio.blob);
+				const fileUrl = await uploadFileOnS3(
+					formData.audio.blob,
+					formData.audio.fileName,
+					`${account.email ?? "guest"}/`,
+				);
 
-					preview = blobId;
-					url = fileUrl;
-				} catch (e) {
-					console.log(e);
-					toast.error("Ocorreu um erro ao fazer o upload do arquivo", {
-						position: "bottom-right",
-						className: "text-base ring-2 ring-[#1F2937]",
-						duration: 5000,
-					});
-
-					return;
-				}
+				preview = blobId;
+				url = fileUrl;
 			}
 
 			const updatedItem: Audio = {
@@ -164,6 +172,24 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					onClick={async () => {
 						try {
 							setIsLoadingRemove(true);
+
+							const clientId = await getUserIdWithToken();
+
+							deleteItemDatabase(
+								"midia",
+								clientId.id,
+								contentItem.databaseId,
+							).catch((e) => {
+								console.log(e);
+								toast.error("Falha ao excluir um item", {
+									position: "bottom-right",
+									className: "text-base ring-2 ring-[#E53E3E]",
+									duration: 5000,
+								});
+								setIsLoadingRemove(false);
+								return;
+							});
+
 							setData({ itens: await removeItem(contentItem, "audios") });
 						} finally {
 							setContentItem(undefined);
