@@ -93,7 +93,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					const fileUrl = await uploadFileOnS3(
 						formData.audio.blob,
 						formData.audio.fileName,
-						`${account ?? "guest"}/`,
+						`${account.email ?? "guest"}/`,
 					);
 
 					preview = blobId;

@@ -13,7 +13,10 @@ const ModalUser = ({ client }: { client: Client }) => {
 
 	const handleLogout = () => {
 		chrome.storage.sync.get(null, (result) => {
-			const updatedItem = { ...result, account: null };
+			const updatedItem = {
+				...result,
+				account: { isLogin: false, licenseDate: null, email: null },
+			};
 
 			localStorage.removeItem("token");
 			toast.success("Você saiu da sua conta com sucesso!", {

@@ -76,7 +76,11 @@ export interface StorageData {
 	midias: Midia[];
 	funis: Funil[];
 	audios: Audio[];
-	account: string | null;
+	account: {
+		isLogin: boolean;
+		licenseDate: string | null;
+		email: string | null;
+	};
 }
 
 export interface Client {

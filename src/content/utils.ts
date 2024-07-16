@@ -635,7 +635,9 @@ const findDifferences = (
 	compareArrays("funis", oldData.funis, newData.funis);
 	compareArrays("audios", oldData.audios, newData.audios);
 
-	if (oldData.account !== newData.account) {
+	if (oldData.account.isLogin !== newData.account.isLogin) {
+		differences.push({ id: "account", type: "account", action: "changed" });
+	} else if (oldData.account.licenseDate !== newData.account.licenseDate) {
 		differences.push({ id: "account", type: "account", action: "changed" });
 	}
 

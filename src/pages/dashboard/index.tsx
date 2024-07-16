@@ -15,7 +15,7 @@ const init = async () => {
 	root.render(
 		<>
 			<Header />
-			{account ? (
+			{account.isLogin ? (
 				<>
 					<Toaster />
 					<Dashboard />

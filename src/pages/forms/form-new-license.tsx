@@ -24,24 +24,18 @@ const Form = () => {
 			.string()
 			.min(1, "Este campo é obrigatório")
 			.min(14, "Campo de telefone inválido"),
-		date: z.preprocess(
-			(arg) => {
-				if (typeof arg === "string") {
-					const [day, month, year] = arg.split("/");
-					const formattedDate = `${day}-${month}-${year}`;
-					const date = new Date(formattedDate);
-					return isNaN(date.getTime()) ? null : date;
-				}
-				return null;
-			},
-			z
-				.date()
-				.nullable()
-				.refine((date) => date !== null, {
-					message: "Este campo é obrigatório",
-				})
-				.refine((date) => date?.getFullYear() <= 9999, "Data inválida"),
-		),
+		date: z
+			.string({ required_error: "Este campo é obrigatório" })
+			.min(1, "Este campo é obrigatório")
+			.refine(
+				(value) =>
+					Number.parseInt(value.split("/")[2]) >= new Date().getFullYear(),
+				"O ano deve ser maior ou igual ao ano atual",
+			)
+			.refine(
+				(value) => Number.parseInt(value.split("/")[2]) <= 9999,
+				"O ano é inválido",
+			),
 	});
 
 	const {

@@ -100,7 +100,7 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 				const fileUrl = await uploadFileOnS3(
 					formData.file.blob,
 					formData.file.fileName,
-					`${account ?? "guest"}/`,
+					`${account.email ?? "guest"}/`,
 				);
 
 				url = fileUrl;

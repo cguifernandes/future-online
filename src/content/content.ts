@@ -131,7 +131,7 @@ const validateData = async (data: StorageData) => {
 		}
 	}, 100);
 
-	if (data.account === null) {
+	if (!data.account.isLogin) {
 		showErrorMessage();
 		return;
 	}
@@ -151,6 +151,7 @@ window.addEventListener("loadWpp", async () => {
 	});
 
 	let data = (await chrome.storage.sync.get()) as StorageData;
+	const convertDate = new Date(data.account.licenseDate);
 
 	console.log(data);
 
@@ -170,7 +171,8 @@ window.addEventListener("loadWpp", async () => {
 				".item-pattern-future-online",
 			) as HTMLDivElement;
 
-			if (data?.account === null) {
+			console.log(convertDate.getDay() < new Date().getDay());
+			if (!data?.account.isLogin) {
 				data = (await chrome.storage.sync.get()) as StorageData;
 
 				if (!pattern) {
@@ -198,11 +200,10 @@ window.addEventListener("loadWpp", async () => {
 			processDataType("midias", data.midias, pattern);
 			processDataType("funis", data.funis, pattern);
 
-			await revalidateStorage(data).then((res) => {
-				if (res.passDifference) {
-					data = res.data;
-				}
-			});
+			const revalidateData = await revalidateStorage(data);
+			if (revalidateData.passDifference) {
+				data = revalidateData.data;
+			}
 		}, 2500);
 
 		observer.observe(document.querySelector("div#main"), {

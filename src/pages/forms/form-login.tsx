@@ -53,8 +53,34 @@ const Form = () => {
 				return;
 			}
 
+			if (data?.role === "admin") {
+				toast.success(data.message ?? "Login realizado com sucesso", {
+					position: "bottom-right",
+					className: "text-base ring-2 ring-[#1F2937]",
+					duration: 5000,
+				});
+
+				localStorage.setItem("token", data.token);
+
+				setTimeout(() => {
+					chrome.runtime.sendMessage({
+						target: "current",
+						url: "/pages/panel.html",
+					});
+				}, 1000);
+
+				return;
+			}
+
 			chrome.storage.sync.get(null, (result) => {
-				const updatedItem = { ...result, account: data.data.email };
+				const updatedItem = {
+					...result,
+					account: {
+						isLogin: true,
+						licenseDate: data.data.date,
+						email: data.data.email,
+					},
+				};
 
 				toast.success(data.message ?? "Login realizado com sucesso", {
 					position: "bottom-right",

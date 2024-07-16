@@ -195,6 +195,7 @@ export const authenticateClient = async (
 				status: 200,
 				message: "Cliente autenticado com sucesso",
 				data: undefined,
+				role: "admin",
 				token,
 			};
 		} else {

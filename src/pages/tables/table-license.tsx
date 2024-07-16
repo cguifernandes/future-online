@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import Input from "../components/input";
 import { Dispatch, useEffect, useState } from "react";
 import { Client } from "../../type/type";
-import { formatDate, url } from "../../utils/utils";
+import { url } from "../../utils/utils";
 import toast from "react-hot-toast";
 import Pagination from "../components/pagination";
 
@@ -225,7 +225,7 @@ const Table = ({ setVisibleForm }: Props) => {
 								{client.phone}
 							</td>
 							<td className="text-white text-sm p-3 max-w-36">
-								<time className="truncate">{formatDate(client.date)}</time>
+								<time className="truncate">{client.date}</time>
 							</td>
 							<td className="p-3 max-w-36">
 								<button
