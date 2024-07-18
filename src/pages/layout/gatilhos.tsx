@@ -116,15 +116,14 @@ const Gatilhos = () => {
 									onSwitchChange={async (e) => {
 										const updatedItem = { ...item, active: e.target.checked };
 										const clientId = await getUserIdWithToken();
-										const { databaseId, type, ...itemWithoutDatabaseId } =
-											updatedItem;
+										const { type, ...itemWithoutType } = updatedItem;
 
 										await putItemDatabase(
 											"gatilho",
 											JSON.stringify({
-												id: item.databaseId,
+												id: item.id,
 												clientId: clientId.id,
-												newGatilho: { ...itemWithoutDatabaseId },
+												newGatilho: { ...itemWithoutType },
 											}),
 										);
 

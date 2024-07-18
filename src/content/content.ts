@@ -1,5 +1,13 @@
 import { Audio, Funil, Mensagem, Midia, StorageData } from "../type/type";
-import { loadItens, revalidateStorage, showErrorMessage } from "./utils";
+import {
+	changeMessageError,
+	clearMessageError,
+	clearPatternContent,
+	createOrAppendPattern,
+	loadItens,
+	revalidateStorage,
+	showErrorMessage,
+} from "./utils";
 
 const waitForElement = (selector, callback) => {
 	const observer = new MutationObserver(() => {
@@ -69,26 +77,6 @@ const loadButton = () => {
 	});
 };
 
-const createOrAppendPattern = (footer: HTMLElement): HTMLDivElement => {
-	let pattern = footer.querySelector(
-		".item-pattern-future-online",
-	) as HTMLDivElement;
-
-	if (!pattern) {
-		pattern = document.createElement("div");
-		pattern.className = "item-pattern-future-online";
-		footer.appendChild(pattern);
-
-		setTimeout(() => {
-			if (!footer.contains(pattern)) {
-				footer.appendChild(pattern);
-			}
-		}, 100);
-	}
-
-	return pattern;
-};
-
 const processDataType = (
 	dataType: "mensagens" | "audios" | "midias" | "funis",
 	data: Mensagem[] | Audio[] | Midia[] | Funil[],
@@ -116,9 +104,17 @@ const processDataType = (
 	}
 };
 
-const validateData = async (data: StorageData) => {
-	const isNonEmptyArray = (arr: any[]) => Array.isArray(arr) && arr.length > 0;
+const debounce = (func: (...args: any[]) => void, wait: number) => {
+	let timeout: NodeJS.Timeout;
+	return (...args: any[]) => {
+		clearTimeout(timeout);
+		timeout = setTimeout(() => func(...args), wait);
+	};
+};
 
+const isNonEmptyArray = (arr: any[]) => Array.isArray(arr) && arr.length > 0;
+
+const validateData = async (data: StorageData) => {
 	const main = document.querySelector("div#main");
 	if (!main) return;
 
@@ -128,14 +124,12 @@ const validateData = async (data: StorageData) => {
 	const pattern = createOrAppendPattern(footer);
 	if (!pattern) return;
 
-	const messagePattern = pattern.querySelector(
-		".error-message-future-online",
-	) as HTMLDivElement;
-
-	if (messagePattern) return;
-
 	if (!data.account.isLogin) {
-		showErrorMessage("Você precisa fazer login para usar o Future Online");
+		showErrorMessage(
+			"Você precisa estar logado para usar a extensão",
+			undefined,
+			pattern,
+		);
 		return;
 	}
 
@@ -147,22 +141,44 @@ const validateData = async (data: StorageData) => {
 		today.setHours(0, 0, 0, 0);
 
 		if (convertDate < today) {
-			showErrorMessage("A data de licença já expirou");
+			const existMessageError = pattern.querySelector(
+				".error-message-future-online",
+			);
+
+			if (existMessageError) {
+				changeMessageError("A data de licença já expirou");
+			}
+
+			showErrorMessage("A data de licença já expirou", undefined, pattern);
 			return;
 		}
 	}
 
 	if (
-		!data ||
-		(!isNonEmptyArray(data?.funis) &&
-			!isNonEmptyArray(data?.mensagens) &&
-			!isNonEmptyArray(data?.midias) &&
-			!isNonEmptyArray(data?.audios))
+		data.account.isLogin &&
+		(!data ||
+			(!isNonEmptyArray(data?.funis) &&
+				!isNonEmptyArray(data?.mensagens) &&
+				!isNonEmptyArray(data?.midias) &&
+				!isNonEmptyArray(data?.audios)))
 	) {
-		showErrorMessage(
-			"Sem nenhum item criado",
-			"Crie uma conta e adiciona itens.",
+		const existMessageError = pattern.querySelector(
+			".error-message-future-online",
 		);
+
+		if (existMessageError) {
+			changeMessageError(
+				"Sem items para ser exibido",
+				"Acesse o dashboard para criar novos items",
+			);
+		}
+
+		showErrorMessage(
+			"Sem items para ser exibido",
+			"Acesse o dashboard para criar novos items",
+			pattern,
+		);
+
 		return;
 	}
 
@@ -170,7 +186,11 @@ const validateData = async (data: StorageData) => {
 	processDataType("audios", data.audios, pattern);
 	processDataType("midias", data.midias, pattern);
 	processDataType("funis", data.funis, pattern);
+
+	return;
 };
+
+const debouncedValidateData = debounce(validateData, 100);
 
 window.addEventListener("loadWpp", async () => {
 	waitForElement("span.x1okw0bk", () => {
@@ -180,31 +200,32 @@ window.addEventListener("loadWpp", async () => {
 	let data = (await chrome.storage.sync.get()) as StorageData;
 
 	waitForElement("div#main", () => {
-		const observer = new MutationObserver(() => validateData(data));
+		const observer = new MutationObserver(() => {
+			debouncedValidateData(data);
+		});
 
 		setInterval(async () => {
-			const revalidateData = await revalidateStorage(data);
-			if (revalidateData.passDifference) {
-				data = revalidateData.data;
-			}
-
-			const isNonEmptyArray = (arr: any[]) =>
-				Array.isArray(arr) && arr.length > 0;
-
 			const main = document.querySelector("div#main");
 			if (!main) return;
 
 			const footer = main.querySelector("footer");
 			if (!footer) return;
 
-			const pattern = footer.querySelector(
-				".item-pattern-future-online",
-			) as HTMLDivElement;
+			const pattern = createOrAppendPattern(footer);
+			if (!pattern) return;
 
-			if (!pattern) createOrAppendPattern(footer);
+			const revalidateData = await revalidateStorage(data);
+			if (revalidateData.passDifference) {
+				data = revalidateData.data;
+			}
 
-			if (!data?.account.isLogin) {
-				showErrorMessage("Você precisa fazer login para usar o Future Online");
+			if (!data.account.isLogin) {
+				clearPatternContent();
+				showErrorMessage(
+					"Você precisa estar logado para usar a extensão",
+					undefined,
+					pattern,
+				);
 				return;
 			}
 
@@ -220,27 +241,53 @@ window.addEventListener("loadWpp", async () => {
 				today.setHours(0, 0, 0, 0);
 
 				if (convertDate < today) {
-					showErrorMessage("A data de licença já expirou");
+					const existMessageError = pattern.querySelector(
+						".error-message-future-online",
+					);
+
+					clearPatternContent();
+					if (existMessageError) {
+						changeMessageError("A data de licença já expirou");
+					}
+
+					showErrorMessage("A data de licença já expirou", undefined, pattern);
 					return;
 				}
 			}
 
 			if (
-				!data ||
-				(!isNonEmptyArray(data?.funis) &&
-					!isNonEmptyArray(data?.mensagens) &&
-					!isNonEmptyArray(data?.midias) &&
-					!isNonEmptyArray(data?.audios))
+				data.account.isLogin &&
+				(!data ||
+					(!isNonEmptyArray(data?.funis) &&
+						!isNonEmptyArray(data?.mensagens) &&
+						!isNonEmptyArray(data?.midias) &&
+						!isNonEmptyArray(data?.audios)))
 			) {
-				showErrorMessage(
-					"Sem nenhum item criado",
-					"Crie uma conta e adiciona itens.",
+				const existMessageError = pattern.querySelector(
+					".error-message-future-online",
 				);
+				clearPatternContent();
+
+				if (existMessageError) {
+					changeMessageError(
+						"Sem items para ser exibido",
+						"Acesse o dashboard para criar novos items",
+					);
+				}
+
+				showErrorMessage(
+					"Sem items para ser exibido",
+					"Acesse o dashboard para criar novos items",
+					pattern,
+				);
+
 				return;
 			}
+
+			clearMessageError();
 		}, 2500);
 
-		observer.observe(document.querySelector("div#main"), {
+		observer.observe(document, {
 			childList: true,
 			subtree: true,
 		});

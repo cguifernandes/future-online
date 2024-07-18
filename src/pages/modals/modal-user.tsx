@@ -12,29 +12,26 @@ const ModalUser = ({ client }: { client: Client }) => {
 	};
 
 	const handleLogout = () => {
-		chrome.storage.sync.get(null, (result) => {
-			const updatedItem = {
-				...result,
-				account: { isLogin: false, licenseDate: null, email: null },
-			};
+		const updatedItem = {
+			account: { isLogin: false, licenseDate: null, email: null },
+		};
 
-			localStorage.removeItem("token");
-			toast.success("Você saiu da sua conta com sucesso!", {
-				position: "bottom-right",
-				className: "text-base ring-2 ring-[#1F2937]",
-				duration: 5000,
-			});
-
-			setTimeout(() => {
-				chrome.runtime.sendMessage({
-					target: "current",
-					url: "/pages/dashboard.html",
-				});
-			}, 1000);
-
-			window.location.reload();
-			chrome.storage.sync.set(updatedItem);
+		localStorage.removeItem("token");
+		toast.success("Você saiu da sua conta com sucesso!", {
+			position: "bottom-right",
+			className: "text-base ring-2 ring-[#1F2937]",
+			duration: 5000,
 		});
+
+		setTimeout(() => {
+			chrome.runtime.sendMessage({
+				target: "current",
+				url: "/pages/dashboard.html",
+			});
+		}, 1000);
+
+		window.location.reload();
+		chrome.storage.sync.set(updatedItem);
 	};
 
 	useEffect(() => {

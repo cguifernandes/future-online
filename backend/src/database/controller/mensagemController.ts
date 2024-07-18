@@ -8,6 +8,7 @@ import {
 export const setMensagemController = async (req: Request, res: Response) => {
 	const newMensagem = req.body;
 	const { clientId }: { clientId: string } = req.query as { clientId: string };
+
 	const client = await setMensagem(newMensagem, clientId);
 
 	res.status(client.status).json(client);

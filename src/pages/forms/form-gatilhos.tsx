@@ -157,7 +157,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			await putItemDatabase(
 				"gatilho",
 				JSON.stringify({
-					id: contentItem.databaseId,
+					id: contentItem.id,
 					clientId: clientId.id,
 					newGatilho: formData,
 				}),
@@ -217,10 +217,10 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 							setIsLoading(true);
 							const clientId = await getUserIdWithToken();
 
-							deleteItemDatabase(
+							await deleteItemDatabase(
 								"gatilho",
 								clientId.id,
-								contentItem.databaseId,
+								contentItem.id,
 							).catch((e) => {
 								console.log(e);
 								toast.error("Falha ao salvar alterações", {

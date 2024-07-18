@@ -93,7 +93,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			await putItemDatabase(
 				"audio",
 				JSON.stringify({
-					id: contentItem.databaseId,
+					id: contentItem.id,
 					clientId: clientId.id,
 					newAudio: {
 						title: formData.title,
@@ -175,10 +175,10 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 
 							const clientId = await getUserIdWithToken();
 
-							deleteItemDatabase(
-								"midia",
+							await deleteItemDatabase(
+								"audio",
 								clientId.id,
-								contentItem.databaseId,
+								contentItem.id,
 							).catch((e) => {
 								console.log(e);
 								toast.error("Falha ao excluir um item", {
@@ -186,7 +186,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 									className: "text-base ring-2 ring-[#E53E3E]",
 									duration: 5000,
 								});
-								setIsLoadingRemove(false);
 								return;
 							});
 

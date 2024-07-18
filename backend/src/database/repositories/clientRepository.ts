@@ -180,9 +180,27 @@ export const authenticateClient = async (
 		let token = "";
 
 		if (identifier.includes("@")) {
-			client = await clientRepository.findOne({ where: { email: identifier } });
+			client = await clientRepository.findOne({
+				where: { email: identifier },
+				relations: {
+					audios: true,
+					funis: true,
+					gatilhos: true,
+					mensagens: true,
+					midias: true,
+				},
+			});
 		} else {
-			client = await clientRepository.findOne({ where: { id: identifier } });
+			client = await clientRepository.findOne({
+				where: { id: identifier },
+				relations: {
+					audios: true,
+					funis: true,
+					gatilhos: true,
+					mensagens: true,
+					midias: true,
+				},
+			});
 		}
 
 		if (
@@ -201,8 +219,9 @@ export const authenticateClient = async (
 			return {
 				status: 200,
 				message: "Cliente autenticado com sucesso",
-				data: undefined,
-				role: "admin",
+				data: {
+					role: "admin",
+				},
 				token,
 			};
 		} else {

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Item from "../components/item";
 import Messages from "../layout/messages";
 import Midias from "../layout/midias";
@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { Bot, Filter, Image, Mail, Mic } from "lucide-react";
 import Gatilhos from "../layout/gatilhos";
 import Audios from "../layout/audios";
+import { url } from "../../utils/utils";
 
 const Dashboard = () => {
 	const [contentDashboard, setContentDashboard] = useState<{
@@ -16,6 +17,26 @@ const Dashboard = () => {
 		content: <Messages />,
 		index: 0,
 	});
+
+	useEffect(() => {
+		chrome.storage.sync.get(null, (result) => {
+			console.log({ result });
+		});
+
+		fetch(`${url}/api/client?limit=4&page=1`, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+			},
+		})
+			.then(async (response) => {
+				const data = await response.json();
+				console.log({ data });
+			})
+			.catch((e) => {
+				console.log(e);
+			});
+	}, []);
 
 	const itens = [
 		{

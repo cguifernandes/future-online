@@ -9,7 +9,6 @@ export interface Midia {
 		type: "Imagem" | "Vídeo" | "";
 	};
 	delay?: number;
-	databaseId?: string;
 }
 
 export interface Audio {
@@ -21,7 +20,6 @@ export interface Audio {
 		preview: string;
 	};
 	delay?: number;
-	databaseId?: string;
 }
 
 export interface Mensagem {
@@ -30,7 +28,6 @@ export interface Mensagem {
 	title: string;
 	id?: string;
 	delay?: number;
-	databaseId?: string;
 }
 
 export interface Funil {
@@ -45,7 +42,6 @@ export interface Funil {
 		};
 	}[];
 	id?: string;
-	databaseId?: string;
 }
 
 export interface Gatilho {
@@ -73,7 +69,6 @@ export interface Gatilho {
 		name?: string;
 	};
 	id?: string;
-	databaseId?: string;
 }
 
 export interface StorageData {
@@ -88,10 +83,24 @@ export interface StorageData {
 	};
 }
 
+export interface ClientResponse {
+	data: Client;
+	message: string;
+	status: number;
+	token: string;
+}
+
 export interface Client {
-	id: string;
-	name?: string;
-	email: string;
-	phone: string;
+	audios?: Audio[];
 	date: string;
+	email: string;
+	funis?: Funil[];
+	gatilhos?: Gatilho[];
+	id: string;
+	mensagens?: Mensagem[];
+	midias?: Midia[];
+	name: string;
+	password: string;
+	phone: string;
+	role?: "admin" | "user";
 }

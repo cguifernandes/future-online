@@ -8,7 +8,6 @@ import {
 	getItem,
 	getUserIdWithToken,
 	postItemDatabase,
-	url,
 } from "../../utils/utils";
 import { Plus } from "lucide-react";
 import Spinner from "../components/spinner";
@@ -24,13 +23,6 @@ const Messages = () => {
 
 	useEffect(() => {
 		setIsLoading(true);
-
-		fetch(`${url}/api/client?limit=4&page=1`, {
-			method: "GET",
-		}).then(async (data) => {
-			const response = await data.json();
-			console.log(response);
-		});
 
 		getItem<Mensagem>("mensagens")
 			.then((data) => {

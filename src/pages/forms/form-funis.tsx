@@ -104,7 +104,7 @@ const Form = ({
 			await putItemDatabase(
 				"funil",
 				JSON.stringify({
-					id: contentItem.databaseId,
+					id: contentItem.id,
 					clientId: clientId.id,
 					newFunil: {
 						title: formData.title,
@@ -144,6 +144,26 @@ const Form = ({
 		}
 	};
 
+	const handlerRemoveFunil = async () => {
+		const clientId = await getUserIdWithToken();
+
+		await deleteItemDatabase("funil", clientId.id, contentItem.id).catch(
+			(e) => {
+				console.log(e);
+				toast.error("Falha ao salvar alterações", {
+					position: "bottom-right",
+					className: "text-base ring-2 ring-[#E53E3E]",
+					duration: 5000,
+				});
+				setIsLoadingRemove(false);
+				return;
+			},
+		);
+
+		setData({ itens: await removeItem(contentItem, "funis") });
+		setContentItem(undefined);
+	};
+
 	const handlerRemoveFunilItem = (index: number) => {
 		chrome.storage.sync.get("funis", async (result) => {
 			const funis: Funil[] = result.funis || [];
@@ -153,18 +173,17 @@ const Form = ({
 				funil.item.splice(index, 1);
 
 				const clientId = await getUserIdWithToken();
-
-				deleteItemDatabase("funil", clientId.id, contentItem.databaseId).catch(
-					(e) => {
-						console.log(e);
-						toast.error("Falha ao salvar alterações", {
-							position: "bottom-right",
-							className: "text-base ring-2 ring-[#E53E3E]",
-							duration: 5000,
-						});
-						setIsLoadingRemove(false);
-						return;
-					},
+				await putItemDatabase(
+					"funil",
+					JSON.stringify({
+						id: contentItem.id,
+						clientId: clientId.id,
+						newFunil: {
+							id: funil.id,
+							title: funil.title,
+							item: funil.item,
+						},
+					}),
 				);
 
 				chrome.storage.sync.set({ funis }, () => {
@@ -195,13 +214,14 @@ const Form = ({
 				/>
 				<button
 					type="button"
-					onClick={async () => {
-						setData({ itens: await removeItem(contentItem, "funis") });
-						setContentItem(undefined);
-					}}
+					onClick={handlerRemoveFunil}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
-					<Trash2 size={24} color="#fff" strokeWidth={1.5} />
+					{isLoadingRemove ? (
+						<Spinner />
+					) : (
+						<Trash2 color="#fff" size={24} strokeWidth={1.5} />
+					)}
 				</button>
 			</div>
 			{dataItem.data.length > 0 ? (
@@ -252,7 +272,6 @@ const Form = ({
 										<Mic color="#fff" size={24} strokeWidth={1.5} />
 									)}
 									<span className="text-white text-base">{item.type}</span>
-
 									<div className="flex gap-x-3 items-center ml-auto">
 										<span className="text-white gap-x-1 flex items-center text-sm">
 											<Timer size={20} />
@@ -267,7 +286,7 @@ const Form = ({
 											{isLoadingRemove ? (
 												<Spinner />
 											) : (
-												<Trash2 color="#fff" size={24} strokeWidth={1.5} />
+												<Trash2 color="#fff" size={20} strokeWidth={1.5} />
 											)}
 										</button>
 									</div>

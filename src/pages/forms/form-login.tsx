@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import { url } from "../../utils/utils";
+import { ClientResponse } from "../../type/type";
 
 const Form = () => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +43,7 @@ const Form = () => {
 				},
 			);
 
-			const data = await response.json();
+			const data = (await response.json()) as ClientResponse;
 
 			if (response.status >= 400 && response.status < 600) {
 				toast.error(data.message ?? "Ocorreu um erro ao fazer o login", {
@@ -53,7 +54,7 @@ const Form = () => {
 				return;
 			}
 
-			if (data?.role === "admin") {
+			if (data?.data.role === "admin") {
 				toast.success(data.message ?? "Login realizado com sucesso", {
 					position: "bottom-right",
 					className: "text-base ring-2 ring-[#1F2937]",
@@ -72,33 +73,38 @@ const Form = () => {
 				return;
 			}
 
-			chrome.storage.sync.get(null, (result) => {
-				const updatedItem = {
-					...result,
-					account: {
-						isLogin: true,
-						licenseDate: data.data.date,
-						email: data.data.email,
-					},
-				};
+			const addTypeToArray = (items: any[], type: string) => {
+				return items ? items.map((item) => ({ ...item, type })) : [];
+			};
 
-				toast.success(data.message ?? "Login realizado com sucesso", {
-					position: "bottom-right",
-					className: "text-base ring-2 ring-[#1F2937]",
-					duration: 5000,
-				});
+			const updatedItem = {
+				audios: addTypeToArray(data.data.audios, "audios"),
+				funis: addTypeToArray(data.data.funis, "funis"),
+				gatilhos: addTypeToArray(data.data.gatilhos, "gatilhos"),
+				mensagens: addTypeToArray(data.data.mensagens, "mensagens"),
+				midias: addTypeToArray(data.data.midias, "midias"),
+				account: {
+					isLogin: true,
+					licenseDate: data.data.date,
+					email: data.data.email,
+				},
+			};
 
-				localStorage.setItem("token", data.token);
+			localStorage.setItem("token", data.token);
+			await chrome.storage.sync.set(updatedItem);
 
-				setTimeout(() => {
-					chrome.runtime.sendMessage({
-						target: "current",
-						url: "/pages/dashboard.html",
-					});
-				}, 1000);
-
-				chrome.storage.sync.set(updatedItem);
+			toast.success(data.message ?? "Login realizado com sucesso", {
+				position: "bottom-right",
+				className: "text-base ring-2 ring-[#1F2937]",
+				duration: 5000,
 			});
+
+			setTimeout(() => {
+				chrome.runtime.sendMessage({
+					target: "current",
+					url: "/pages/dashboard.html",
+				});
+			}, 1000);
 		} catch (error) {
 			console.log(error);
 			toast.error("Ocorreu um erro ao enviar o formulário", {

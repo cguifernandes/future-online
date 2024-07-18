@@ -101,7 +101,7 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 			await putItemDatabase(
 				"midia",
 				JSON.stringify({
-					id: contentItem.databaseId,
+					id: contentItem.id,
 					clientId: clientId.id,
 					newMidia: {
 						title: formData.title,
@@ -192,10 +192,10 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 							setIsLoadingRemove(true);
 							const clientId = await getUserIdWithToken();
 
-							deleteItemDatabase(
+							await deleteItemDatabase(
 								"midia",
 								clientId.id,
-								contentItem.databaseId,
+								contentItem.id,
 							).catch((e) => {
 								console.log(e);
 								toast.error("Falha ao excluir um item", {

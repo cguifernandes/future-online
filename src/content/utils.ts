@@ -386,30 +386,84 @@ export const loadStorageData = async (key: string): Promise<any[]> => {
 	});
 };
 
+export const createOrAppendPattern = (footer: HTMLElement): HTMLDivElement => {
+	let pattern = footer.querySelector(
+		".item-pattern-future-online",
+	) as HTMLDivElement;
+
+	if (!pattern) {
+		pattern = document.createElement("div");
+		pattern.className = "item-pattern-future-online";
+		footer.appendChild(pattern);
+
+		setTimeout(() => {
+			if (!footer.contains(pattern)) {
+				footer.appendChild(pattern);
+			}
+		}, 100);
+	}
+
+	return pattern;
+};
+
+export const clearMessageError = () => {
+	const main = document.querySelector("div#main");
+	if (!main) return;
+
+	const footer = main.querySelector("footer");
+	if (!footer) return;
+
+	const pattern = footer.querySelector(".item-pattern-future-online");
+	if (!pattern) return;
+
+	const errorMessage = pattern.querySelector(".error-message-future-online");
+
+	if (errorMessage) {
+		pattern.removeChild(errorMessage);
+	}
+};
+
+export const changeMessageError = (message: string, subMessage?: string) => {
+	const main = document.querySelector("div#main");
+	if (!main) return;
+
+	const footer = main.querySelector("footer");
+	if (!footer) return;
+
+	const pattern = footer.querySelector(".item-pattern-future-online");
+
+	if (!pattern) return;
+
+	const errorMessage = pattern.querySelector(".error-message-future-online");
+
+	const primaryMessage = errorMessage.querySelector("span");
+	primaryMessage.innerText = message;
+
+	if (subMessage) {
+		const secondMessage = errorMessage.querySelector("p");
+		secondMessage.innerText = subMessage;
+		return;
+	}
+
+	return;
+};
+
 export const showErrorMessage = (
 	message: string,
 	subMessage = "Chame nosso suporte ou contrate um novo plano!",
+	pattern: Element | HTMLDivElement,
 ) => {
-	const pattern = document.querySelector(".item-pattern-future-online");
-	if (!pattern) return;
+	const main = document.querySelector("div#main");
+	if (!main) return;
 
-	while (pattern.firstChild) {
-		pattern.removeChild(pattern.firstChild);
-	}
+	const footer = main.querySelector("footer");
+	if (!footer) return;
 
-	let messagePattern = pattern.querySelector(
-		".error-message-future-online",
-	) as HTMLDivElement;
+	if (pattern.querySelector(".error-message-future-online")) return;
 
-	if (!messagePattern) {
-		messagePattern = document.createElement("div");
-		messagePattern.className = "error-message-future-online";
-		pattern.appendChild(messagePattern);
-	}
-
-	while (messagePattern.firstChild) {
-		messagePattern.removeChild(messagePattern.firstChild);
-	}
+	const messagePattern = document.createElement("div");
+	messagePattern.className = "error-message-future-online";
+	pattern.appendChild(messagePattern);
 
 	const primaryMessage = document.createElement("span");
 	primaryMessage.innerText = message;
@@ -428,12 +482,29 @@ export const normalizeType = (type: string) => {
 		.replace(/[\u0300-\u036f]/g, "");
 };
 
+export const clearPatternContent = () => {
+	const main = document.querySelector("div#main");
+	if (!main) return;
+
+	const footer = main.querySelector("footer");
+	if (!footer) return;
+
+	const pattern = footer.querySelector(".item-pattern-future-online");
+	if (!pattern) return;
+
+	const errorMessageDiv = pattern.querySelector(".error-message-future-online");
+	if (!errorMessageDiv) {
+		while (pattern.firstChild) {
+			pattern.removeChild(pattern.firstChild);
+		}
+	}
+
+	return;
+};
+
 export const revalidateStorage = async (
 	oldData: StorageData,
-): Promise<{
-	data: undefined | StorageData;
-	passDifference: boolean;
-}> => {
+): Promise<{ data: undefined | StorageData; passDifference: boolean }> => {
 	const newData = (await chrome.storage.sync.get()) as StorageData;
 
 	const differences = findDifferences(oldData, newData);
@@ -449,13 +520,9 @@ export const revalidateStorage = async (
 	const footer = main.querySelector("footer");
 	if (!footer) return;
 
-	const pattern = footer.querySelector(".item-pattern-future-online");
-
-	if (!pattern) {
-		const pattern = document.createElement("div");
-		pattern.className = "item-pattern-future-online";
-		footer.appendChild(pattern);
-	}
+	const pattern = footer.querySelector(
+		".item-pattern-future-online",
+	) as HTMLDivElement;
 
 	const titleMap = {
 		mensagens: "Mensagens",
@@ -463,6 +530,13 @@ export const revalidateStorage = async (
 		midias: "Mídias",
 		funis: "Funis",
 	};
+
+	const existMessageError = pattern.querySelector(
+		".error-message-future-online",
+	);
+	if (existMessageError) {
+		pattern.removeChild(existMessageError);
+	}
 
 	differences.forEach(async (diff) => {
 		if (diff.type === "account") return;
@@ -560,7 +634,6 @@ export const revalidateStorage = async (
 		}
 	});
 
-	chrome.storage.sync.set({ ...newData });
 	return {
 		data: newData,
 		passDifference: true,
@@ -654,9 +727,11 @@ const findDifferences = (
 	compareArrays("funis", oldData.funis, newData.funis);
 	compareArrays("audios", oldData.audios, newData.audios);
 
-	if (oldData.account.isLogin !== newData.account.isLogin) {
-		differences.push({ id: "account", type: "account", action: "changed" });
-	} else if (oldData.account.licenseDate !== newData.account.licenseDate) {
+	if (
+		oldData.account.isLogin !== newData.account.isLogin ||
+		oldData.account.email !== newData.account.email ||
+		oldData.account.licenseDate !== newData.account.licenseDate
+	) {
 		differences.push({ id: "account", type: "account", action: "changed" });
 	}
 

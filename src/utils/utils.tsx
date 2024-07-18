@@ -1,5 +1,4 @@
 import type { Audio, Funil, Gatilho, Mensagem, Midia } from "../type/type";
-import { v4 as uuidv4 } from "uuid";
 
 export const FILES_TYPE = [
 	"image/jpeg",
@@ -434,7 +433,7 @@ export const addItem = <T extends Item>(
 	data: { itens: T[] },
 	databaseId: string,
 ): T[] => {
-	const newItemWithId = { ...newItem, databaseId, id: uuidv4() };
+	const newItemWithId = { ...newItem, id: databaseId };
 	const newItens = [...data.itens, newItemWithId];
 
 	chrome.storage.sync.set({ [newItem.type.toLocaleLowerCase()]: newItens });
