@@ -19,15 +19,18 @@ const Table = ({ setVisibleForm }: Props) => {
 	const [page, setPage] = useState(1);
 	const [notFound, setNotFound] = useState(false);
 	const LIMIT_PER_PAGE = 12;
+	const token = localStorage.getItem("token");
 	const totalPages = Math.ceil(count / LIMIT_PER_PAGE);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		setIsLoading(true);
+
 		fetch(`${url}/api/client?limit=${LIMIT_PER_PAGE}&page=${page}`, {
 			method: "GET",
 			headers: {
 				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
 			},
 		})
 			.then(async (response) => {
@@ -77,6 +80,7 @@ const Table = ({ setVisibleForm }: Props) => {
 						method: "GET",
 						headers: {
 							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`,
 						},
 					},
 				);
@@ -106,6 +110,7 @@ const Table = ({ setVisibleForm }: Props) => {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
 				},
 			});
 

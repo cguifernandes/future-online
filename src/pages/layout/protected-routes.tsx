@@ -20,7 +20,13 @@ const ProtectedRoutes = ({ children, clientId, isAuthor, isUser }: Props) => {
 			return;
 		}
 
-		fetch(`${url}/api/decoded-token?token=${token}`)
+		fetch(`${url}/api/decoded-token?token=${token}`, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		})
 			.then(async (response) => {
 				const data = await response.json();
 

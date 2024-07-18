@@ -9,6 +9,7 @@ import { url } from "../../utils/utils";
 import toast from "react-hot-toast";
 
 const Form = () => {
+	const token = localStorage.getItem("token");
 	const [isLoading, setIsLoading] = useState(false);
 
 	const schema = z.object({
@@ -59,6 +60,7 @@ const Form = () => {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
 				},
 				body: JSON.stringify(formData),
 			});

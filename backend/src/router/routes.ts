@@ -36,17 +36,18 @@ import {
 	removeMensagemController,
 	updateMensagemController,
 } from "../database/controller/mensagemController";
+import { verifyToken } from "../middleware";
 const routers = Router();
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// routers.use((req, res, next) => {
-// 	if (req.path === "/api/client/authenticate") {
-// 		return next();
-// 	}
+routers.use((req, res, next) => {
+	if (req.path === "/api/client/authenticate") {
+		return next();
+	}
 
-// 	verifyToken(req, res, next);
-// });
+	verifyToken(req, res, next);
+});
 
 //MIDIAS
 routers.post(

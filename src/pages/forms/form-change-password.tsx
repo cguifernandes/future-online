@@ -117,6 +117,7 @@ const NewPassword = ({
 	password: string;
 	clientId: string;
 }) => {
+	const token = localStorage.getItem("token");
 	const [isLoading, setIsLoading] = useState(false);
 	const schema = z.object({
 		password: z.string().min(1, "Este campo é obrigatório"),
@@ -139,6 +140,7 @@ const NewPassword = ({
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
 				},
 				body: JSON.stringify({
 					password,

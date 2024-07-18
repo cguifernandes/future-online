@@ -100,9 +100,14 @@ export const storeBlobInIndexedDB = (blob: Blob): Promise<string> => {
 };
 
 export const removeStorage = (fileName: string) => {
+	const token = localStorage.getItem("token");
 	return new Promise((resolve, reject) => {
 		fetch(`${url}/api/file?fileName=${fileName}`, {
 			method: "DELETE",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
 		})
 			.then(async (response) => {
 				const data = await response.json();
@@ -189,6 +194,7 @@ export const uploadFileOnS3 = (
 	folderName: string,
 ): Promise<string | undefined> => {
 	return new Promise((resolve, reject) => {
+		const token = localStorage.getItem("token");
 		const file = new File(
 			[blob],
 			`${folderName}${new Date().getTime().toString()}-${fileName}`,
@@ -202,6 +208,10 @@ export const uploadFileOnS3 = (
 
 		fetch(`${url}/api/file?folderName=${folderName}`, {
 			method: "POST",
+			headers: {
+				"Content-Type": "multipart/form-data",
+				Authorization: `Bearer ${token}`,
+			},
 			body: formData,
 		})
 			.then(async (response) => {
@@ -283,6 +293,13 @@ export const getUserIdWithToken = async (): Promise<{ id: string }> => {
 	const token = localStorage.getItem("token");
 	const responseDecodedToken = await fetch(
 		`${url}/api/decoded-token?token=${token}`,
+		{
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		},
 	);
 
 	const decodedToken = await responseDecodedToken.json();
@@ -297,10 +314,12 @@ export const postItemDatabase = async (
 ): Promise<any> => {
 	return new Promise((resolve, reject) => {
 		try {
+			const token = localStorage.getItem("token");
 			fetch(`${url}/api/client/${item}?clientId=${clientId}`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
 				},
 				body,
 			}).then(async (response) => {
@@ -326,10 +345,12 @@ export const deleteItemDatabase = async (
 ): Promise<any> => {
 	return new Promise((resolve, reject) => {
 		try {
+			const token = localStorage.getItem("token");
 			fetch(`${url}/api/client/${item}?id=${id}&clientId=${clientId}`, {
 				method: "DELETE",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
 				},
 			}).then(async (response) => {
 				const data = await response.json();
@@ -352,10 +373,12 @@ export const putItemDatabase = async (
 ): Promise<any> => {
 	return new Promise((resolve, reject) => {
 		try {
+			const token = localStorage.getItem("token");
 			fetch(`${url}/api/client/${item}`, {
 				method: "PUT",
 				headers: {
 					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
 				},
 				body,
 			}).then(async (response) => {

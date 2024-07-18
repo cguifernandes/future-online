@@ -12,7 +12,13 @@ const Header = () => {
 		setIsLoading(true);
 		const token = localStorage.getItem("token");
 
-		fetch(`${url}/api/decoded-token?token=${token}`)
+		fetch(`${url}/api/decoded-token?token=${token}`, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${token}`,
+			},
+		})
 			.then(async (response) => {
 				const data = await response.json();
 				setClient(data?.data);
@@ -36,7 +42,6 @@ const Header = () => {
 				>
 					<img src="https://i.imgur.com/L43iCAC.png" alt="Logo" />
 				</button>
-				ADICIONAR MIDDLEWARE NO BACKEND
 				{isLoading || client === null ? (
 					<span className="text-white text-base">Carregando...</span>
 				) : client ? (
