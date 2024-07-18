@@ -1,4 +1,11 @@
-import { Audio, Funil, Mensagem, Midia, StorageData } from "../type/type";
+import {
+	Audio,
+	Funil,
+	Gatilho,
+	Mensagem,
+	Midia,
+	StorageData,
+} from "../type/type";
 import "./whatsapp.css";
 
 window.addEventListener("getGatilhosRequest", async () => {
@@ -200,9 +207,9 @@ export const loadItens = async ({
 	titleText: string;
 	itens: Mensagem[] | Funil[] | Audio[] | Midia[];
 	pattern: HTMLDivElement;
-	type: "mensagens" | "audios" | "midias" | "funis" | "account";
+	type: "mensagens" | "audios" | "midias" | "funis" | "account" | "gatilhos";
 }) => {
-	if (type === "account") return;
+	if (type === "account" || type === "gatilhos") return;
 
 	const existPattern = pattern.querySelector(
 		`div.item-message-future-online.${type}`,
@@ -540,8 +547,8 @@ export const revalidateStorage = async (
 
 	differences.forEach(async (diff) => {
 		if (diff.type === "account") return;
-
 		const data = await loadStorageData(diff.type);
+
 		const pattern = document.querySelector(
 			".item-pattern-future-online",
 		) as HTMLDivElement;
@@ -652,7 +659,7 @@ const findDifferences = (
 ): Difference[] => {
 	const differences: Difference[] = [];
 
-	const compareArrays = <U extends Mensagem | Midia | Funil | Audio>(
+	const compareArrays = <U extends Mensagem | Midia | Funil | Audio | Gatilho>(
 		type: "mensagens" | "audios" | "midias" | "funis" | "account",
 		arr1: U[] = [],
 		arr2: U[] = [],
@@ -709,14 +716,6 @@ const findDifferences = (
 					) {
 						differences.push({ id, type, action: "changed" });
 					}
-				} else if (
-					type === "audios" &&
-					((item1 as Audio).audio.url !== (item2 as Audio).audio.url ||
-						(item1 as Audio).audio.preview !== (item2 as Audio).audio.preview ||
-						(item1 as Audio).delay !== (item2 as Audio).delay ||
-						(item1 as Audio).title !== (item2 as Audio).title)
-				) {
-					differences.push({ id, type, action: "changed" });
 				}
 			}
 		});

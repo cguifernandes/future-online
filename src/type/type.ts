@@ -76,6 +76,7 @@ export interface StorageData {
 	midias: Midia[];
 	funis: Funil[];
 	audios: Audio[];
+	gatilhos: Gatilho[];
 	account: {
 		isLogin: boolean;
 		licenseDate: string | null;

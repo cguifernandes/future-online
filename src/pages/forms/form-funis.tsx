@@ -98,7 +98,6 @@ const Form = ({
 
 		try {
 			const updatedItem: Funil = { ...contentItem, title: formData.title };
-			console.log(dataItem);
 
 			const clientId = await getUserIdWithToken();
 			await putItemDatabase(

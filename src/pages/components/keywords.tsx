@@ -44,9 +44,13 @@ const Keywords = ({ name, setValue, defaultValue }: Props) => {
 						<button
 							type="button"
 							onClick={() =>
-								setKeywords((prevKeywords) =>
-									prevKeywords.filter((kw) => kw !== keyword),
-								)
+								setKeywords((prevKeywords) => {
+									setValue?.(
+										name,
+										prevKeywords.filter((kw) => kw !== keyword),
+									);
+									return prevKeywords.filter((kw) => kw !== keyword);
+								})
 							}
 							className="p-1 rounded-full bg-black"
 						>
