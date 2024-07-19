@@ -42,6 +42,7 @@ const Header = () => {
 				>
 					<img src="https://i.imgur.com/L43iCAC.png" alt="Logo" />
 				</button>
+				ARRUMAR ERRO UPLOAD IMAGE
 				{isLoading || client === null ? (
 					<span className="text-white text-base">Carregando...</span>
 				) : client ? (

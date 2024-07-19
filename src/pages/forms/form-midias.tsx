@@ -97,27 +97,10 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 			let url = "";
 			let preview = "";
 
-			const clientId = await getUserIdWithToken();
-			await putItemDatabase(
-				"midia",
-				JSON.stringify({
-					id: contentItem.id,
-					clientId: clientId.id,
-					newMidia: {
-						title: formData.title,
-						file: {
-							subtitle: formData.file.subtitle,
-							url: url !== "" ? url : contentItem.file.url,
-							preview: preview !== "" ? preview : contentItem.file.preview,
-							type: formData.file.type,
-						},
-					},
-				}),
-			);
-
 			if (formData.file && formData.file.blob) {
 				const { account } = await chrome.storage.sync.get("account");
 				const blobId = await storeBlobInIndexedDB(formData.file.blob);
+
 				const fileUrl = await uploadFileOnS3(
 					formData.file.blob,
 					formData.file.fileName,
@@ -138,6 +121,24 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					type: formData.file.type,
 				},
 			};
+
+			const clientId = await getUserIdWithToken();
+			await putItemDatabase(
+				"midia",
+				JSON.stringify({
+					id: contentItem.id,
+					clientId: clientId.id,
+					newMidia: {
+						title: formData.title,
+						file: {
+							subtitle: formData.file.subtitle,
+							url: url !== "" ? url : contentItem.file.url,
+							preview: preview !== "" ? preview : contentItem.file.preview,
+							type: formData.file.type,
+						},
+					},
+				}),
+			);
 
 			chrome.storage.sync.get("midias", (result) => {
 				const updatedItems = result.midias.map((item) =>

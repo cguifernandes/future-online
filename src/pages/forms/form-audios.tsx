@@ -89,22 +89,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			let url = "";
 			let preview = "";
 
-			const clientId = await getUserIdWithToken();
-			await putItemDatabase(
-				"audio",
-				JSON.stringify({
-					id: contentItem.id,
-					clientId: clientId.id,
-					newAudio: {
-						title: formData.title,
-						audio: {
-							url: url !== "" ? url : contentItem.audio.url,
-							preview: preview !== "" ? preview : contentItem.audio.preview,
-						},
-					},
-				}),
-			);
-
 			if (formData.audio?.blob) {
 				const { account } = await chrome.storage.sync.get("account");
 				const blobId = await storeBlobInIndexedDB(formData.audio.blob);
@@ -126,6 +110,22 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					preview: preview !== "" ? preview : contentItem.audio.preview,
 				},
 			};
+
+			const clientId = await getUserIdWithToken();
+			await putItemDatabase(
+				"audio",
+				JSON.stringify({
+					id: contentItem.id,
+					clientId: clientId.id,
+					newAudio: {
+						title: formData.title,
+						audio: {
+							url: url !== "" ? url : contentItem.audio.url,
+							preview: preview !== "" ? preview : contentItem.audio.preview,
+						},
+					},
+				}),
+			);
 
 			chrome.storage.sync.get("audios", (result) => {
 				const updatedItems = result.audios.map((item) =>

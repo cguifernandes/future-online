@@ -116,7 +116,7 @@ export const updateAudio = async (
 		await audioRepository.update(id, { ...newAudio });
 
 		return {
-			status: 404,
+			status: 200,
 			data: undefined,
 			message: "Audio alterada",
 		};

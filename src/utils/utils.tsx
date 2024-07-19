@@ -101,11 +101,11 @@ export const storeBlobInIndexedDB = (blob: Blob): Promise<string> => {
 
 export const removeStorage = (fileName: string) => {
 	const token = localStorage.getItem("token");
+
 	return new Promise((resolve, reject) => {
 		fetch(`${url}/api/file?fileName=${fileName}`, {
 			method: "DELETE",
 			headers: {
-				"Content-Type": "application/json",
 				Authorization: `Bearer ${token}`,
 			},
 		})
@@ -209,7 +209,6 @@ export const uploadFileOnS3 = (
 		fetch(`${url}/api/file?folderName=${folderName}`, {
 			method: "POST",
 			headers: {
-				"Content-Type": "multipart/form-data",
 				Authorization: `Bearer ${token}`,
 			},
 			body: formData,

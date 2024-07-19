@@ -124,7 +124,7 @@ const validateData = async (data: StorageData) => {
 	const pattern = createOrAppendPattern(footer);
 	if (!pattern) return;
 
-	if (!data.account.isLogin) {
+	if (!data.account?.isLogin) {
 		showErrorMessage(
 			"Você precisa estar logado para usar a extensão",
 			undefined,
@@ -133,7 +133,7 @@ const validateData = async (data: StorageData) => {
 		return;
 	}
 
-	if (data.account.isLogin && data.account.licenseDate) {
+	if (data.account?.isLogin && data.account.licenseDate) {
 		const licenseDate = data.account.licenseDate;
 		const [day, month, year] = licenseDate.split("/");
 		const convertDate = new Date(Number(year), Number(month) - 1, Number(day));
@@ -155,7 +155,7 @@ const validateData = async (data: StorageData) => {
 	}
 
 	if (
-		data.account.isLogin &&
+		data.account?.isLogin &&
 		(!data ||
 			(!isNonEmptyArray(data?.funis) &&
 				!isNonEmptyArray(data?.mensagens) &&
@@ -219,7 +219,7 @@ window.addEventListener("loadWpp", async () => {
 				data = revalidateData.data;
 			}
 
-			if (!data.account.isLogin) {
+			if (!data.account?.isLogin) {
 				clearPatternContent();
 				showErrorMessage(
 					"Você precisa estar logado para usar a extensão",
@@ -229,7 +229,7 @@ window.addEventListener("loadWpp", async () => {
 				return;
 			}
 
-			if (data.account.isLogin && data.account.licenseDate) {
+			if (data.account?.isLogin && data.account.licenseDate) {
 				const licenseDate = data.account.licenseDate;
 				const [day, month, year] = licenseDate.split("/");
 				const convertDate = new Date(
@@ -256,7 +256,7 @@ window.addEventListener("loadWpp", async () => {
 			}
 
 			if (
-				data.account.isLogin &&
+				data.account?.isLogin &&
 				(!data ||
 					(!isNonEmptyArray(data?.funis) &&
 						!isNonEmptyArray(data?.mensagens) &&
