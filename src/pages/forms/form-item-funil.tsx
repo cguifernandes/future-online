@@ -9,7 +9,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Button from "../components/button";
 import { Image, Mail, Mic } from "lucide-react";
 import toast from "react-hot-toast";
-import { getUserIdWithToken, putItemDatabase } from "../../utils/utils";
 
 interface Props {
 	setVisibleModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -112,20 +111,6 @@ const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 
 				return funil;
 			});
-
-			const clientId = await getUserIdWithToken();
-			await putItemDatabase(
-				"funil",
-				JSON.stringify({
-					id: content.id,
-					clientId: clientId.id,
-					newFunil: {
-						id: updatedItem.id,
-						title: updatedItem.title,
-						item: updatedItem.item,
-					},
-				}),
-			);
 
 			chrome.storage.sync.set({ funis: updatedFunis }, () => {
 				setData({ itens: updatedFunis });

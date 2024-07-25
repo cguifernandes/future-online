@@ -14,23 +14,9 @@ const ErrorMessage = ({
 			<main className="min-h-[calc(100vh_-_96px)] max-w-7xl w-full mx-auto px-8">
 				<div className="flex flex-col gap-y-px py-6">
 					<h1 className="text-2xl font-bold">{message}</h1>
-					<span className="text-base">
-						{subMessage ? (
-							subMessage
-						) : (
-							<button
-								type="button"
-								onClick={() =>
-									chrome.runtime.sendMessage({
-										target: "current",
-										url: "/pages/login.html",
-									})
-								}
-							>
-								Ir para a página de login
-							</button>
-						)}
-					</span>
+					{subMessage && (
+						<span className="text-base text-black/7 0">{subMessage}</span>
+					)}
 				</div>
 			</main>
 		</>
@@ -43,23 +29,16 @@ const init = async () => {
 	document.body.appendChild(appContainer);
 	const root = createRoot(appContainer);
 	appContainer.id = "app";
-	const { account } = await chrome.storage.sync.get("account");
+	const { account } = await chrome.storage.sync.get();
 
-	if (!account?.isLogin) {
-		root.render(
-			<ErrorMessage message="Você precisa estar logado para acessar essa página" />,
-		);
-		return;
-	}
-
-	if (account?.isLogin && account?.licenseDate) {
-		const licenseDate = account?.licenseDate;
-		const [day, month, year] = licenseDate.split("/");
-		const convertDate = new Date(Number(year), Number(month) - 1, Number(day));
+	if (account?.licenseDate) {
+		const licenseDate = new Date(account.licenseDate);
+		const licenseDateWithoutTime = new Date(licenseDate);
+		licenseDateWithoutTime.setHours(0, 0, 0, 0);
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
 
-		if (convertDate < today) {
+		if (licenseDateWithoutTime < today) {
 			root.render(
 				<ErrorMessage
 					message="A data de licença já expirou"

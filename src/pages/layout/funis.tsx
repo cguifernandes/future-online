@@ -4,20 +4,12 @@ import Button from "../components/button";
 import clsx from "clsx";
 import type { Funil } from "../../type/type";
 import Modal from "./modal-funil";
-import {
-	addItem,
-	getItem,
-	getUserIdWithToken,
-	postItemDatabase,
-} from "../../utils/utils";
+import { addItem, getItem } from "../../utils/utils";
 import { Plus } from "lucide-react";
-import toast from "react-hot-toast";
-import Spinner from "../components/spinner";
 
 const Funis = () => {
 	const [visibleModal, setVisibleModal] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
-	const [isLoadingCreate, setIsLoadingCreate] = useState(false);
 	const [contentItem, setContentItem] = useState<Funil>(undefined);
 	const [data, setData] = useState<{
 		itens: Funil[];
@@ -36,41 +28,16 @@ const Funis = () => {
 	}, []);
 
 	const handlerClickAdd = async () => {
-		setIsLoadingCreate(true);
-		const clientId = await getUserIdWithToken();
-
-		postItemDatabase(
-			"funil",
-			clientId.id,
-			JSON.stringify({
-				title: "Novo funil",
-				item: null,
-			}),
-		)
-			.then((response) => {
-				setData({
-					itens: addItem<Funil>(
-						{
-							title: "Novo funil",
-							item: null,
-							type: "funis",
-						},
-						data,
-						response.data.id,
-					),
-				});
-			})
-			.catch((e) => {
-				console.log(e);
-				toast.error("Falha ao salvar alterações", {
-					position: "bottom-right",
-					className: "text-base ring-2 ring-[#E53E3E]",
-					duration: 5000,
-				});
-			})
-			.finally(() => {
-				setIsLoadingCreate(false);
-			});
+		setData({
+			itens: addItem<Funil>(
+				{
+					title: "Novo funil",
+					item: null,
+					type: "funis",
+				},
+				data,
+			),
+		});
 	};
 
 	return (
@@ -111,15 +78,9 @@ const Funis = () => {
 								theme="yellow-dark"
 								className="hover:bg-yellow-700 min-w-36 flex items-center justify-center"
 								onClick={handlerClickAdd}
-								icon={
-									isLoadingCreate ? undefined : <Plus size={18} color="#fff" />
-								}
+								icon={<Plus size={18} color="#fff" />}
 							>
-								{isLoadingCreate ? (
-									<Spinner className="fill-purple-800" />
-								) : (
-									"Novo item"
-								)}
+								Novo item
 							</Button>
 						</div>
 					</>
@@ -135,15 +96,9 @@ const Funis = () => {
 								theme="yellow-dark"
 								onClick={handlerClickAdd}
 								className="min-w-36 flex items-center justify-center"
-								icon={
-									isLoadingCreate ? undefined : <Plus size={18} color="#fff" />
-								}
+								icon={<Plus size={18} color="#fff" />}
 							>
-								{isLoadingCreate ? (
-									<Spinner className="fill-purple-800" />
-								) : (
-									"Novo item"
-								)}
+								Novo item
 							</Button>
 						</div>
 					</div>

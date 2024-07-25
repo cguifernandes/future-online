@@ -4,13 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import type { Funil, Gatilho } from "../../type/type";
 import Input from "../components/input";
-import {
-	deleteItemDatabase,
-	getItem,
-	getUserIdWithToken,
-	putItemDatabase,
-	removeItem,
-} from "../../utils/utils";
+import { getItem, removeItem } from "../../utils/utils";
 import { Trash2 } from "lucide-react";
 import Button from "../components/button";
 import Select from "../components/select";
@@ -152,16 +146,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 		setIsLoading(true);
 		try {
 			const updatedItem: Gatilho = { ...contentItem, ...formData };
-			const clientId = await getUserIdWithToken();
-
-			await putItemDatabase(
-				"gatilho",
-				JSON.stringify({
-					id: contentItem.id,
-					clientId: clientId.id,
-					newGatilho: formData,
-				}),
-			);
 
 			chrome.storage.sync.get("gatilhos", (result) => {
 				const gatilhos = result.gatilhos || [];
@@ -215,22 +199,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					onClick={async () => {
 						try {
 							setIsLoading(true);
-							const clientId = await getUserIdWithToken();
-
-							await deleteItemDatabase(
-								"gatilho",
-								clientId.id,
-								contentItem.id,
-							).catch((e) => {
-								console.log(e);
-								toast.error("Falha ao salvar alterações", {
-									position: "bottom-right",
-									className: "text-base ring-2 ring-[#E53E3E]",
-									duration: 5000,
-								});
-								setIsLoadingRemove(false);
-								return;
-							});
 
 							setData({ itens: await removeItem(contentItem, "gatilhos") });
 							setContentItem(undefined);

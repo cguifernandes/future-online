@@ -1,4 +1,7 @@
 import type { Audio, Funil, Gatilho, Mensagem, Midia } from "../type/type";
+import { v4 as uuidv4 } from "uuid";
+import * as AWS from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 
 export const FILES_TYPE = [
 	"image/jpeg",
@@ -100,28 +103,23 @@ export const storeBlobInIndexedDB = (blob: Blob): Promise<string> => {
 };
 
 export const removeStorage = (fileName: string) => {
-	const token = localStorage.getItem("token");
-
 	return new Promise((resolve, reject) => {
-		fetch(`${url}/api/file?fileName=${fileName}`, {
-			method: "DELETE",
-			headers: {
-				Authorization: `Bearer ${token}`,
+		const s3 = new AWS.S3({
+			region: process.env.AWS_REGION ?? "",
+			credentials: {
+				accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
+				secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
 			},
+		});
+
+		s3.deleteObject({
+			Bucket: process.env.AWS_BUCKET_NAME,
+			Key: fileName,
 		})
-			.then(async (response) => {
-				const data = await response.json();
-
-				if (response.status >= 400 && response.status < 600) {
-					reject(data.message ?? "Ocorreu um erro ao remover a imagem");
-					return;
-				}
-
-				resolve(data.message);
-			})
+			.then(() => resolve("Imagem removida com sucesso"))
 			.catch((err) => {
 				console.log(err);
-				reject("Ocorreu um erro ao excluir a imagem");
+				reject("Erro ao remover a imagem");
 			});
 	});
 };
@@ -191,46 +189,37 @@ export const getBlobFromIndexedDB = (id: string): Promise<Blob> => {
 export const uploadFileOnS3 = (
 	blob: Blob,
 	fileName: string,
-	folderName: string,
-): Promise<string | undefined> => {
+): Promise<string> => {
 	return new Promise((resolve, reject) => {
-		const token = localStorage.getItem("token");
-		const file = new File(
-			[blob],
-			`${folderName}${new Date().getTime().toString()}-${fileName}`,
-			{
-				type: blob.type,
+		const s3 = new AWS.S3({
+			region: process.env.AWS_REGION ?? "",
+			credentials: {
+				accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
+				secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
 			},
-		);
+		});
 
-		const formData = new FormData();
-		formData.append("file", file);
-
-		fetch(`${url}/api/file?folderName=${folderName}`, {
-			method: "POST",
-			headers: {
-				Authorization: `Bearer ${token}`,
+		new Upload({
+			client: s3,
+			leavePartsOnError: false,
+			params: {
+				Bucket: process.env.AWS_BUCKET_NAME,
+				Key: fileName,
+				Body: blob,
+				ContentDisposition: "inline",
+				ContentType: blob.type,
 			},
-			body: formData,
 		})
-			.then(async (response) => {
-				if (!response.ok) {
-					reject(`Erro ao fazer upload do arquivo: ${response.statusText}`);
-				}
-
-				const data = await response.json();
-				resolve(data.data);
+			.done()
+			.then(() => {
+				const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+				resolve(url);
 			})
-			.catch((error) => {
-				reject(error);
+			.catch(() => {
+				reject("Ocorreu um erro ao fazer upload do arquivo");
 			});
 	});
 };
-
-export const delay = (minutes: number, seconds: number) =>
-	new Promise((resolve) =>
-		setTimeout(resolve, (minutes * 60 + seconds) * 1000),
-	);
 
 export const blobToFile = (
 	blob: Blob,
@@ -285,114 +274,6 @@ export const generateThumbnail = (
 		};
 
 		video.src = URL.createObjectURL(videoFile);
-	});
-};
-
-export const getUserIdWithToken = async (): Promise<{ id: string }> => {
-	const token = localStorage.getItem("token");
-	const responseDecodedToken = await fetch(
-		`${url}/api/decoded-token?token=${token}`,
-		{
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: `Bearer ${token}`,
-			},
-		},
-	);
-
-	const decodedToken = await responseDecodedToken.json();
-
-	return decodedToken.data;
-};
-
-export const postItemDatabase = async (
-	item: "audio" | "funil" | "gatilho" | "midia" | "mensagem",
-	clientId: string,
-	body: any,
-): Promise<any> => {
-	return new Promise((resolve, reject) => {
-		try {
-			const token = localStorage.getItem("token");
-			fetch(`${url}/api/client/${item}?clientId=${clientId}`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-				body,
-			}).then(async (response) => {
-				const data = await response.json();
-
-				if (response.status >= 400 && response.status < 600) {
-					reject(new Error("Falha ao criar um item"));
-				}
-
-				resolve(data);
-			});
-		} catch (error) {
-			console.error("Falha ao criar um item:", error);
-			reject(new Error("Falha ao criar um item"));
-		}
-	});
-};
-
-export const deleteItemDatabase = async (
-	item: "audio" | "funil" | "gatilho" | "midia" | "mensagem",
-	clientId: string,
-	id: string,
-): Promise<any> => {
-	return new Promise((resolve, reject) => {
-		try {
-			const token = localStorage.getItem("token");
-			fetch(`${url}/api/client/${item}?id=${id}&clientId=${clientId}`, {
-				method: "DELETE",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-			}).then(async (response) => {
-				const data = await response.json();
-
-				if (response.status >= 400 && response.status < 600) {
-					reject(new Error("Falha ao excluir um item"));
-				}
-				resolve(data);
-			});
-		} catch (error) {
-			console.error("Falha ao excluir um item:", error);
-			reject(new Error("Falha ao excluir um item"));
-		}
-	});
-};
-
-export const putItemDatabase = async (
-	item: "audio" | "funil" | "gatilho" | "midia" | "mensagem",
-	body: any,
-): Promise<any> => {
-	return new Promise((resolve, reject) => {
-		try {
-			const token = localStorage.getItem("token");
-			fetch(`${url}/api/client/${item}`, {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-				body,
-			}).then(async (response) => {
-				const data = await response.json();
-
-				if (response.status >= 400 && response.status < 600) {
-					reject(new Error("Falha ao salvar alterações"));
-				}
-
-				resolve(data);
-			});
-		} catch (error) {
-			console.error("Erro ao salvar alterações:", error);
-			reject(new Error("Erro ao salvar alterações"));
-		}
 	});
 };
 
@@ -453,9 +334,8 @@ type Item = Gatilho | Funil | Mensagem | Midia | Audio;
 export const addItem = <T extends Item>(
 	newItem: T,
 	data: { itens: T[] },
-	databaseId: string,
 ): T[] => {
-	const newItemWithId = { ...newItem, id: databaseId };
+	const newItemWithId = { ...newItem, id: uuidv4() };
 	const newItens = [...data.itens, newItemWithId];
 
 	chrome.storage.sync.set({ [newItem.type.toLocaleLowerCase()]: newItens });

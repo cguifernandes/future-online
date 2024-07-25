@@ -7,12 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
-import {
-	deleteItemDatabase,
-	getUserIdWithToken,
-	putItemDatabase,
-	removeItem,
-} from "../../utils/utils";
+import { removeItem } from "../../utils/utils";
 import toast from "react-hot-toast";
 import Spinner from "../components/spinner";
 
@@ -53,16 +48,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 	const handlerSubmit = async (formData: z.infer<typeof schema>) => {
 		try {
 			setIsLoading(true);
-
-			const clientId = await getUserIdWithToken();
-			await putItemDatabase(
-				"mensagem",
-				JSON.stringify({
-					id: contentItem.id,
-					clientId: clientId.id,
-					newMensagem: formData,
-				}),
-			);
 
 			const updatedItem = {
 				...contentItem,
@@ -125,22 +110,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					onClick={async () => {
 						try {
 							setIsLoading(true);
-							const clientId = await getUserIdWithToken();
-
-							await deleteItemDatabase(
-								"mensagem",
-								clientId.id,
-								contentItem.id,
-							).catch((e) => {
-								console.log(e);
-								toast.error("Falha ao salvar alterações", {
-									position: "bottom-right",
-									className: "text-base ring-2 ring-[#E53E3E]",
-									duration: 5000,
-								});
-								setIsLoadingRemove(false);
-								return;
-							});
 
 							setData({ itens: await removeItem(contentItem, "mensagens") });
 							setContentItem(undefined);

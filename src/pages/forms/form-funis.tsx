@@ -5,17 +5,10 @@ import Button from "../components/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	deleteItemDatabase,
-	getFunilItem,
-	getUserIdWithToken,
-	putItemDatabase,
-	removeItem,
-} from "../../utils/utils";
+import { getFunilItem, removeItem } from "../../utils/utils";
 import { Image, Mail, Mic, Plus, Timer, Trash2 } from "lucide-react";
 import clsx from "clsx";
 import toast from "react-hot-toast";
-import Spinner from "../components/spinner";
 
 interface Props {
 	contentItem: Funil;
@@ -36,7 +29,6 @@ const Form = ({
 }: Props) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isLoadingItem, setIsLoadingItem] = useState(false);
-	const [isLoadingRemove, setIsLoadingRemove] = useState(false);
 	const [dataItem, setDataItem] = useState<{
 		data: {
 			item: Midia | Mensagem;
@@ -99,19 +91,6 @@ const Form = ({
 		try {
 			const updatedItem: Funil = { ...contentItem, title: formData.title };
 
-			const clientId = await getUserIdWithToken();
-			await putItemDatabase(
-				"funil",
-				JSON.stringify({
-					id: contentItem.id,
-					clientId: clientId.id,
-					newFunil: {
-						title: formData.title,
-						item: dataItem.data.map((item) => item),
-					},
-				}),
-			);
-
 			chrome.storage.sync.get("funis", (result) => {
 				const funis = result.funis || [];
 				const updatedItems: Funil[] = funis.map((item) =>
@@ -144,21 +123,6 @@ const Form = ({
 	};
 
 	const handlerRemoveFunil = async () => {
-		const clientId = await getUserIdWithToken();
-
-		await deleteItemDatabase("funil", clientId.id, contentItem.id).catch(
-			(e) => {
-				console.log(e);
-				toast.error("Falha ao salvar alterações", {
-					position: "bottom-right",
-					className: "text-base ring-2 ring-[#E53E3E]",
-					duration: 5000,
-				});
-				setIsLoadingRemove(false);
-				return;
-			},
-		);
-
 		setData({ itens: await removeItem(contentItem, "funis") });
 		setContentItem(undefined);
 	};
@@ -170,20 +134,6 @@ const Form = ({
 
 			if (funil) {
 				funil.item.splice(index, 1);
-
-				const clientId = await getUserIdWithToken();
-				await putItemDatabase(
-					"funil",
-					JSON.stringify({
-						id: contentItem.id,
-						clientId: clientId.id,
-						newFunil: {
-							id: funil.id,
-							title: funil.title,
-							item: funil.item,
-						},
-					}),
-				);
 
 				chrome.storage.sync.set({ funis }, () => {
 					setData({ itens: funis });
@@ -216,11 +166,7 @@ const Form = ({
 					onClick={handlerRemoveFunil}
 					className="p-2 flex items-center justify-center w-12 h-12 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 				>
-					{isLoadingRemove ? (
-						<Spinner />
-					) : (
-						<Trash2 color="#fff" size={24} strokeWidth={1.5} />
-					)}
+					<Trash2 color="#fff" size={24} strokeWidth={1.5} />
 				</button>
 			</div>
 			{dataItem.data.length > 0 ? (
@@ -282,11 +228,7 @@ const Form = ({
 											onClick={() => handlerRemoveFunilItem(index)}
 											className="ml-auto flex items-center justify-center w-8 h-8 rounded-lg transition-all bg-red-600 hover:bg-red-700"
 										>
-											{isLoadingRemove ? (
-												<Spinner />
-											) : (
-												<Trash2 color="#fff" size={20} strokeWidth={1.5} />
-											)}
+											<Trash2 color="#fff" size={20} strokeWidth={1.5} />
 										</button>
 									</div>
 								</div>

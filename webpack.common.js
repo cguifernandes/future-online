@@ -10,9 +10,6 @@ module.exports = {
 	entry: {
 		popup: path.resolve(__dirname, "src/popup/index.tsx"),
 		dashboard: path.resolve(__dirname, "src/pages/dashboard/index.tsx"),
-		login: path.resolve(__dirname, "src/pages/login/index.tsx"),
-		panel: path.resolve(__dirname, "src/pages/panel-control/index.tsx"),
-		config: path.resolve(__dirname, "src/pages/config/index.tsx"),
 		"content/content": path.resolve(__dirname, "src/content/content.ts"),
 		"background/background": path.resolve(
 			__dirname,
@@ -70,14 +67,7 @@ module.exports = {
 				},
 			],
 		}),
-		...getHtmlPlugins([
-			"popup",
-			"dashboard",
-			"login",
-			"panel",
-			"config",
-			"button",
-		]),
+		...getHtmlPlugins(["popup", "dashboard"]),
 		new Dotenv(),
 	],
 	resolve: {

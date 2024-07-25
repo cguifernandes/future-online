@@ -124,23 +124,14 @@ const validateData = async (data: StorageData) => {
 	const pattern = createOrAppendPattern(footer);
 	if (!pattern) return;
 
-	if (!data.account?.isLogin) {
-		showErrorMessage(
-			"Você precisa estar logado para usar a extensão",
-			undefined,
-			pattern,
-		);
-		return;
-	}
-
-	if (data.account?.isLogin && data.account.licenseDate) {
-		const licenseDate = data.account.licenseDate;
-		const [day, month, year] = licenseDate.split("/");
-		const convertDate = new Date(Number(year), Number(month) - 1, Number(day));
+	if (data.account.licenseDate) {
+		const licenseDate = new Date(data.account.licenseDate);
+		const licenseDateWithoutTime = new Date(licenseDate);
+		licenseDateWithoutTime.setHours(0, 0, 0, 0);
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
 
-		if (convertDate < today) {
+		if (licenseDateWithoutTime < today) {
 			const existMessageError = pattern.querySelector(
 				".error-message-future-online",
 			);
@@ -155,12 +146,11 @@ const validateData = async (data: StorageData) => {
 	}
 
 	if (
-		data.account?.isLogin &&
-		(!data ||
-			(!isNonEmptyArray(data?.funis) &&
-				!isNonEmptyArray(data?.mensagens) &&
-				!isNonEmptyArray(data?.midias) &&
-				!isNonEmptyArray(data?.audios)))
+		!data ||
+		(!isNonEmptyArray(data?.funis) &&
+			!isNonEmptyArray(data?.mensagens) &&
+			!isNonEmptyArray(data?.midias) &&
+			!isNonEmptyArray(data?.audios))
 	) {
 		const existMessageError = pattern.querySelector(
 			".error-message-future-online",
@@ -219,28 +209,14 @@ window.addEventListener("loadWpp", async () => {
 				data = revalidateData.data;
 			}
 
-			if (!data.account?.isLogin) {
-				clearPatternContent();
-				showErrorMessage(
-					"Você precisa estar logado para usar a extensão",
-					undefined,
-					pattern,
-				);
-				return;
-			}
-
-			if (data.account?.isLogin && data.account.licenseDate) {
-				const licenseDate = data.account.licenseDate;
-				const [day, month, year] = licenseDate.split("/");
-				const convertDate = new Date(
-					Number(year),
-					Number(month) - 1,
-					Number(day),
-				);
+			if (data.account.licenseDate) {
+				const licenseDate = new Date(data.account.licenseDate);
+				const licenseDateWithoutTime = new Date(licenseDate);
+				licenseDateWithoutTime.setHours(0, 0, 0, 0);
 				const today = new Date();
 				today.setHours(0, 0, 0, 0);
 
-				if (convertDate < today) {
+				if (licenseDateWithoutTime < today) {
 					const existMessageError = pattern.querySelector(
 						".error-message-future-online",
 					);
@@ -256,12 +232,11 @@ window.addEventListener("loadWpp", async () => {
 			}
 
 			if (
-				data.account?.isLogin &&
-				(!data ||
-					(!isNonEmptyArray(data?.funis) &&
-						!isNonEmptyArray(data?.mensagens) &&
-						!isNonEmptyArray(data?.midias) &&
-						!isNonEmptyArray(data?.audios)))
+				!data ||
+				(!isNonEmptyArray(data?.funis) &&
+					!isNonEmptyArray(data?.mensagens) &&
+					!isNonEmptyArray(data?.midias) &&
+					!isNonEmptyArray(data?.audios))
 			) {
 				const existMessageError = pattern.querySelector(
 					".error-message-future-online",

@@ -2,21 +2,13 @@ import { useEffect, useState } from "react";
 import Button from "../components/button";
 import type { Gatilho } from "../../type/type";
 import clsx from "clsx";
-import {
-	addItem,
-	getItem,
-	getUserIdWithToken,
-	postItemDatabase,
-	putItemDatabase,
-} from "../../utils/utils";
+import { addItem, getItem } from "../../utils/utils";
 import { Plus } from "lucide-react";
 import Form from "../forms/form-gatilhos";
 import toast from "react-hot-toast";
-import Spinner from "../components/spinner";
 
 const Gatilhos = () => {
 	const [isLoading, setIsLoading] = useState(false);
-	const [isLoadingCreate, setIsLoadingCreate] = useState(false);
 	const [contentItem, setContentItem] = useState<Gatilho>(undefined);
 	const [data, setData] = useState<{
 		itens: Gatilho[];
@@ -35,65 +27,28 @@ const Gatilhos = () => {
 	}, []);
 
 	const handlerClickAdd = async () => {
-		setIsLoadingCreate(true);
-		const clientId = await getUserIdWithToken();
-
-		postItemDatabase(
-			"gatilho",
-			clientId.id,
-			JSON.stringify({
-				title: "Novo gatilho",
-				active: true,
-				delay: 1,
-				ignoreCase: false,
-				saveContacts: false,
-				sendGroups: false,
-				funil: {
-					id: undefined,
-					name: undefined,
+		setData({
+			itens: addItem<Gatilho>(
+				{
+					title: "Novo gatilho",
+					type: "gatilhos",
+					active: true,
+					delay: 1,
+					ignoreCase: false,
+					saveContacts: false,
+					sendGroups: false,
+					funil: {
+						id: undefined,
+						name: undefined,
+					},
+					keywords: {
+						key: [],
+						type: { name: "", value: "" },
+					},
 				},
-				keywords: {
-					key: [],
-					type: { name: "", value: "" },
-				},
-			}),
-		)
-			.then((response) => {
-				setData({
-					itens: addItem<Gatilho>(
-						{
-							title: "Novo gatilho",
-							type: "gatilhos",
-							active: true,
-							delay: 1,
-							ignoreCase: false,
-							saveContacts: false,
-							sendGroups: false,
-							funil: {
-								id: undefined,
-								name: undefined,
-							},
-							keywords: {
-								key: [],
-								type: { name: "", value: "" },
-							},
-						},
-						data,
-						response.data.id,
-					),
-				});
-			})
-			.catch((e) => {
-				console.log(e);
-				toast.error("Falha ao salvar alterações", {
-					position: "bottom-right",
-					className: "text-base ring-2 ring-[#E53E3E]",
-					duration: 5000,
-				});
-			})
-			.finally(() => {
-				setIsLoadingCreate(false);
-			});
+				data,
+			),
+		});
 	};
 
 	return (
@@ -115,17 +70,6 @@ const Gatilhos = () => {
 									switchDefaultValue={item.active}
 									onSwitchChange={async (e) => {
 										const updatedItem = { ...item, active: e.target.checked };
-										const clientId = await getUserIdWithToken();
-										const { type, ...itemWithoutType } = updatedItem;
-
-										await putItemDatabase(
-											"gatilho",
-											JSON.stringify({
-												id: item.id,
-												clientId: clientId.id,
-												newGatilho: { ...itemWithoutType },
-											}),
-										);
 
 										chrome.storage.sync.get("gatilhos", (result) => {
 											const gatilhos = result.gatilhos || [];
@@ -173,15 +117,9 @@ const Gatilhos = () => {
 								theme="orange-dark"
 								className="hover:bg-orange-800 min-w-36 flex items-center justify-center"
 								onClick={handlerClickAdd}
-								icon={
-									isLoadingCreate ? undefined : <Plus size={18} color="#fff" />
-								}
+								icon={<Plus size={18} color="#fff" />}
 							>
-								{isLoadingCreate ? (
-									<Spinner className="fill-purple-800" />
-								) : (
-									"Novo item"
-								)}
+								Novo item
 							</Button>
 						</div>
 					</>
@@ -197,15 +135,9 @@ const Gatilhos = () => {
 								theme="orange-dark"
 								onClick={handlerClickAdd}
 								className="min-w-36 flex items-center justify-center"
-								icon={
-									isLoadingCreate ? undefined : <Plus size={18} color="#fff" />
-								}
+								icon={<Plus size={18} color="#fff" />}
 							>
-								{isLoadingCreate ? (
-									<Spinner className="fill-purple-800" />
-								) : (
-									"Novo item"
-								)}
+								Novo item
 							</Button>
 						</div>
 					</div>

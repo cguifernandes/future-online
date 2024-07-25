@@ -11,6 +11,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 	}
 });
 
+chrome.runtime.onInstalled.addListener(() => {
+	const currentDate = new Date();
+	const futureDate = new Date(currentDate);
+	futureDate.setDate(currentDate.getDate() + 30);
+
+	const futureDateString = futureDate.toISOString();
+
+	chrome.storage.sync.set({ account: { licenseDate: futureDateString } });
+});
+
 function processDynamicUrl(url: string) {
 	const clientIdMatch = url.match(/config.html\/(.+)/);
 	if (clientIdMatch) {

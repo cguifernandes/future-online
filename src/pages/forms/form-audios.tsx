@@ -9,9 +9,6 @@ import { Audio } from "../../type/type";
 import {
 	ACCEPT_AUDIOS_TYPE,
 	AUDIOS_TYPE,
-	deleteItemDatabase,
-	getUserIdWithToken,
-	putItemDatabase,
 	removeItem,
 	storeBlobInIndexedDB,
 	uploadFileOnS3,
@@ -90,13 +87,12 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			let preview = "";
 
 			if (formData.audio?.blob) {
-				const { account } = await chrome.storage.sync.get("account");
 				const blobId = await storeBlobInIndexedDB(formData.audio.blob);
-				const fileUrl = await uploadFileOnS3(
-					formData.audio.blob,
-					formData.audio.fileName,
-					`${account.email ?? "guest"}/`,
-				);
+				const fileName = `${new Date()
+					.getTime()
+					.toString()}-${formData.audio.fileName.replace(/\s+/g, "-")}`;
+
+				const fileUrl = await uploadFileOnS3(formData.audio.blob, fileName);
 
 				preview = blobId;
 				url = fileUrl;
@@ -110,22 +106,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					preview: preview !== "" ? preview : contentItem.audio.preview,
 				},
 			};
-
-			const clientId = await getUserIdWithToken();
-			await putItemDatabase(
-				"audio",
-				JSON.stringify({
-					id: contentItem.id,
-					clientId: clientId.id,
-					newAudio: {
-						title: formData.title,
-						audio: {
-							url: url !== "" ? url : contentItem.audio.url,
-							preview: preview !== "" ? preview : contentItem.audio.preview,
-						},
-					},
-				}),
-			);
 
 			chrome.storage.sync.get("audios", (result) => {
 				const updatedItems = result.audios.map((item) =>
@@ -172,23 +152,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 					onClick={async () => {
 						try {
 							setIsLoadingRemove(true);
-
-							const clientId = await getUserIdWithToken();
-
-							await deleteItemDatabase(
-								"audio",
-								clientId.id,
-								contentItem.id,
-							).catch((e) => {
-								console.log(e);
-								toast.error("Falha ao excluir um item", {
-									position: "bottom-right",
-									className: "text-base ring-2 ring-[#E53E3E]",
-									duration: 5000,
-								});
-								return;
-							});
-
 							setData({ itens: await removeItem(contentItem, "audios") });
 						} finally {
 							setContentItem(undefined);

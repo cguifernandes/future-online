@@ -48,6 +48,7 @@ const Button = ({
 		return (
 			<div className="relative w-full flex items-center">
 				<button
+					disabled={isLoading}
 					className={button({
 						theme,
 						className: `${className} w-full`,

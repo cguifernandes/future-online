@@ -5,10 +5,7 @@ import File from "../components/file";
 import Textarea from "../components/textarea";
 import {
 	ACCEPT_FILES_TYPE,
-	deleteItemDatabase,
 	FILES_TYPE,
-	getUserIdWithToken,
-	putItemDatabase,
 	removeItem,
 	storeBlobInIndexedDB,
 	uploadFileOnS3,
@@ -98,14 +95,12 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 			let preview = "";
 
 			if (formData.file && formData.file.blob) {
-				const { account } = await chrome.storage.sync.get("account");
 				const blobId = await storeBlobInIndexedDB(formData.file.blob);
+				const fileName = `${new Date()
+					.getTime()
+					.toString()}-${formData.file.fileName.replace(/\s+/g, "-")}`;
 
-				const fileUrl = await uploadFileOnS3(
-					formData.file.blob,
-					formData.file.fileName,
-					`${account.email ?? "guest"}/`,
-				);
+				const fileUrl = await uploadFileOnS3(formData.file.blob, fileName);
 
 				url = fileUrl;
 				preview = blobId;
@@ -121,24 +116,6 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					type: formData.file.type,
 				},
 			};
-
-			const clientId = await getUserIdWithToken();
-			await putItemDatabase(
-				"midia",
-				JSON.stringify({
-					id: contentItem.id,
-					clientId: clientId.id,
-					newMidia: {
-						title: formData.title,
-						file: {
-							subtitle: formData.file.subtitle,
-							url: url !== "" ? url : contentItem.file.url,
-							preview: preview !== "" ? preview : contentItem.file.preview,
-							type: formData.file.type,
-						},
-					},
-				}),
-			);
 
 			chrome.storage.sync.get("midias", (result) => {
 				const updatedItems = result.midias.map((item) =>
@@ -191,23 +168,6 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					onClick={async () => {
 						try {
 							setIsLoadingRemove(true);
-							const clientId = await getUserIdWithToken();
-
-							await deleteItemDatabase(
-								"midia",
-								clientId.id,
-								contentItem.id,
-							).catch((e) => {
-								console.log(e);
-								toast.error("Falha ao excluir um item", {
-									position: "bottom-right",
-									className: "text-base ring-2 ring-[#E53E3E]",
-									duration: 5000,
-								});
-								setIsLoadingRemove(false);
-								return;
-							});
-
 							setData({ itens: await removeItem(contentItem, "midias") });
 						} finally {
 							setContentItem(undefined);
