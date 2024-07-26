@@ -7,6 +7,7 @@ import {
 	ACCEPT_FILES_TYPE,
 	FILES_TYPE,
 	removeItem,
+	sanitizeFileName,
 	storeBlobInIndexedDB,
 	uploadFileOnS3,
 } from "../../utils/utils";
@@ -96,9 +97,9 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 
 			if (formData.file && formData.file.blob) {
 				const blobId = await storeBlobInIndexedDB(formData.file.blob);
-				const fileName = `${new Date()
-					.getTime()
-					.toString()}-${formData.file.fileName.replace(/\s+/g, "-")}`;
+				const fileName = `${new Date().getTime().toString()}-${sanitizeFileName(
+					formData.file.fileName,
+				)}`;
 
 				const fileUrl = await uploadFileOnS3(formData.file.blob, fileName);
 
@@ -190,7 +191,6 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					contentItem={contentItem}
 					onChange={(e) => {
 						const file = e.target.files[0];
-						if (!file) return;
 
 						const blob = new Blob([file], { type: file.type });
 

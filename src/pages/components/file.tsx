@@ -37,7 +37,7 @@ const File = ({
 	const [isLoadingImage, setIsLoadingImage] = useState(false);
 
 	useEffect(() => {
-		if (contentItem.file.preview) {
+		if (contentItem.file.preview !== "") {
 			setIsLoadingImage(true);
 
 			getBlobFromIndexedDB(contentItem.file.preview)

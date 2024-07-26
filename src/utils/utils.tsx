@@ -153,6 +153,12 @@ export const removeItemFromIndexedDB = (id: string): Promise<void> => {
 	});
 };
 
+export const sanitizeFileName = (fileName: string): string => {
+	return encodeURIComponent(
+		fileName.replace(/\s+/g, "-").replace(/[^\w.-]/g, ""),
+	);
+};
+
 export const getBlobFromIndexedDB = (id: string): Promise<Blob> => {
 	return new Promise((resolve, reject) => {
 		const dbName = "blobDB";
@@ -215,7 +221,8 @@ export const uploadFileOnS3 = (
 				const url = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
 				resolve(url);
 			})
-			.catch(() => {
+			.catch((e) => {
+				console.log(e);
 				reject("Ocorreu um erro ao fazer upload do arquivo");
 			});
 	});
