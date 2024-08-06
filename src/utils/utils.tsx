@@ -37,8 +37,14 @@ export const convertUrlToFile = async (path: string, fileName: string) => {
 	}
 };
 
-export const ACCEPT_FILES_TYPE = [".jpeg", ".png", ".svg+xml", ".mp4", ".m4v"];
-export const ACCEPT_AUDIOS_TYPE = [".mp3", ".aac", ".aiff", ".flac"];
+export const ACCEPT_FILES_TYPE = [
+	"image/jpeg",
+	"image/png",
+	"image/svg+xml",
+	"video/mp4",
+	"video/m4v",
+];
+export const ACCEPT_AUDIOS_TYPE = ["audio/mp3", "audio/ogg", "audio/wave"];
 
 export const loadingImage = (file: File): Promise<string> => {
 	return new Promise((resolve, reject) => {

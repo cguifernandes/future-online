@@ -10,6 +10,8 @@ async function injectScripts() {
 			clearInterval(timer);
 			window.dispatchEvent(new CustomEvent("loadWpp"));
 			window.dispatchEvent(new CustomEvent("initGatilho"));
+			window.dispatchEvent(new CustomEvent("getChatsRequest"));
+			window.dispatchEvent(new CustomEvent("storageContacts"));
 		}
 	}, 1000);
 }

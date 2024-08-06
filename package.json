@@ -48,6 +48,7 @@
 		"eslint_d": "^13.1.2",
 		"express": "^4.19.2",
 		"jsonwebtoken": "^9.0.2",
+		"lucide": "^0.424.0",
 		"lucide-react": "^0.383.0",
 		"postcss": "^8.4.14",
 		"prettier": "^3.3.2",

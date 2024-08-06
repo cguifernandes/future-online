@@ -52,37 +52,34 @@
 
 .item-pattern-future-online {
   background-color: #202C33;
-  @apply p-4 flex gap-x-3 relative z-50 max-h-40;
+  @apply px-4 py-3 flex gap-x-3 relative z-50 max-h-40 ;
+  border-top:  1px solid rgba(134, 150, 160, .15);
+  border-left: 1px solid rgba(134, 150, 160, .15);
 }
 
 .item-pattern-future-online button {
   font-family: "Poppins", sans-serif !important;
-  @apply px-2 py-1 rounded-lg text-sm text-white w-fit truncate max-w-[120px]
+  @apply px-2 py-1 rounded-lg text-sm text-white w-fit
 }
 
 .item-message-future-online {
-  @apply flex flex-col gap-y-2 min-w-[22.5%] overflow-y-auto
-}
-
-.item-title-future-online {
-  font-family: "Poppins", sans-serif !important;
-  @apply text-white text-lg font-bold
+  @apply flex gap-2 overflow-y-auto flex-wrap
 }
 
 .button-mensagens-future-online {
-  @apply bg-purple-500 hover:bg-purple-600 min-h-7
+  @apply bg-purple-500 hover:bg-purple-600
 }
 
 .button-midias-future-online {
-  @apply bg-green-500 hover:bg-green-600 min-h-7
+  @apply bg-green-500 hover:bg-green-600
 }
 
 .button-audios-future-online {
-  @apply bg-blue-500 hover:bg-blue-600 min-h-7
+  @apply bg-blue-500 hover:bg-blue-600
 }
 
 .button-funis-future-online {
-  @apply bg-yellow-500 hover:bg-yellow-600 min-h-7
+  @apply bg-yellow-500 hover:bg-yellow-600
 }
 
 .error-message-future-online {
@@ -95,4 +92,45 @@
 
 .error-message-future-online > p {
   @apply text-sm text-white/60
+}
+
+.pattern-tabs-future-online {
+  @apply flex flex-col gap-y-1 w-full
+}
+
+.pattern-tabs-future-online > span {
+  font-family: "Poppins", sans-serif !important;
+  @apply text-white text-base font-bold w-full text-left
+}
+
+.divider-tabs-future-online {
+  background-color: rgba(134, 150, 160, .15);
+  @apply w-full h-px my-2
+}
+
+.tabs-future-online {
+  @apply flex gap-2 justify-start flex-wrap w-full max-h-[66px] overflow-y-auto
+}
+
+.tab-future-online-button {
+  font-family: "Poppins", sans-serif !important;
+  @apply px-2 py-1 rounded-lg text-sm h-fit text-white w-fit bg-aqua-100 transition-all hover:bg-aqua-200
+}
+
+.tabs-future-online > button > span {
+  @apply text-sm
+}
+
+.tabs-empty-button-future-online {
+  font-family: "Poppins", sans-serif !important;
+  border: 1px solid #07ECFF;
+  @apply px-2 py-1 rounded-lg text-sm h-fit text-white w-fit hover:bg-aqua-100 transition-all
+}
+
+.sidebar-future-online {
+  @apply bg-[#202C33] absolute right-[20px] bottom-full px-2 py-3 flex flex-col gap-y-7 rounded-t-md
+}
+
+.sidebar-future-online > button {
+  @apply text-[#8696A0]
 }

@@ -1,4 +1,4 @@
-import type { Audio, Gatilho, Mensagem, Midia } from "../type/type";
+import type { Audio, Contact, Gatilho, Mensagem, Midia } from "../type/type";
 
 window.addEventListener("sendMessage", async (e: CustomEvent) => {
 	const { content, delay, chatId: eventChatId } = e.detail;
@@ -157,7 +157,7 @@ const sendFunil = async (
 	}
 };
 
-const initGatilho = () => {
+window.addEventListener("initGatilho", async () => {
 	try {
 		WPP.on("chat.new_message", async (msg) => {
 			if (msg.type !== "chat") return;
@@ -275,6 +275,66 @@ const initGatilho = () => {
 	} catch (e) {
 		console.log(e);
 	}
-};
+});
 
-initGatilho();
+window.addEventListener("clickTab", async (e: CustomEvent) => {
+	const contacts = e.detail as Contact[];
+
+	const allChats = await WPP.chat.list();
+	allChats.forEach((chat: any) => (chat.__x_shouldAppearInList = false));
+
+	contacts.forEach((contact) => {
+		const chat: any = WPP.chat.get(contact.phone);
+
+		chat.__x_shouldAppearInList = true;
+	});
+
+	const button = document.querySelector(
+		"button.xjb2p0i.x1ypdohk.x972fbf.xcfux6l.x1qhh985.xm0m39n.xzqyx8i.xqa96yk.xvwobac.x1h2y310.x6prxxf.xo1l8bm.x1btupbp.xdxn8r.xmuu9lm.x1690sq9.x1yrsyyn.x10b6aqq.x1ye3gou.xn6708d",
+	) as HTMLButtonElement;
+
+	button.click();
+});
+
+window.addEventListener("showAllContacts", async () => {
+	const allChats = await WPP.chat.list();
+	allChats.forEach((chat: any) => (chat.__x_shouldAppearInList = true));
+
+	const button = document.querySelector(
+		"button.xjb2p0i.x1ypdohk.x972fbf.xcfux6l.x1qhh985.xm0m39n.xzqyx8i.xqa96yk.xvwobac.x1h2y310.x6prxxf.xo1l8bm.x1btupbp.xdxn8r.xmuu9lm.x1690sq9.x1yrsyyn.x10b6aqq.x1ye3gou.xn6708d",
+	) as HTMLButtonElement;
+
+	button.click();
+});
+
+window.addEventListener("getChatsRequest", async () => {
+	const chats = await WPP.chat.list({ count: 75 });
+	const chatsId = chats
+		.filter((chat) => chat.shouldAppearInList)
+		.map((chat) => chat.contact.id._serialized);
+
+	const chatDetailsPromises = chatsId.map(async (chatId) => {
+		const contact = await WPP.contact.get(chatId);
+		const name =
+			contact.name ??
+			contact.verifiedName ??
+			contact.pushname ??
+			contact.shortName ??
+			contact.id.user;
+
+		const url = await WPP.contact.getProfilePictureUrl(chatId, true);
+		return {
+			name,
+			pfp: url ?? "https://i.imgur.com/dKirVs8.png",
+			phone: contact.id._serialized,
+		};
+	});
+
+	const chatDetails = await Promise.all(chatDetailsPromises);
+
+	const event = new CustomEvent("getChats", {
+		detail: chatDetails,
+	});
+
+	window.dispatchEvent(event);
+});

@@ -20,6 +20,7 @@ module.exports = {
 		utils: path.resolve(__dirname, "src/utils/utils.tsx"),
 		"content/injector": path.resolve(__dirname, "src/content/injector.ts"),
 		"content/utils": path.resolve(__dirname, "src/content/utils.ts"),
+		crm: path.resolve(__dirname, "src/pages/crm/index.tsx"),
 	},
 	module: {
 		rules: [
@@ -67,7 +68,7 @@ module.exports = {
 				},
 			],
 		}),
-		...getHtmlPlugins(["popup", "dashboard"]),
+		...getHtmlPlugins(["popup", "dashboard", "crm"]),
 		new Dotenv(),
 	],
 	resolve: {

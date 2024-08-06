@@ -1,4 +1,4 @@
-export interface Midia {
+export type Midia = {
 	type?: "midias";
 	title: string;
 	id?: string;
@@ -9,9 +9,9 @@ export interface Midia {
 		type: "Imagem" | "Vídeo" | "";
 	};
 	delay?: number;
-}
+};
 
-export interface Audio {
+export type Audio = {
 	type?: "audios";
 	title: string;
 	id?: string;
@@ -20,17 +20,28 @@ export interface Audio {
 		preview: string;
 	};
 	delay?: number;
-}
+};
 
-export interface Mensagem {
+export type Tabs = {
+	name: string;
+	contacts: Contact[];
+};
+
+export type Contact = {
+	name: string;
+	pfp: string;
+	phone: string;
+};
+
+export type Mensagem = {
 	type?: "mensagens";
 	content: string;
 	title: string;
 	id?: string;
 	delay?: number;
-}
+};
 
-export interface Funil {
+export type Funil = {
 	type?: "funis";
 	title: string;
 	item: {
@@ -42,9 +53,9 @@ export interface Funil {
 		};
 	}[];
 	id?: string;
-}
+};
 
-export interface Gatilho {
+export type Gatilho = {
 	type?: "gatilhos";
 	title: string;
 	active: boolean;
@@ -69,9 +80,9 @@ export interface Gatilho {
 		name?: string;
 	};
 	id?: string;
-}
+};
 
-export interface StorageData {
+export type StorageData = {
 	mensagens: Mensagem[];
 	midias: Midia[];
 	funis: Funil[];
@@ -82,16 +93,17 @@ export interface StorageData {
 		licenseDate: string | null;
 		email: string | null;
 	};
-}
+	tabs: Tabs[];
+};
 
-export interface ClientResponse {
+export type ClientResponse = {
 	data: Client;
 	message: string;
 	status: number;
 	token: string;
-}
+};
 
-export interface Client {
+export type Client = {
 	audios?: Audio[];
 	date: string;
 	email: string;
@@ -104,4 +116,4 @@ export interface Client {
 	password: string;
 	phone: string;
 	role?: "admin" | "user";
-}
+};

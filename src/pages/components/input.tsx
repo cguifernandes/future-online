@@ -17,7 +17,7 @@ const input = tv({
 });
 
 interface Props {
-	error?: string;
+	error?: string | undefined;
 	label?: string;
 	labelClassName?: string;
 	patternClassName?: string;

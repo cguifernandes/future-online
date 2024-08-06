@@ -121,7 +121,7 @@ const Audios = ({
 							)}
 							<label htmlFor="input-file" className="text-white text-center">
 								Formatos aceitos: <br />
-								'.mp3'
+								.mp3 .ogg .wave
 							</label>
 						</>
 					)}

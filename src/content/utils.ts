@@ -1,11 +1,4 @@
-import {
-	Audio,
-	Funil,
-	Gatilho,
-	Mensagem,
-	Midia,
-	StorageData,
-} from "../type/type";
+import { Audio, Funil, Mensagem, Midia } from "../type/type";
 import "./whatsapp.css";
 
 window.addEventListener("getGatilhosRequest", async () => {
@@ -201,10 +194,8 @@ export const createButton = (
 export const loadItens = async ({
 	itens,
 	pattern,
-	titleText,
 	type,
 }: {
-	titleText: string;
 	itens: Mensagem[] | Funil[] | Audio[] | Midia[];
 	pattern: HTMLDivElement;
 	type: "mensagens" | "audios" | "midias" | "funis" | "account" | "gatilhos";
@@ -218,10 +209,6 @@ export const loadItens = async ({
 	if (existPattern) return;
 
 	const content = document.createElement("div");
-	const title = document.createElement("h1");
-	title.textContent = titleText;
-	title.className = "item-title-future-online";
-	content.appendChild(title);
 
 	itens.forEach((item) => {
 		const button = createButton(item, `button-${type}-future-online`);
@@ -229,6 +216,7 @@ export const loadItens = async ({
 	});
 
 	content.className = `item-message-future-online ${type}`;
+	content.id = type;
 	const order = ["mensagens", "midias", "audios", "funis"];
 
 	let insertBeforeElement: HTMLElement | null = null;
@@ -413,23 +401,6 @@ export const createOrAppendPattern = (footer: HTMLElement): HTMLDivElement => {
 	return pattern;
 };
 
-export const clearMessageError = () => {
-	const main = document.querySelector("div#main");
-	if (!main) return;
-
-	const footer = main.querySelector("footer");
-	if (!footer) return;
-
-	const pattern = footer.querySelector(".item-pattern-future-online");
-	if (!pattern) return;
-
-	const errorMessage = pattern.querySelector(".error-message-future-online");
-
-	if (errorMessage) {
-		pattern.removeChild(errorMessage);
-	}
-};
-
 export const changeMessageError = (message: string, subMessage?: string) => {
 	const main = document.querySelector("div#main");
 	if (!main) return;
@@ -507,232 +478,4 @@ export const clearPatternContent = () => {
 	}
 
 	return;
-};
-
-export const revalidateStorage = async (
-	oldData: StorageData,
-): Promise<{ data: undefined | StorageData; passDifference: boolean }> => {
-	const newData = (await chrome.storage.sync.get()) as StorageData;
-
-	const differences = findDifferences(oldData, newData);
-	if (differences.length === 0)
-		return {
-			data: undefined,
-			passDifference: false,
-		};
-
-	const main = document.querySelector("div#main");
-	if (!main) return;
-
-	const footer = main.querySelector("footer");
-	if (!footer) return;
-
-	const pattern = footer.querySelector(
-		".item-pattern-future-online",
-	) as HTMLDivElement;
-
-	const titleMap = {
-		mensagens: "Mensagens",
-		audios: "Áudios",
-		midias: "Mídias",
-		funis: "Funis",
-	};
-
-	const existMessageError = pattern.querySelector(
-		".error-message-future-online",
-	);
-	if (existMessageError) {
-		pattern.removeChild(existMessageError);
-	}
-
-	differences.forEach(async (diff) => {
-		if (diff.type === "account") return;
-		const data = await loadStorageData(diff.type);
-
-		const pattern = document.querySelector(
-			".item-pattern-future-online",
-		) as HTMLDivElement;
-
-		const item: Midia | Audio | Funil | Mensagem = data?.find(
-			(item) => item.id === diff.id,
-		);
-		if (!pattern) return;
-
-		if (diff.action === "added") {
-			const content = pattern.querySelector(
-				`.item-message-future-online.${diff.type}`,
-			);
-
-			if (!content) {
-				const processedData = [];
-				processedData.push(item);
-
-				loadItens({
-					titleText: titleMap[diff.type],
-					itens: processedData,
-					pattern,
-					type: diff.type,
-				});
-
-				return;
-			}
-
-			const button = createButton(item, `button-${diff.type}-future-online`);
-			content.appendChild(button);
-		} else if (diff.action === "removed") {
-			const content = pattern.querySelector(
-				`.item-message-future-online.${diff.type}`,
-			);
-
-			if (!content) return;
-
-			const buttons = content.querySelectorAll("button");
-
-			buttons.forEach((button) => {
-				const elementId = button.id;
-
-				const existsInNewData = data.some((item) => item.id === elementId);
-
-				if (!existsInNewData) {
-					content.removeChild(button);
-				}
-			});
-
-			if (content.children.length === 1) {
-				while (content.firstChild) {
-					content.removeChild(content.firstChild);
-				}
-			}
-
-			if (content) {
-				content.remove();
-			}
-		} else if (diff.action === "changed") {
-			const content = pattern.querySelector(
-				`.item-message-future-online.${diff.type}`,
-			);
-
-			if (!content) return;
-
-			const buttons = content.querySelectorAll("button");
-			let buttonIndex = -1;
-
-			buttons.forEach((button, index) => {
-				const elementId = button.id;
-
-				if (elementId === item.id) {
-					buttonIndex = index + 1;
-					content.removeChild(button);
-				}
-			});
-
-			const button = createButton(item, `button-${diff.type}-future-online`);
-			if (buttonIndex >= 0 && buttonIndex < content.children.length) {
-				content.insertBefore(button, content.children[buttonIndex]);
-			} else {
-				content.appendChild(button);
-			}
-		}
-
-		if (pattern.children.length === 0) {
-			while (pattern.firstChild) {
-				pattern.removeChild(pattern.firstChild);
-			}
-		}
-	});
-
-	return {
-		data: newData,
-		passDifference: true,
-	};
-};
-
-type Difference = {
-	id: string;
-	type: "mensagens" | "audios" | "midias" | "funis" | "account";
-	action: "changed" | "removed" | "added";
-};
-
-const findDifferences = (
-	oldData: StorageData,
-	newData: StorageData,
-): Difference[] => {
-	const differences: Difference[] = [];
-
-	const compareArrays = <U extends Mensagem | Midia | Funil | Audio | Gatilho>(
-		type: "mensagens" | "audios" | "midias" | "funis" | "account",
-		arr1: U[] = [],
-		arr2: U[] = [],
-	): void => {
-		const ids1 = arr1.map((item) => item.id);
-		const ids2 = arr2.map((item) => item.id);
-
-		const uniqueIds = Array.from(new Set([...ids1, ...ids2]));
-
-		uniqueIds.forEach((id) => {
-			const item1 = arr1.find((item) => item.id === id);
-			const item2 = arr2.find((item) => item.id === id);
-
-			if (!item1) {
-				differences.push({ id, type, action: "added" });
-			} else if (!item2) {
-				differences.push({ id, type, action: "removed" });
-			} else {
-				if (
-					type === "mensagens" &&
-					((item1 as Mensagem).content !== (item2 as Mensagem).content ||
-						(item1 as Mensagem).delay !== (item2 as Mensagem).delay ||
-						(item1 as Mensagem).title !== (item2 as Mensagem).title)
-				) {
-					differences.push({ id, type, action: "changed" });
-				} else if (
-					type === "midias" &&
-					((item1 as Midia).file.url !== (item2 as Midia).file.url ||
-						(item1 as Midia).file.subtitle !== (item2 as Midia).file.subtitle ||
-						(item1 as Midia).file.preview !== (item2 as Midia).file.preview ||
-						(item1 as Midia).file.type !== (item2 as Midia).file.type ||
-						(item1 as Midia).delay !== (item2 as Midia).delay ||
-						(item1 as Midia).title !== (item2 as Midia).title)
-				) {
-					differences.push({ id, type, action: "changed" });
-				} else if (type === "funis") {
-					const item1Funil = item1 as Funil;
-					const item2Funil = item2 as Funil;
-
-					const itemChanged = item1Funil.item?.some((item, index) => {
-						const otherItem = item2Funil.item[index];
-						return (
-							item.selectedId !== otherItem.selectedId ||
-							item.type !== otherItem.type ||
-							item.delay.minutes !== otherItem.delay.minutes ||
-							item.delay.seconds !== otherItem.delay.seconds
-						);
-					});
-
-					if (
-						item1Funil.title !== item2Funil.title ||
-						item1Funil.item?.length !== item2Funil.item?.length ||
-						itemChanged
-					) {
-						differences.push({ id, type, action: "changed" });
-					}
-				}
-			}
-		});
-	};
-
-	compareArrays("mensagens", oldData.mensagens, newData.mensagens);
-	compareArrays("midias", oldData.midias, newData.midias);
-	compareArrays("funis", oldData.funis, newData.funis);
-	compareArrays("audios", oldData.audios, newData.audios);
-
-	if (
-		oldData.account.isLogin !== newData.account.isLogin ||
-		oldData.account.email !== newData.account.email ||
-		oldData.account.licenseDate !== newData.account.licenseDate
-	) {
-		differences.push({ id: "account", type: "account", action: "changed" });
-	}
-
-	return differences;
 };
