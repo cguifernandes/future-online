@@ -43,7 +43,9 @@ export const ACCEPT_FILES_TYPE = [
 	"image/svg+xml",
 	"video/mp4",
 	"video/m4v",
+	"application/pdf",
 ];
+
 export const ACCEPT_AUDIOS_TYPE = ["audio/mp3", "audio/ogg", "audio/wave"];
 
 export const loadingImage = (file: File): Promise<string> => {
@@ -260,7 +262,7 @@ export const generateThumbnail = (
 		video.muted = true;
 
 		video.onloadedmetadata = () => {
-			video.currentTime = Math.min(video.duration / 2, 5);
+			video.currentTime = Math.min(video.duration / 2, 100);
 		};
 
 		video.onseeked = () => {
@@ -376,20 +378,25 @@ export const removeItem = async <
 		});
 	});
 
-	if (type === "midias" || type === "audios") {
+	if (
+		(type === "midias" || type === "audios") &&
+		(removeItem as Midia).file.type !== "Documento"
+	) {
 		const isMidias = type === "midias";
 		const isAudios = type === "audios";
 
-		const url = isMidias
-			? (removeItem as Midia).file.url
-			: isAudios
-				? (removeItem as Audio).audio.url
-				: null;
-		const preview = isMidias
-			? (removeItem as Midia).file.preview
-			: isAudios
-				? (removeItem as Audio).audio.preview
-				: null;
+		let url: string | null = null;
+		let preview: string | null = null;
+
+		if (isMidias) {
+			const midiaItem = removeItem as Midia;
+			url = midiaItem.file.url;
+			preview = midiaItem.file.preview;
+		} else if (isAudios) {
+			const audioItem = removeItem as Audio;
+			url = audioItem.audio.url;
+			preview = audioItem.audio.preview;
+		}
 
 		if (preview) {
 			await removeItemFromIndexedDB(preview);

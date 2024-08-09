@@ -6,7 +6,7 @@ export type Midia = {
 		url: string;
 		subtitle: string;
 		preview: string | undefined;
-		type: "Imagem" | "Vídeo" | "";
+		type: "Imagem" | "Vídeo" | "Documento" | "";
 	};
 	delay?: number;
 };

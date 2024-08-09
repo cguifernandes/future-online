@@ -39,12 +39,24 @@ const sendFileMessage = async (
 		return;
 	}
 
+	if (file.type.startsWith("application")) {
+		await WPP.chat.sendFileMessage(chatId, file, {
+			type: "document",
+			mimetype: file.type,
+			delay,
+		});
+
+		return;
+	}
+
 	await WPP.chat.sendFileMessage(chatId, file, {
 		type: "auto-detect",
 		caption: subtitle,
 		mimetype: file.type,
 		delay,
 	});
+
+	return;
 };
 
 window.addEventListener("sendFile", async (e: CustomEvent) => {
@@ -54,6 +66,13 @@ window.addEventListener("sendFile", async (e: CustomEvent) => {
 		const chatId = eventChatId || activeChat?.id?._serialized;
 
 		if (!chatId) return;
+
+		if (file.type.startsWith("application")) {
+			await sendFileMessage(chatId, file, delay, subtitle);
+			window.dispatchEvent(new CustomEvent("loadingEnd"));
+
+			return;
+		}
 
 		if (type === "audios") {
 			await WPP.chat.markIsRecording(chatId, delay ?? 30000);

@@ -39,13 +39,15 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 			subtitle: z.string().optional(),
 			blob: z
 				.instanceof(Blob, {
-					message: "O arquivo deve ser um vídeo ou uma imagem",
+					message: "Arquivo inválido",
 				})
 				.refine(
 					(value) =>
-						value.type.startsWith("image") || value.type.startsWith("video"),
+						value.type.startsWith("image") ||
+						value.type.startsWith("video") ||
+						value.type.startsWith("application/pdf"),
 					{
-						message: "O arquivo deve ser um vídeo ou uma imagem",
+						message: "Arquivo inválido",
 					},
 				)
 				.refine((value) => value.size < 3 * 1024 * 1024 * 1024, {
@@ -53,7 +55,7 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 				})
 				.optional(),
 			fileName: z.string().optional(),
-			type: z.enum(["", "Imagem", "Vídeo"]).optional(),
+			type: z.enum(["", "Imagem", "Vídeo", "Documento"]).optional(),
 		}),
 	});
 
@@ -96,15 +98,19 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 			let preview = "";
 
 			if (formData.file && formData.file.blob) {
-				const blobId = await storeBlobInIndexedDB(formData.file.blob);
 				const fileName = `${new Date().getTime().toString()}-${sanitizeFileName(
 					formData.file.fileName,
 				)}`;
 
-				const fileUrl = await uploadFileOnS3(formData.file.blob, fileName);
+				if (formData.file.type === "Documento") {
+					preview = formData.file.fileName;
+				} else {
+					const blobId = await storeBlobInIndexedDB(formData.file.blob);
+					preview = blobId;
+				}
 
+				const fileUrl = await uploadFileOnS3(formData.file.blob, fileName);
 				url = fileUrl;
-				preview = blobId;
 			}
 
 			const updatedItem: Midia = {
@@ -193,17 +199,17 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 						const file = e.target.files[0];
 
 						const blob = new Blob([file], { type: file.type });
+						const fileType = file
+							? file.type.includes("video")
+								? "Vídeo"
+								: file.type.includes("image")
+									? "Imagem"
+									: "Documento"
+							: "Documento";
 
 						setValue("file.blob", blob);
 						setValue("file.fileName", file.name);
-						setValue(
-							"file.type",
-							file
-								? file.type.includes("video")
-									? "Vídeo"
-									: "Imagem"
-								: contentItem.file.type,
-						);
+						setValue("file.type", fileType);
 					}}
 					name="file.blobUrl"
 					setError={setError}

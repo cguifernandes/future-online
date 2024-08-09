@@ -35,10 +35,18 @@ const File = ({
 }: Props) => {
 	const [imagePreview, setImagePreview] = useState<string | null>(null);
 	const [isLoadingImage, setIsLoadingImage] = useState(false);
+	const [documentPreview, setDocumentPreview] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (contentItem.file.preview !== "") {
 			setIsLoadingImage(true);
+
+			if (contentItem.file.type === "Documento") {
+				setImagePreview(null);
+				setDocumentPreview(contentItem.file.preview);
+				setIsLoadingImage(false);
+				return;
+			}
 
 			getBlobFromIndexedDB(contentItem.file.preview)
 				.then(async (blob) => {
@@ -66,6 +74,7 @@ const File = ({
 		} else {
 			setImagePreview(null);
 			setIsLoadingImage(false);
+			setDocumentPreview(null);
 		}
 	}, [contentItem]);
 
@@ -77,19 +86,27 @@ const File = ({
 		setImagePreview(null);
 
 		let preview = "";
+
 		if (file.type.includes("video")) {
 			preview = (await generateThumbnail(file, true)) as string;
 			setIsLoadingImage(false);
-		} else {
+			setDocumentPreview(null);
+			setImagePreview(preview);
+		} else if (file.type.includes("image")) {
 			preview = await loadingImage(file);
 			setIsLoadingImage(false);
+			setDocumentPreview(null);
+			setImagePreview(preview);
+		} else {
+			setImagePreview(null);
+			setIsLoadingImage(false);
+			setDocumentPreview(file.name);
 		}
 
 		if (setValue && name) {
 			setValue(name, file);
 		}
 
-		setImagePreview(preview);
 		onChange(e);
 	};
 
@@ -116,11 +133,16 @@ const File = ({
 							src={imagePreview}
 							alt="Imagem"
 						/>
+					) : documentPreview ? (
+						<div className="bg-white rounded-md p-4">
+							<p className="text-black text-base">{documentPreview}</p>
+						</div>
 					) : (
 						<label htmlFor="input-file" className="text-white text-center">
 							Formatos aceitos: <br />
 							Fotos: '.jpg', '.jpeg', '.png', '.svg' <br />
-							Vídeos: '.m4v', '.mp4'
+							Vídeos: '.m4v', '.mp4' <br />
+							Documentos: '.pdf'
 						</label>
 					)}
 				</div>
