@@ -218,7 +218,7 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 				<Textarea
 					name="subtitle"
 					theme="green"
-					className="resize-none"
+					className="resize-none h-full"
 					placeholder="Insira uma legenda para a mídia (Opcional)"
 					{...register("file.subtitle")}
 				/>

@@ -22,6 +22,21 @@ export type Audio = {
 	delay?: number;
 };
 
+export type Trigger = {
+	type?: "triggers";
+	id?: string;
+	title?: string;
+	trigger?: {
+		message?: string;
+		type?: "saveContacts" | "notSaveContacts";
+		delay?: {
+			value1?: number;
+			value2?: number;
+		};
+		phones?: string[];
+	};
+};
+
 export type Tabs = {
 	name: string;
 	contacts: Contact[];
@@ -88,9 +103,12 @@ export type StorageData = {
 	funis: Funil[];
 	audios: Audio[];
 	gatilhos: Gatilho[];
+	triggers: Trigger[];
 	account: {
 		isLogin: boolean;
 		licenseDate: string | null;
+		role: string | null;
+		logo: string | null;
 		email: string | null;
 	};
 	tabs: Tabs[];

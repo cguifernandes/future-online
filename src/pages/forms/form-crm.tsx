@@ -67,7 +67,7 @@ const Form = ({ setTabs }: Props) => {
 			<Input
 				labelClassName="!text-black"
 				placeholder="Digite o nome de uma nova aba"
-				className="!bg-transparent !text-black !ring-2 !ring-aqua-100"
+				className="!bg-transparent !text-black !ring-2 !ring-gray-800"
 				label="Crie uma nova aba"
 				patternClassName="flex-1"
 				maxLength={32}
@@ -79,7 +79,7 @@ const Form = ({ setTabs }: Props) => {
 				style={{
 					margin: errors.tabName ? "auto 0px" : "",
 				}}
-				className="transition-all rounded-lg flex items-center justify-center bg-aqua-100 size-[46px] hover:bg-aqua-200"
+				className="transition-all rounded-lg flex items-center justify-center bg-gray-800 size-[46px] hover:bg-gray-700"
 			>
 				<Plus color="#fff" size={22} />
 			</button>

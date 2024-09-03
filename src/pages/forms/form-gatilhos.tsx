@@ -228,7 +228,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 									errors.funil?.id?.message ||
 									errors.funil?.name?.message
 								}
-								size="small"
 								isLoading={isLoading}
 								options={funis.itens.map((funil) => ({
 									title: funil.title,
@@ -274,13 +273,13 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 						/>
 					</div>
 				</div>
-				<div className="text-white max-h-[128px] justify-between flex-1 bg-black/30 px-4 rounded-lg transition-all py-3 gap-y-2 flex flex-col">
+				<div className="text-white max-h-[128px] justify-between flex-1 bg-gray-900 px-4 rounded-lg transition-all py-3 gap-y-2 flex flex-col">
 					<div className="flex items-center gap-x-2">
 						<span className="text-white text-base">Se</span>
 						<Select
 							zIndex={50}
 							className="w-full"
-							size="small"
+							contentClassName="!bg-gray-800"
 							defaultValue={
 								contentItem.keywords.type.name === ""
 									? undefined

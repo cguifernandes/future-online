@@ -37,8 +37,13 @@
   @apply absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/60 z-50
 }
 
+.loading-overlay.trigger {
+  @apply absolute top-0 left-0 w-full h-full flex items-center flex-col gap-y-1 justify-center bg-black/60 z-50
+}
+
 .loading-text {
-  @apply text-white text-lg
+  font-family: "Poppins", sans-serif !important;
+  @apply text-white text-lg text-center line-clamp-2 px-3
 }
 
 .button-popup-future-online {
@@ -55,6 +60,10 @@
   @apply px-4 py-3 flex gap-x-3 relative z-50 max-h-40 ;
   border-top:  1px solid rgba(134, 150, 160, .15);
   border-left: 1px solid rgba(134, 150, 160, .15);
+}
+
+.item-message-future-online.triggers {
+  height: 65px;
 }
 
 .item-pattern-future-online button {
@@ -82,8 +91,16 @@
   @apply bg-yellow-500 hover:bg-yellow-600
 }
 
+.button-triggers-future-online {
+  @apply bg-pink-500 hover:bg-pink-600 h-fit
+}
+
 .error-message-future-online {
   @apply flex flex-col gap-y-px
+}
+
+.cancel-button {
+  @apply px-2 py-1 rounded-lg text-sm text-white w-fit bg-red-500 hover:bg-red-600
 }
 
 .error-message-future-online > span {

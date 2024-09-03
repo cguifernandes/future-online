@@ -40,7 +40,7 @@ const Midias = () => {
 
 	return (
 		<>
-			<div className="flex flex-col max-w-sm w-full h-full bg-black/70 rounded-l-lg">
+			<div className="flex flex-col max-w-sm w-full h-full bg-gray-800 rounded-l-lg">
 				<h1 className="text-lg font-semibold text-center text-white p-2 w-full bg-green-500 rounded-tl-lg">
 					Gerenciamento de Mídias
 				</h1>
@@ -100,7 +100,7 @@ const Midias = () => {
 					</div>
 				)}
 			</div>
-			<div className="bg-black/70 rounded-r-lg border-l-2 border-white w-full h-full">
+			<div className="bg-gray-800 rounded-r-lg border-l-2 border-white w-full h-full">
 				{contentItem ? (
 					<Form
 						contentItem={contentItem}

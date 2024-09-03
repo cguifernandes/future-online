@@ -3,7 +3,7 @@ import { type VariantProps, tv } from "tailwind-variants";
 import Switch from "./switch";
 
 const button = tv({
-	base: "text-white text-base px-4 rounded-lg transition-all py-3",
+	base: "text-white text-base px-4 rounded-lg transition-all py-3 disabled:opacity-50 disabled:cursor-not-allowed",
 	variants: {
 		theme: {
 			"purple-dark": "bg-purple-900/90",
@@ -16,8 +16,11 @@ const button = tv({
 			"orange-light": "bg-orange-500",
 			"blue-dark": "bg-blue-800/90",
 			"blue-light": "bg-blue-500",
+			"pink-dark": "bg-pink-800/90",
+			"pink-light": "bg-pink-500",
 			danger: "bg-red-600 hover:bg-red-700",
-			solid: "bg-aqua-100 hover:bg-aqua-200",
+			solid: "bg-aqua-200 hover:bg-aqua-300",
+			outline: "ring-1 ring-aqua-200",
 		},
 	},
 });
@@ -71,6 +74,7 @@ const Button = ({
 	if (icon) {
 		return (
 			<button
+				disabled={isLoading}
 				className={button({
 					theme,
 					className: `${className} flex items-center justify-center gap-x-3`,
@@ -86,9 +90,10 @@ const Button = ({
 
 	return (
 		<button
+			disabled={isLoading}
 			className={button({
 				theme,
-				className: `truncate ${className}`,
+				className: `truncate ${className ? className : ""}`,
 			})}
 			{...rest}
 		>

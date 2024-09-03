@@ -1,8 +1,13 @@
 import clsx from "clsx";
 
-const Spinner = ({ className }: { className?: string }) => {
+type Props = {
+	className?: string;
+	patternClassName?: string;
+};
+
+const Spinner = ({ className, patternClassName }: Props) => {
 	return (
-		<div role="status">
+		<div className={patternClassName} role="status">
 			<svg
 				aria-hidden="true"
 				className={clsx(

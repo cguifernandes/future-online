@@ -24,6 +24,7 @@ interface Props {
 	};
 	className: string;
 	color: string;
+	isNotSelectColor: string;
 	children?: ReactNode;
 }
 
@@ -40,11 +41,12 @@ const Item = ({
 	name,
 	className,
 	children,
+	isNotSelectColor,
 }: Props) => {
 	const isSelected = contentDashboard.index !== index;
 
 	return (
-		<li className={clsx(className, isSelected ? "bg-black/70" : color)}>
+		<li className={clsx(className, isSelected ? isNotSelectColor : color)}>
 			<button
 				className={classNameButton}
 				type="button"
@@ -64,7 +66,7 @@ const Item = ({
 					children
 				) : (
 					<>
-						<div className="p-2 rounded-lg transition-all bg-black/40 text-white">
+						<div className="p-2 rounded-lg transition-all bg-gray-900/80 text-white">
 							{icon}
 						</div>
 						<span className="text-base font-semibold text-white">{title}</span>

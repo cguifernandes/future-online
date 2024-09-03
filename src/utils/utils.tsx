@@ -1,4 +1,11 @@
-import type { Audio, Funil, Gatilho, Mensagem, Midia } from "../type/type";
+import type {
+	Audio,
+	Funil,
+	Gatilho,
+	Mensagem,
+	Midia,
+	Trigger,
+} from "../type/type";
 import { v4 as uuidv4 } from "uuid";
 import * as AWS from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
@@ -344,7 +351,7 @@ export const getFunilItem = async (contentItem: Funil["item"]) => {
 	return localData;
 };
 
-type Item = Gatilho | Funil | Mensagem | Midia | Audio;
+type Item = Gatilho | Funil | Mensagem | Midia | Audio | Trigger;
 
 export const addItem = <T extends Item>(
 	newItem: T,
@@ -358,11 +365,28 @@ export const addItem = <T extends Item>(
 	return newItens;
 };
 
+export const checkIfAccountExists = async (
+	email: string | null,
+): Promise<boolean> => {
+	const response = await fetch(
+		`https://futureonline.com.br/api/extesion/existAccount?email=${email}`,
+		{
+			method: "GET",
+		},
+	);
+
+	if (!response.ok) {
+		return false;
+	}
+
+	return true;
+};
+
 export const removeItem = async <
-	T extends Midia | Mensagem | Funil | Gatilho | Audio,
+	T extends Midia | Mensagem | Funil | Gatilho | Audio | Trigger,
 >(
 	removeItem: T,
-	type: "midias" | "mensagens" | "funis" | "gatilhos" | "audios",
+	type: "midias" | "mensagens" | "funis" | "gatilhos" | "audios" | "triggers",
 ) => {
 	const items = await new Promise<T[]>((resolve) => {
 		chrome.storage.sync.get(type, (result) => {
@@ -415,9 +439,9 @@ export const removeItem = async <
 };
 
 export const getItem = async <
-	T extends Midia | Mensagem | Funil | Gatilho | Audio,
+	T extends Midia | Mensagem | Funil | Gatilho | Audio | Trigger,
 >(
-	type: "midias" | "mensagens" | "funis" | "gatilhos" | "audios",
+	type: "midias" | "mensagens" | "funis" | "gatilhos" | "audios" | "triggers",
 ) => {
 	const result = await new Promise<{ [key: string]: T[] }>(
 		(resolve, reject) => {

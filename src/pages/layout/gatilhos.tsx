@@ -53,7 +53,7 @@ const Gatilhos = () => {
 
 	return (
 		<>
-			<div className="flex flex-col max-w-sm w-full h-full bg-black/70 rounded-l-lg">
+			<div className="flex flex-col max-w-sm w-full h-full bg-gray-800 rounded-l-lg">
 				<h1 className="text-lg font-semibold text-center text-white p-2 w-full bg-orange-500 rounded-tl-lg">
 					Gerenciamento de Gatilhos
 				</h1>
@@ -143,7 +143,7 @@ const Gatilhos = () => {
 					</div>
 				)}
 			</div>
-			<div className="relative w-full h-full bg-black/70 backdrop-blur rounded-r-lg border-l-2 border-white">
+			<div className="relative w-full h-full bg-gray-800 backdrop-blur rounded-r-lg border-l-2 border-white">
 				{contentItem ? (
 					<Form
 						contentItem={contentItem}

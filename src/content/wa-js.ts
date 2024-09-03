@@ -341,6 +341,8 @@ window.addEventListener("getChatsRequest", async () => {
 			contact.shortName ??
 			contact.id.user;
 
+		if (!chatId) return;
+
 		const url = await WPP.contact.getProfilePictureUrl(chatId, true);
 		return {
 			name,
@@ -356,4 +358,100 @@ window.addEventListener("getChatsRequest", async () => {
 	});
 
 	window.dispatchEvent(event);
+});
+
+const getRandomDelay = (delay: { value1: number; value2: number }) => {
+	if (delay && delay.value1 !== undefined && delay.value2 !== undefined) {
+		const min = Math.min(delay.value1, delay.value2);
+		const max = Math.max(delay.value1, delay.value2);
+		const randomValue = Math.random() * (max - min) + min;
+		return parseFloat(randomValue.toFixed(2));
+	}
+	return 0;
+};
+
+window.addEventListener("sendTrigger", async (e: CustomEvent) => {
+	const { message, phones, delay, id } = e.detail;
+	const abortController = new AbortController();
+	window.dispatchEvent(new CustomEvent("overlayTrigger"));
+
+	const existPhones = await new Promise((resolve) => {
+		window.dispatchEvent(
+			new CustomEvent("existPhones", {
+				detail: {
+					id,
+					phones,
+				},
+			}),
+		);
+
+		const responseHandler = (responseEvent: CustomEvent) => {
+			resolve(responseEvent.detail.success);
+			window.removeEventListener("existPhonesResponse", responseHandler);
+		};
+
+		window.addEventListener("existPhonesResponse", responseHandler);
+	});
+
+	if (existPhones) return;
+
+	window.addEventListener(
+		"clickCancelTrigger",
+		() => {
+			abortController.abort();
+		},
+		{ once: true },
+	);
+
+	const triggerPhones = [];
+
+	try {
+		for (const phone of phones) {
+			if (abortController.signal.aborted) {
+				window.dispatchEvent(new CustomEvent("triggerLoading"));
+				window.dispatchEvent(new CustomEvent("triggerEnd"));
+				break;
+			}
+
+			const randomDelay = getRandomDelay(delay);
+
+			await new Promise((resolve, reject) => {
+				const timeoutId = setTimeout(async () => {
+					if (abortController.signal.aborted) {
+						clearTimeout(timeoutId);
+						reject(new Error("Envio cancelado."));
+						return;
+					}
+
+					triggerPhones.push(phone);
+					const phoneWithSuffix = phone.endsWith("@c.us")
+						? phone
+						: `${phone}@c.us`;
+					await WPP.chat.sendTextMessage(phoneWithSuffix, message);
+					resolve(null);
+				}, randomDelay * 1000);
+			});
+		}
+	} catch (e) {
+		if (abortController.signal.aborted) {
+			window.dispatchEvent(new CustomEvent("triggerEnd"));
+			window.dispatchEvent(new CustomEvent("triggerLoading"));
+		} else {
+			console.log(e);
+		}
+	} finally {
+		if (triggerPhones.length > 0) {
+			window.dispatchEvent(
+				new CustomEvent("postPhones", {
+					detail: {
+						triggerPhones,
+						id,
+					},
+				}),
+			);
+		}
+
+		window.dispatchEvent(new CustomEvent("triggerEnd"));
+		window.dispatchEvent(new CustomEvent("triggerLoading"));
+	}
 });

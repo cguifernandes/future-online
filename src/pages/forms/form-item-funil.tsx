@@ -186,6 +186,7 @@ const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 						<Item
 							color={item.color}
 							key={item.title}
+							isNotSelectColor="bg-gray-900"
 							className="flex-1 flex-col flex h-36 rounded-lg"
 							classNameButton="transition-all p-4 rounded-lg text-white w-full cursor-pointer h-full flex items-center justify-center"
 							setContent={setSelectedItem}
@@ -247,7 +248,7 @@ const Form = ({ setVisibleModal, content, setContentItem, setData }: Props) => {
 					</span>
 				)}
 			</div>
-			<Button className="bg-black/30" type="submit">
+			<Button className="bg-gray-900" type="submit">
 				Salvar
 			</Button>
 		</form>

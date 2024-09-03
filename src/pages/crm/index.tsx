@@ -10,11 +10,12 @@ const init = async () => {
 	document.body.appendChild(appContainer);
 	const root = createRoot(appContainer);
 	appContainer.id = "app";
+	const { account } = await chrome.storage.sync.get();
 
 	root.render(
 		<>
 			<Header />
-			<CRM />
+			<CRM account={account} />
 			<Toaster />
 		</>,
 	);

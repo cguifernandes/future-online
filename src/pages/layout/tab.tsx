@@ -85,22 +85,22 @@ const Tab = ({ draggedContact, setTabs, tab, allTabs }: Props) => {
 			onDragLeave={handleDragLeave}
 			onDrop={(e) => handleDrop(e, tab)}
 		>
-			<div className="bg-aqua-100 flex items-center justify-between w-full rounded-t-md px-3 py-2">
+			<div className="bg-gray-800 flex items-center h-14 justify-between w-full rounded-t-md px-3 py-2">
 				<h1 className="text-2xl font-bold text-white">{tab.name}</h1>
 				<button
 					type="button"
 					onClick={() => handlerRemoveTab(tab)}
-					className="flex items-center justify-center p-2.5 transition-all text-white hover:bg-white hover:text-black rounded-full border border-white"
+					className="flex items-center justify-center p-2.5 transition-all text-white hover:bg-gray-700 rounded-full border border-gray-700"
 				>
 					<Trash2 size={18} />
 				</button>
 			</div>
-			<div className="p-1 flex flex-col gap-y-2 rounded-b-md border border-t-0 border-gray-200 min-h-[182px] max-h-[544px] overflow-y-auto custom-scrollbar">
+			<div className="p-1 flex flex-col bg-gray-700 gap-y-2 rounded-b-md border border-t-0 border-neutral-400 min-h-[182px] max-h-[544px] overflow-y-auto custom-scrollbar">
 				{tab?.contacts.length > 0 &&
 					tab.contacts.map((contact, index) => (
 						<div
 							key={index}
-							className="border border-gray-200 cursor-pointer min-h-14 hover:bg-gray-200 hover:border-gray-400 transition-all gap-x-2 flex p-2 rounded-lg items-center"
+							className="cursor-pointer bg-gray-800 h-14 hover:bg-gray-700 hover:border-gray-700 transition-all gap-x-2 flex p-2 rounded-lg items-center"
 						>
 							<img
 								src={contact.pfp}
@@ -108,15 +108,15 @@ const Tab = ({ draggedContact, setTabs, tab, allTabs }: Props) => {
 								className="size-8 rounded-full select-none"
 							/>
 							<div className="flex items-center w-full justify-between">
-								<span className="text-base max-w-[154px] truncate select-none">
+								<span className="text-base text-white max-w-[154px] truncate select-none">
 									{contact.name}
 								</span>
 								<button
 									type="button"
 									onClick={() => handlerRemoveContact(contact)}
-									className="flex items-center justify-center p-2 transition-all hover:bg-gray-400 rounded-full border border-gray-400"
+									className="flex items-center justify-center p-2 transition-all hover:bg-gray-800 rounded-full border border-gray-700"
 								>
-									<Trash2 size={16} />
+									<Trash2 color="#fff" size={16} />
 								</button>
 							</div>
 						</div>
@@ -125,7 +125,7 @@ const Tab = ({ draggedContact, setTabs, tab, allTabs }: Props) => {
 					style={{
 						opacity: isDragOver ? 1 : 0,
 					}}
-					className="border border-gray-200 h-14 transition-all bg-gray-200 gap-x-2 flex p-2 rounded-lg items-center"
+					className="border border-neutral-400 h-14 transition-all bg-gray-200 gap-x-2 flex p-2 rounded-lg items-center"
 				/>
 			</div>
 		</div>

@@ -3,13 +3,14 @@ import { forwardRef, type InputHTMLAttributes } from "react";
 import { type VariantProps, tv } from "tailwind-variants";
 
 const input = tv({
-	base: "text-white bg-black/30 text-sm px-4 rounded-lg transition-all ring-transparent py-3 ring-2",
+	base: "text-white bg-gray-900 text-sm px-4 rounded-lg transition-all ring-transparent py-3 ring-2 disabled:opacity-50 disabled:cursor-not-allowed",
 	variants: {
 		theme: {
 			purple: "focus:ring-purple-500",
 			green: "focus:ring-green-500",
 			yellow: "focus:ring-yellow-500",
 			orange: "focus:ring-orange-500",
+			pink: "focus:ring-pink-500",
 			blue: "focus:ring-blue-500",
 			"dark-blue": "focus:ring-dark-blue-600 !bg-dark-blue-500",
 		},

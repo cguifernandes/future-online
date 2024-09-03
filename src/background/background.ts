@@ -8,7 +8,56 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			const url = processDynamicUrl(request.url);
 			chrome.tabs.update(currentTabId, { url: chrome.runtime.getURL(url) });
 		});
+	} else if (request.target === "triggerApi") {
+		const { id, phones } = request;
+
+		fetch(`https://futureonline.com.br/api/extesion/trigger/${id}`, {
+			method: "POST",
+			body: JSON.stringify({ phones }),
+		})
+			.then((response) => {
+				if (!response.ok) {
+					sendResponse({
+						success: false,
+						error: "Ocorreu um erro ao enviar o disparo",
+					});
+				}
+
+				return response.json();
+			})
+			.then((response) => {
+				sendResponse({ success: true, data: response });
+			})
+			.catch((error) => {
+				console.error({ error });
+				sendResponse({ success: false, error: error.message });
+			});
+	} else if (request.target === "existPhones") {
+		const { id } = request;
+
+		fetch(`https://futureonline.com.br/api/extesion/trigger/${id}`, {
+			method: "GET",
+		})
+			.then((response) => {
+				if (!response.ok) {
+					sendResponse({
+						success: false,
+						error: "Ocorreu um erro ao enviar o disparo",
+					});
+				}
+
+				return response.json();
+			})
+			.then((response) => {
+				sendResponse({ success: true, data: response });
+			})
+			.catch((error) => {
+				console.error({ error });
+				sendResponse({ success: false, error: error.message });
+			});
 	}
+
+	return true;
 });
 
 chrome.runtime.onInstalled.addListener(() => {

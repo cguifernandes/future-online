@@ -24,3 +24,23 @@ input[type="date"]::-webkit-inner-spin-button,
 input[type="date"]::-webkit-clear-button {
   display: none; 
 }
+
+input::placeholder, textarea::placeholder {
+  @apply text-gray-500
+}
+
+input::-webkit-input-placeholder, textarea::-webkit-input-placeholder {
+  @apply text-gray-500
+}
+
+input::-moz-placeholder, textarea::-moz-placeholder {
+  @apply text-gray-500
+}
+
+input:-ms-input-placeholder, textarea:-ms-input-placeholder {
+  @apply text-gray-500
+}
+
+input:-moz-placeholder, textarea:-moz-placeholder {
+  @apply text-gray-500
+}

@@ -1,4 +1,4 @@
-import { Audio, Funil, Mensagem, Midia } from "../type/type";
+import { Audio, Funil, Mensagem, Midia, Trigger } from "../type/type";
 import "./whatsapp.css";
 
 window.addEventListener("getGatilhosRequest", async () => {
@@ -87,6 +87,15 @@ window.addEventListener("loadingEnd", () => {
 	loadingContainer.remove();
 });
 
+window.addEventListener("triggerEnd", () => {
+	if (!document) return;
+
+	const loadingContainer = document.querySelector(".loading-overlay.trigger");
+	if (!loadingContainer) return;
+
+	loadingContainer.remove();
+});
+
 window.addEventListener("loadingStart", () => {
 	const main = document.querySelector("div#main");
 	const footer = main.querySelector("footer");
@@ -154,7 +163,7 @@ const convertUrlToFile = async (path: string, fileName: string) => {
 };
 
 export const createButton = (
-	item: Mensagem | Funil | Audio | Midia,
+	item: Mensagem | Funil | Audio | Midia | Trigger,
 	buttonClassName: string,
 ) => {
 	const button = document.createElement("button");
@@ -185,10 +194,132 @@ export const createButton = (
 			case "funis":
 				await handleFunnelItem(item);
 				break;
+
+			case "triggers":
+				await sendTrigger(item);
+				break;
 		}
 	});
 
 	return button;
+};
+
+window.addEventListener("overlayTrigger", async () => {
+	const main = document.querySelector("div#main");
+	const footer = main.querySelector("footer");
+	const loadingContainer = footer.querySelector(".item-pattern-future-online");
+	const existingOverlay = loadingContainer.querySelector(
+		".loading-overlay.trigger",
+	);
+
+	if (existingOverlay) return;
+	if (!loadingContainer) return;
+
+	const text = document.createElement("h2");
+	const overlay = document.createElement("div");
+	const button = document.createElement("button");
+	button.textContent = "Cancelar";
+	overlay.className = "loading-overlay trigger";
+	loadingContainer.appendChild(overlay);
+	text.textContent = "Preparando para enviar o disparo em massa...";
+
+	text.className = "loading-text";
+	button.className = "cancel-button";
+
+	button.addEventListener("click", () => {
+		window.dispatchEvent(new CustomEvent("clickCancelTrigger"));
+		window.dispatchEvent(new CustomEvent("triggerEnd"));
+		window.dispatchEvent(new CustomEvent("triggerLoading"));
+	});
+
+	overlay.appendChild(text);
+	overlay.appendChild(button);
+});
+
+window.addEventListener("triggerError", async (e: CustomEvent) => {
+	const { errorMessage } = e.detail;
+	const main = document.querySelector("div#main");
+	const footer = main.querySelector("footer");
+	const loadingContainer = footer.querySelector(".item-pattern-future-online");
+	const existingOverlay = loadingContainer.querySelector(
+		".loading-overlay.trigger",
+	);
+
+	if (existingOverlay) return;
+	if (!loadingContainer) return;
+
+	const text = document.createElement("h2");
+	const overlay = document.createElement("div");
+	overlay.className = "loading-overlay trigger";
+	loadingContainer.appendChild(overlay);
+	text.textContent = errorMessage;
+
+	text.className = "loading-text";
+
+	overlay.appendChild(text);
+});
+
+window.addEventListener("triggerLoading", async () => {
+	const main = document.querySelector("div#main");
+	const footer = main.querySelector("footer");
+	const loadingContainer = footer.querySelector(".item-pattern-future-online");
+	const existingOverlay = loadingContainer.querySelector(
+		".loading-overlay.trigger",
+	);
+
+	if (existingOverlay) return;
+	if (!loadingContainer) return;
+
+	const text = document.createElement("h2");
+	const overlay = document.createElement("div");
+	overlay.className = "loading-overlay trigger";
+	loadingContainer.appendChild(overlay);
+
+	text.textContent = "Disparo em massa enviado, finalizando...";
+	text.className = "loading-text";
+
+	overlay.appendChild(text);
+});
+
+window.addEventListener("triggerError", async () => {
+	const main = document.querySelector("div#main");
+	const footer = main.querySelector("footer");
+	const loadingContainer = footer.querySelector(".item-pattern-future-online");
+	const existingOverlay = loadingContainer.querySelector(
+		".loading-overlay.trigger",
+	);
+
+	if (existingOverlay) return;
+	if (!loadingContainer) return;
+
+	const text = document.createElement("h2");
+	const overlay = document.createElement("div");
+	overlay.className = "loading-overlay trigger";
+	loadingContainer.appendChild(overlay);
+
+	text.textContent = "Ocorreu um erro ao enviar o disparo em massa";
+	text.className = "loading-text";
+
+	overlay.appendChild(text);
+});
+
+export const sendTrigger = async (trigger: Trigger) => {
+	window.dispatchEvent(new CustomEvent("loadingEnd"));
+
+	if (!trigger.trigger) return;
+
+	const { account } = await chrome.storage.sync.get();
+
+	window.dispatchEvent(
+		new CustomEvent("sendTrigger", {
+			detail: {
+				message: trigger.trigger.message,
+				phones: trigger.trigger.phones,
+				delay: trigger.trigger.delay,
+				id: account.id,
+			},
+		}),
+	);
 };
 
 export const loadItens = async ({
@@ -198,7 +329,14 @@ export const loadItens = async ({
 }: {
 	itens: Mensagem[] | Funil[] | Audio[] | Midia[];
 	pattern: HTMLDivElement;
-	type: "mensagens" | "audios" | "midias" | "funis" | "account" | "gatilhos";
+	type:
+		| "mensagens"
+		| "audios"
+		| "midias"
+		| "funis"
+		| "account"
+		| "gatilhos"
+		| "triggers";
 }) => {
 	if (type === "account" || type === "gatilhos") return;
 
@@ -217,7 +355,7 @@ export const loadItens = async ({
 
 	content.className = `item-message-future-online ${type}`;
 	content.id = type;
-	const order = ["mensagens", "midias", "audios", "funis"];
+	const order = ["mensagens", "midias", "audios", "funis", "triggers"];
 
 	let insertBeforeElement: HTMLElement | null = null;
 	for (const t of order) {

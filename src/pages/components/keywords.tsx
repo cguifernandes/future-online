@@ -38,7 +38,7 @@ const Keywords = ({ name, setValue, defaultValue }: Props) => {
 				{keywords.map((keyword, index) => (
 					<span
 						key={index}
-						className="bg-black/20 w-fit px-3 flex items-center gap-x-1 py-2 rounded-lg"
+						className="bg-gray-800 w-fit px-3 flex items-center gap-x-1 py-2 rounded-lg"
 					>
 						{keyword}
 						<button
@@ -60,7 +60,7 @@ const Keywords = ({ name, setValue, defaultValue }: Props) => {
 				))}
 				Ou
 				{visibleInput ? (
-					<div className="ring-transparent max-w-fit bg-black/30 text-sm px-4 rounded-lg py-3 ring-2">
+					<div className="ring-transparent max-w-fit bg-gray-800 text-sm px-4 rounded-lg py-3 ring-2">
 						<input
 							value={inputValue}
 							onChange={(e) => setInputValue(e.target.value)}
@@ -70,13 +70,13 @@ const Keywords = ({ name, setValue, defaultValue }: Props) => {
 							onKeyDown={handleAddKeyword}
 							placeholder="Digite a palavra-chave"
 						/>
-						<span className="bg-black text-white text-xs px-2 py-1 rounded-lg pointer-events-none">
+						<span className="bg-gray-900 text-white text-xs px-2 py-1 rounded-lg pointer-events-none">
 							Enter
 						</span>
 					</div>
 				) : (
 					<button
-						className="text-white flex items-center gap-x-2 max-w-fit bg-black/30 text-sm px-4 rounded-lg transition-all py-3"
+						className="text-white flex items-center gap-x-2 max-w-fit bg-gray-800 text-sm px-4 rounded-lg transition-all py-3"
 						onClick={() => setVisibleInput(true)}
 						type="button"
 					>
@@ -91,7 +91,7 @@ const Keywords = ({ name, setValue, defaultValue }: Props) => {
 	return (
 		<>
 			{visibleInput ? (
-				<div className="ring-transparent max-w-fit bg-black/30 text-sm px-4 rounded-lg py-3 ring-2">
+				<div className="ring-transparent max-w-fit bg-gray-800 text-sm px-4 rounded-lg py-3 ring-2">
 					<input
 						value={inputValue}
 						onChange={(e) => setInputValue(e.target.value)}
@@ -101,13 +101,13 @@ const Keywords = ({ name, setValue, defaultValue }: Props) => {
 						onKeyDown={handleAddKeyword}
 						placeholder="Digite a palavra-chave"
 					/>
-					<span className="bg-black text-white text-xs px-2 py-1 rounded-lg pointer-events-none">
+					<span className="bg-gray-900 text-white text-xs px-2 py-1 rounded-lg pointer-events-none">
 						Enter
 					</span>
 				</div>
 			) : (
 				<button
-					className="text-white flex items-center gap-x-2 max-w-fit bg-black/30 text-sm px-4 rounded-lg transition-all py-3"
+					className="text-white flex items-center gap-x-2 max-w-fit bg-gray-800 text-sm px-4 rounded-lg transition-all py-3"
 					onClick={() => setVisibleInput(true)}
 					type="button"
 				>
