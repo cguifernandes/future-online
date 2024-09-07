@@ -59,7 +59,6 @@ const CRM = ({ account }: Props) => {
 							message: "A data de licença já expirou.",
 							subMessage: "Chame nosso suporte ou contrate um novo plano!",
 						});
-
 						return;
 					}
 				}
@@ -97,6 +96,12 @@ const CRM = ({ account }: Props) => {
 		};
 
 		verifyAccount();
+
+		const intervalId = setInterval(() => {
+			verifyAccount();
+		}, 2000);
+
+		return () => clearInterval(intervalId);
 	}, [account]);
 
 	const handleDragStart = (contact: Contact) => {

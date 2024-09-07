@@ -372,6 +372,7 @@ export const checkIfAccountExists = async (
 		`https://futureonline.com.br/api/extesion/existAccount?email=${email}`,
 		{
 			method: "GET",
+			cache: "force-cache",
 		},
 	);
 

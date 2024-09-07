@@ -46,7 +46,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			phones: z
 				.union([
 					z.string().min(1, "Este campo é obrigatório"),
-					z.array(z.string().nonempty("Este campo é obrigatório")),
+					z.array(z.string().min(1, "Este campo é obrigatório")),
 				])
 				.refine(
 					(value) =>
@@ -64,7 +64,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				)
 				.superRefine((value, ctx) => {
 					const phonesArray = Array.isArray(value) ? value : [value];
-					const regex = /^55\d{2}\d{8,9}$/;
+					const regex = /^\+55\d{2}\d{8,9}$/;
 					const uniquePhones = new Set();
 					let duplicatedPhone: string | null = null;
 
@@ -73,7 +73,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 							ctx.addIssue({
 								code: z.ZodIssueCode.custom,
 								message:
-									"O telefone deve estar no formato: 55(DDI)(DDD)XXXXXXXX. Exemplo: 5521976444731",
+									"O telefone deve estar no formato: +55(DDI)(DDD)XXXXXXXX. Exemplo: +5521976444731",
 							});
 						}
 						if (uniquePhones.has(phone)) {
@@ -114,8 +114,6 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			},
 		},
 	});
-
-	console.log(errors);
 
 	useEffect(() => {
 		reset({

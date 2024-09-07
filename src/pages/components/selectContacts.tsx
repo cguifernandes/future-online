@@ -44,7 +44,9 @@ const SelectContacts = ({
 					.filter((contact) => contact.phone.endsWith("@c.us"))
 					.map((contact) => ({
 						...contact,
-						phone: contact.phone.replace("@c.us", ""),
+						phone: contact.phone.startsWith("55")
+							? `+${contact.phone.replace("@c.us", "")}`
+							: `+55${contact.phone.replace("@c.us", "")}`,
 					}));
 
 				setOptions(updatedContacts);

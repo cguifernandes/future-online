@@ -82,7 +82,6 @@ const Dashboard = ({ account }: Props) => {
 							message: "A data de licença já expirou.",
 							subMessage: "Chame nosso suporte ou contrate um novo plano!",
 						});
-
 						return;
 					}
 				}
@@ -120,6 +119,12 @@ const Dashboard = ({ account }: Props) => {
 		};
 
 		verifyAccount();
+
+		const intervalId = setInterval(() => {
+			verifyAccount();
+		}, 2000);
+
+		return () => clearInterval(intervalId);
 	}, [account]);
 
 	if (isLoading) {
