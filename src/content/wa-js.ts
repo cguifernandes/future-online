@@ -424,9 +424,13 @@ window.addEventListener("sendTrigger", async (e: CustomEvent) => {
 					}
 
 					triggerPhones.push(phone);
-					const phoneWithSuffix = phone.endsWith("@c.us")
-						? phone
-						: `${phone}@c.us`;
+
+					const sanitizedPhone = phone.replace("+", "");
+
+					const phoneWithSuffix = sanitizedPhone.endsWith("@c.us")
+						? sanitizedPhone
+						: `${sanitizedPhone}@c.us`;
+
 					await WPP.chat.sendTextMessage(phoneWithSuffix, message);
 					resolve(null);
 				}, randomDelay * 1000);

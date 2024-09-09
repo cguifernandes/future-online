@@ -29,7 +29,7 @@ const Funis = () => {
 
 	const handlerClickAdd = async () => {
 		setData({
-			itens: addItem<Funil>(
+			itens: await addItem<Funil>(
 				{
 					title: "Novo funil",
 					item: null,

@@ -27,7 +27,7 @@ const Audios = () => {
 
 	const handlerClickAdd = async () => {
 		setData({
-			itens: addItem<Audio>(
+			itens: await addItem<Audio>(
 				{
 					title: "Novo conteúdo",
 					audio: {

@@ -353,10 +353,18 @@ export const getFunilItem = async (contentItem: Funil["item"]) => {
 
 type Item = Gatilho | Funil | Mensagem | Midia | Audio | Trigger;
 
-export const addItem = <T extends Item>(
+export const addItem = async <T extends Item>(
 	newItem: T,
 	data: { itens: T[] },
-): T[] => {
+): Promise<T[]> => {
+	const { account } = await chrome.storage.sync.get();
+
+	const exists = await checkIfAccountExists(account.email);
+	if (!exists) {
+		await chrome.storage.sync.clear();
+		return;
+	}
+
 	const newItemWithId = { ...newItem, id: uuidv4() };
 	const newItens = [...data.itens, newItemWithId];
 

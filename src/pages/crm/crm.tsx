@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import Form from "../forms/form-crm";
 import { Contact, StorageData, Tabs } from "../../type/type";
 import Tab from "../layout/tab";
-import { checkIfAccountExists } from "../../utils/utils";
 import Spinner from "../components/spinner";
 import { ErrorMessage } from "../components/errorMessage";
 
@@ -69,20 +68,6 @@ const CRM = ({ account }: Props) => {
 						subMessage: "Faça login e então acesse essa página",
 					});
 					return;
-				} else {
-					const exists = await checkIfAccountExists(account.email);
-					if (!exists) {
-						await chrome.storage.sync.clear();
-
-						setError({
-							message: "Você não possui uma conta válida.",
-							subMessage:
-								"Entre em contato com nosso suporte para mais informações.",
-						});
-						return;
-					} else {
-						setError(null);
-					}
 				}
 			} catch (err) {
 				console.log(err);

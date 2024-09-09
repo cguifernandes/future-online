@@ -27,7 +27,7 @@ const Trigger = () => {
 
 	const handlerClickAdd = async () => {
 		setData({
-			itens: addItem<TriggerType>(
+			itens: await addItem<TriggerType>(
 				{
 					title: "Novo disparo em massa",
 					type: "triggers",

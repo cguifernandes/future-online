@@ -48,6 +48,9 @@ const Popup = () => {
 			setIsLoading(true);
 			const response = await fetch(
 				`https://futureonline.com.br/api/extesion?email=${formData.email}&password=${formData.password}`,
+				{
+					method: "GET",
+				},
 			);
 
 			const data = (await response.json()) as {

@@ -27,7 +27,7 @@ const Midias = () => {
 
 	const handlerClickAdd = async () => {
 		setData({
-			itens: addItem<Midia>(
+			itens: await addItem<Midia>(
 				{
 					title: "Novo conteúdo",
 					file: { url: "", subtitle: "", preview: "", type: "" },

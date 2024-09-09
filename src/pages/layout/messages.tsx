@@ -27,7 +27,7 @@ const Messages = () => {
 
 	const handlerClickAdd = async () => {
 		setData({
-			itens: addItem<Mensagem>(
+			itens: await addItem<Mensagem>(
 				{
 					content: "Novo item",
 					title: "Novo conteúdo",

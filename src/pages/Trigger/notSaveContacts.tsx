@@ -89,8 +89,8 @@ const NotSaveContacts = ({
 				/>
 			)}
 			<Textarea
-				label="Telefones para disparo (Separados por vírgula)"
-				placeholder="Digite o no formato: 5511999999999"
+				label="Telefones para disparo (Separados por vírgula ou quebra de espaço)"
+				placeholder="Digite o no formato: +5511999999999"
 				className="w-full h-full min-h-32 max-h-44 flex-1"
 				{...register("trigger.phones")}
 				error={

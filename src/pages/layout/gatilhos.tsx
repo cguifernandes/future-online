@@ -28,7 +28,7 @@ const Gatilhos = () => {
 
 	const handlerClickAdd = async () => {
 		setData({
-			itens: addItem<Gatilho>(
+			itens: await addItem<Gatilho>(
 				{
 					title: "Novo gatilho",
 					type: "gatilhos",

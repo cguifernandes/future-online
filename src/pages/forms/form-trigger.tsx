@@ -51,15 +51,18 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 				.refine(
 					(value) =>
 						typeof value === "string"
-							? value.includes(",")
+							? /[,\s\n]+/.test(value)
 							: Array.isArray(value),
 					{
-						message: "Cada telefone deve ser separado por vírgula",
+						message:
+							"Cada telefone deve ser separado por vírgula, espaço ou quebra de linha",
 					},
 				)
 				.transform((value) =>
 					typeof value === "string"
-						? value.split(",").map((phone) => phone.trim().replace("@c.us", ""))
+						? value
+								.split(/[\s,]+/)
+								.map((phone) => phone.trim().replace("@c.us", ""))
 						: value.map((phone) => phone.trim().replace("@c.us", "")),
 				)
 				.superRefine((value, ctx) => {
