@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 
 const Gatilhos = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingAdd, setIsLoadingAdd] = useState(false);
 	const [contentItem, setContentItem] = useState<Gatilho>(undefined);
 	const [data, setData] = useState<{
 		itens: Gatilho[];
@@ -27,6 +28,7 @@ const Gatilhos = () => {
 	}, []);
 
 	const handlerClickAdd = async () => {
+		setIsLoadingAdd(true);
 		setData({
 			itens: await addItem<Gatilho>(
 				{
@@ -49,6 +51,7 @@ const Gatilhos = () => {
 				data,
 			),
 		});
+		setIsLoadingAdd(false);
 	};
 
 	return (
@@ -115,6 +118,7 @@ const Gatilhos = () => {
 							<Button
 								type="button"
 								theme="orange-dark"
+								isLoading={isLoadingAdd}
 								className="hover:bg-orange-800 min-w-36 flex items-center justify-center"
 								onClick={handlerClickAdd}
 								icon={<Plus size={18} color="#fff" />}
@@ -133,6 +137,7 @@ const Gatilhos = () => {
 							<Button
 								type="button"
 								theme="orange-dark"
+								isLoading={isLoadingAdd}
 								onClick={handlerClickAdd}
 								className="min-w-36 flex items-center justify-center"
 								icon={<Plus size={18} color="#fff" />}

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { forwardRef, type InputHTMLAttributes } from "react";
+import { forwardRef, ReactNode, type InputHTMLAttributes } from "react";
 import { type VariantProps, tv } from "tailwind-variants";
 
 const input = tv({
@@ -22,6 +22,7 @@ interface Props {
 	label?: string;
 	labelClassName?: string;
 	patternClassName?: string;
+	addOn?: ReactNode;
 }
 
 const Input = forwardRef<
@@ -33,6 +34,7 @@ const Input = forwardRef<
 			theme,
 			className,
 			label,
+			addOn,
 			error,
 			patternClassName,
 			labelClassName,
@@ -42,7 +44,12 @@ const Input = forwardRef<
 	) => {
 		return (
 			<div
-				className={clsx("flex flex-col", label && "gap-y-1", patternClassName)}
+				className={clsx(
+					"flex flex-col",
+					label && "gap-y-1",
+					patternClassName,
+					addOn && "relative",
+				)}
 			>
 				{label && (
 					<label className={clsx("text-sm text-white", labelClassName)}>
@@ -57,6 +64,7 @@ const Input = forwardRef<
 					})}
 					{...rest}
 				/>
+				{addOn}
 				{error && <span className="text-red-600 text-sm">{error}</span>}
 			</div>
 		);

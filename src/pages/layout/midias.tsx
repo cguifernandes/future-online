@@ -8,6 +8,7 @@ import { Plus } from "lucide-react";
 
 const Midias = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingAdd, setIsLoadingAdd] = useState(false);
 	const [data, setData] = useState<{
 		itens: Midia[];
 	}>({ itens: [] });
@@ -26,6 +27,7 @@ const Midias = () => {
 	}, []);
 
 	const handlerClickAdd = async () => {
+		setIsLoadingAdd(true);
 		setData({
 			itens: await addItem<Midia>(
 				{
@@ -36,6 +38,7 @@ const Midias = () => {
 				data,
 			),
 		});
+		setIsLoadingAdd(false);
 	};
 
 	return (
@@ -72,6 +75,7 @@ const Midias = () => {
 							<Button
 								type="button"
 								theme="green-dark"
+								isLoading={isLoadingAdd}
 								className="hover:bg-green-700 min-w-36 flex items-center justify-center"
 								onClick={handlerClickAdd}
 								icon={<Plus size={18} color="#fff" />}
@@ -90,6 +94,7 @@ const Midias = () => {
 							<Button
 								type="button"
 								theme="green-dark"
+								isLoading={isLoadingAdd}
 								className="min-w-36 flex items-center justify-center"
 								onClick={handlerClickAdd}
 								icon={<Plus size={18} color="#fff" />}

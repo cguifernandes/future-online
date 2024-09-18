@@ -8,6 +8,7 @@ import Form from "../forms/form-trigger";
 
 const Trigger = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingAdd, setIsLoadingAdd] = useState(false);
 	const [contentItem, setContentItem] = useState<TriggerType>(undefined);
 	const [data, setData] = useState<{
 		itens: TriggerType[];
@@ -26,6 +27,7 @@ const Trigger = () => {
 	}, []);
 
 	const handlerClickAdd = async () => {
+		setIsLoadingAdd(true);
 		setData({
 			itens: await addItem<TriggerType>(
 				{
@@ -42,6 +44,7 @@ const Trigger = () => {
 				data,
 			),
 		});
+		setIsLoadingAdd(false);
 	};
 
 	return (
@@ -78,6 +81,7 @@ const Trigger = () => {
 							<Button
 								type="button"
 								theme="pink-dark"
+								isLoading={isLoadingAdd}
 								onClick={handlerClickAdd}
 								className="hover:bg-pink-700 min-w-36 flex items-center justify-center"
 								icon={<Plus size={18} color="#fff" />}
@@ -96,6 +100,7 @@ const Trigger = () => {
 							<Button
 								type="button"
 								theme="pink-dark"
+								isLoading={isLoadingAdd}
 								onClick={handlerClickAdd}
 								className="min-w-36 flex items-center justify-center"
 								icon={<Plus size={18} color="#fff" />}

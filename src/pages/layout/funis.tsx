@@ -9,6 +9,7 @@ import { Plus } from "lucide-react";
 
 const Funis = () => {
 	const [visibleModal, setVisibleModal] = useState(false);
+	const [isLoadingAdd, setIsLoadingAdd] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [contentItem, setContentItem] = useState<Funil>(undefined);
 	const [data, setData] = useState<{
@@ -28,6 +29,7 @@ const Funis = () => {
 	}, []);
 
 	const handlerClickAdd = async () => {
+		setIsLoadingAdd(true);
 		setData({
 			itens: await addItem<Funil>(
 				{
@@ -38,6 +40,7 @@ const Funis = () => {
 				data,
 			),
 		});
+		setIsLoadingAdd(false);
 	};
 
 	return (
@@ -76,6 +79,7 @@ const Funis = () => {
 							<Button
 								type="button"
 								theme="yellow-dark"
+								isLoading={isLoadingAdd}
 								className="hover:bg-yellow-700 min-w-36 flex items-center justify-center"
 								onClick={handlerClickAdd}
 								icon={<Plus size={18} color="#fff" />}
@@ -94,6 +98,7 @@ const Funis = () => {
 							<Button
 								type="button"
 								theme="yellow-dark"
+								isLoading={isLoadingAdd}
 								onClick={handlerClickAdd}
 								className="min-w-36 flex items-center justify-center"
 								icon={<Plus size={18} color="#fff" />}

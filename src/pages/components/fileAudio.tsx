@@ -94,7 +94,7 @@ const Audios = ({
 	};
 
 	return (
-		<div className="flex flex-col gap-y-1 w-full flex-1">
+		<div className="flex flex-col gap-y-1 w-full flex-1 mb-auto max-h-[232px]">
 			<div className="flex flex-col items-center justify-center border-dashed h-full border-2 border-blue-600 w-full p-3 relative rounded-lg gap-y-2">
 				<div className="flex flex-col text-center text-white gap-y-1">
 					<Image className="mx-auto" size={72} color="#fff" />

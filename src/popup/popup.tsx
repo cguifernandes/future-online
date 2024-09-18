@@ -7,6 +7,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Logo from "../pages/components/logo";
+import PasswordInput from "../pages/components/password-input";
 
 const Popup = () => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -46,12 +47,13 @@ const Popup = () => {
 	const login = async (formData: z.infer<typeof schema>) => {
 		try {
 			setIsLoading(true);
-			const response = await fetch(
-				`https://futureonline.com.br/api/extesion?email=${formData.email}&password=${formData.password}`,
-				{
-					method: "GET",
-				},
-			);
+			const response = await fetch("https://futureonline.com.br/api/extesion", {
+				method: "POST",
+				body: JSON.stringify({
+					email: formData.email,
+					password: formData.password,
+				}),
+			});
 
 			const data = (await response.json()) as {
 				message: string;
@@ -203,13 +205,12 @@ const Popup = () => {
 						type="email"
 						error={errors.email?.message}
 					/>
-					<Input
+					<PasswordInput
 						{...register("password")}
 						disabled={isLoading}
 						className="focus:ring-aqua-200"
 						placeholder="Senha"
 						label="Senha"
-						type="password"
 						error={errors.password?.message}
 					/>
 					{error && (

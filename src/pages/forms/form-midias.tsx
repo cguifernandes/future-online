@@ -158,7 +158,7 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 	return (
 		<form
 			onSubmit={handleSubmit(handlerSubmit)}
-			className="flex flex-col gap-y-3 items-center justify-center p-4 h-full"
+			className="flex flex-col gap-y-3 items-center justify-between p-4 h-full"
 		>
 			<div className="flex gap-x-3 w-full">
 				<Input
@@ -190,7 +190,7 @@ const Form = ({ setContentItem, setData, contentItem }: Props) => {
 					)}
 				</button>
 			</div>
-			<div className="flex gap-x-3 w-full flex-1">
+			<div className="flex gap-x-3 w-full flex-1 mb-auto max-h-[232px]">
 				<File
 					FILES_TYPE={FILES_TYPE}
 					ACCEPT_FILES_TYPE={ACCEPT_FILES_TYPE}

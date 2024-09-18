@@ -91,60 +91,29 @@ window.addEventListener("sendFile", async (e: CustomEvent) => {
 });
 
 const sendFunil = async (
-	selectedItems: (Midia | Mensagem | Audio)[],
+	selectedItem: Midia | Mensagem | Audio,
 	chatId: string,
 ) => {
-	for (let i = 0; i < selectedItems?.length; i++) {
-		const funilItem = selectedItems[i];
-
-		if (funilItem.type === "mensagens") {
-			await new Promise((resolve) => {
+	switch (selectedItem.type) {
+		case "mensagens": {
+			await new Promise<void>((resolve) => {
 				window.dispatchEvent(
 					new CustomEvent("sendMessage", {
 						detail: {
-							content: funilItem.content,
-							delay: funilItem.delay,
+							content: (selectedItem as Mensagem).content,
+							delay: selectedItem.delay,
 							chatId,
 						},
 					}),
 				);
-				setTimeout(resolve, funilItem.delay);
+				resolve();
 			});
-		} else if (funilItem.type === "midias") {
-			const fileName = new Date().getTime().toString();
+			break;
+		}
 
-			await new Promise((resolve) => {
-				const handler = (event: CustomEvent) => {
-					window.removeEventListener(
-						"saveFileResponse",
-						handler as EventListener,
-					);
-					resolve(event.detail);
-				};
-				window.addEventListener("saveFileResponse", handler as EventListener);
-				window.dispatchEvent(
-					new CustomEvent("saveFile", {
-						detail: { path: funilItem.file.url, fileName },
-					}),
-				);
-			}).then((file: File) => {
-				return new Promise((resolve) => {
-					window.dispatchEvent(
-						new CustomEvent("sendFile", {
-							detail: {
-								file,
-								subtitle: funilItem.file.subtitle,
-								delay: funilItem.delay,
-								chatId,
-							},
-						}),
-					);
-					setTimeout(resolve, funilItem.delay);
-				});
-			});
-		} else if (funilItem.type === "audios") {
+		case "audios": {
 			const fileName = new Date().getTime().toString();
-			await new Promise((resolve) => {
+			const file = await new Promise((resolve) => {
 				const handler = (event: CustomEvent) => {
 					window.removeEventListener(
 						"saveFileResponse",
@@ -155,22 +124,56 @@ const sendFunil = async (
 				window.addEventListener("saveFileResponse", handler as EventListener);
 				window.dispatchEvent(
 					new CustomEvent("saveFile", {
-						detail: { path: funilItem.audio.url, fileName },
+						detail: { path: selectedItem.audio.url, fileName },
 					}),
 				);
-			}).then((file: File) => {
-				return new Promise((resolve) => {
-					window.dispatchEvent(
-						new CustomEvent("sendFile", {
-							detail: {
-								file,
-								delay: funilItem.delay,
-								chatId,
-							},
-						}),
+			});
+
+			return new Promise<void>((resolve) => {
+				window.dispatchEvent(
+					new CustomEvent("sendFile", {
+						detail: {
+							file,
+							type: "audios",
+							delay: selectedItem.delay,
+							chatId,
+						},
+					}),
+				);
+				resolve();
+			});
+		}
+
+		case "midias": {
+			const fileName = new Date().getTime().toString();
+			const file = await new Promise((resolve) => {
+				const handler = (event: CustomEvent) => {
+					window.removeEventListener(
+						"saveFileResponse",
+						handler as EventListener,
 					);
-					setTimeout(resolve, funilItem.delay);
-				});
+					resolve(event.detail);
+				};
+				window.addEventListener("saveFileResponse", handler as EventListener);
+				window.dispatchEvent(
+					new CustomEvent("saveFile", {
+						detail: { path: selectedItem.file.url, fileName },
+					}),
+				);
+			});
+
+			return new Promise<void>((resolve) => {
+				window.dispatchEvent(
+					new CustomEvent("sendFile", {
+						detail: {
+							file,
+							subtitle: (selectedItem as Midia).file.subtitle,
+							chatId,
+							delay: selectedItem.delay,
+						},
+					}),
+				);
+				resolve();
 			});
 		}
 	}
@@ -240,13 +243,33 @@ window.addEventListener("initGatilho", async () => {
 						if (gatilho.ignoreCase) {
 							isMatch = message.toLowerCase() === key.toLowerCase();
 							if (isMatch) {
-								sendFunil(selectedItems, chatId);
+								for (let i = 0; i < selectedItems.length; i++) {
+									const funilItem = selectedItems[i];
+
+									await new Promise<void>((resolve) => {
+										setTimeout(async () => {
+											await sendFunil(funilItem, chatId);
+
+											resolve();
+										}, funilItem.delay ?? 1000);
+									});
+								}
 								return;
 							}
 						} else {
 							isMatch = message === key;
 							if (isMatch) {
-								sendFunil(selectedItems, chatId);
+								for (let i = 0; i < selectedItems.length; i++) {
+									const funilItem = selectedItems[i];
+
+									await new Promise<void>((resolve) => {
+										setTimeout(async () => {
+											await sendFunil(funilItem, chatId);
+
+											resolve();
+										}, funilItem.delay ?? 1000);
+									});
+								}
 								return;
 							}
 						}
@@ -260,7 +283,17 @@ window.addEventListener("initGatilho", async () => {
 							isMatch = message.includes(key);
 						}
 						if (isMatch) {
-							sendFunil(selectedItems, chatId);
+							for (let i = 0; i < selectedItems.length; i++) {
+								const funilItem = selectedItems[i];
+
+								await new Promise<void>((resolve) => {
+									setTimeout(async () => {
+										await sendFunil(funilItem, chatId);
+
+										resolve();
+									}, funilItem.delay ?? 1000);
+								});
+							}
 							return;
 						}
 					}
@@ -272,7 +305,17 @@ window.addEventListener("initGatilho", async () => {
 							isMatch = message.startsWith(key);
 						}
 						if (isMatch) {
-							sendFunil(selectedItems, chatId);
+							for (let i = 0; i < selectedItems.length; i++) {
+								const funilItem = selectedItems[i];
+
+								await new Promise<void>((resolve) => {
+									setTimeout(async () => {
+										await sendFunil(funilItem, chatId);
+
+										resolve();
+									}, funilItem.delay ?? 1000);
+								});
+							}
 							return;
 						}
 					}
@@ -284,7 +327,17 @@ window.addEventListener("initGatilho", async () => {
 							isMatch = !message.includes(key);
 						}
 						if (isMatch) {
-							sendFunil(selectedItems, chatId);
+							for (let i = 0; i < selectedItems.length; i++) {
+								const funilItem = selectedItems[i];
+
+								await new Promise<void>((resolve) => {
+									setTimeout(async () => {
+										await sendFunil(funilItem, chatId);
+
+										resolve();
+									}, funilItem.delay ?? 1000);
+								});
+							}
 							return;
 						}
 					}

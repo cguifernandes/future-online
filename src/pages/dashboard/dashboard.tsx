@@ -10,7 +10,6 @@ import Audios from "../layout/audios";
 import Trigger from "../layout/trigger";
 import { StorageData } from "../../type/type";
 import { ErrorMessage } from "../components/errorMessage";
-import { checkIfAccountExists } from "../../utils/utils";
 import Spinner from "../components/spinner";
 
 type Props = {
@@ -92,20 +91,6 @@ const Dashboard = ({ account }: Props) => {
 						subMessage: "Faça login e então acesse essa página",
 					});
 					return;
-				} else {
-					const exists = await checkIfAccountExists(account.email);
-					if (!exists) {
-						await chrome.storage.sync.clear();
-
-						setError({
-							message: "Você não possui uma conta válida.",
-							subMessage:
-								"Entre em contato com nosso suporte para mais informações.",
-						});
-						return;
-					} else {
-						setError(null);
-					}
 				}
 			} catch (err) {
 				console.log(err);
@@ -172,7 +157,7 @@ const Dashboard = ({ account }: Props) => {
 						/>
 					))}
 				</ul>
-				<div className="flex-1 flex h-[404px]">{contentDashboard.content}</div>
+				<div className="flex-1 flex h-[520px]">{contentDashboard.content}</div>
 			</div>
 		</main>
 	);

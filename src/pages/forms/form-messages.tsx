@@ -129,7 +129,7 @@ const Form = ({ contentItem, setContentItem, setData }: Props) => {
 			<Textarea
 				name="content"
 				placeholder="Conteúdo do item"
-				patternClassName="flex-1 w-full"
+				patternClassName="flex-1 w-full mb-auto max-h-[232px]"
 				className="resize-none w-full h-full"
 				theme="purple"
 				{...register("content")}

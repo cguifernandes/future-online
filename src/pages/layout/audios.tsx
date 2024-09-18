@@ -9,6 +9,7 @@ import Form from "../forms/form-audios";
 const Audios = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [contentItem, setContentItem] = useState<Audio>(undefined);
+	const [isLoadingAdd, setIsLoadingAdd] = useState(false);
 	const [data, setData] = useState<{
 		itens: Audio[];
 	}>({ itens: [] });
@@ -26,6 +27,7 @@ const Audios = () => {
 	}, []);
 
 	const handlerClickAdd = async () => {
+		setIsLoadingAdd(true);
 		setData({
 			itens: await addItem<Audio>(
 				{
@@ -39,6 +41,7 @@ const Audios = () => {
 				data,
 			),
 		});
+		setIsLoadingAdd(false);
 	};
 
 	return (
@@ -77,6 +80,7 @@ const Audios = () => {
 								theme="blue-dark"
 								className="hover:bg-blue-700 min-w-36 flex items-center justify-center"
 								onClick={handlerClickAdd}
+								isLoading={isLoadingAdd}
 								icon={<Plus size={18} color="#fff" />}
 							>
 								Novo item
@@ -95,6 +99,7 @@ const Audios = () => {
 								theme="blue-dark"
 								className="min-w-36 flex items-center justify-center"
 								onClick={handlerClickAdd}
+								isLoading={isLoadingAdd}
 								icon={<Plus size={18} color="#fff" />}
 							>
 								Novo item

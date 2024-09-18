@@ -8,6 +8,7 @@ import { Plus } from "lucide-react";
 
 const Messages = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingAdd, setIsLoadingAdd] = useState(false);
 	const [contentItem, setContentItem] = useState<Mensagem>(undefined);
 	const [data, setData] = useState<{
 		itens: Mensagem[];
@@ -26,6 +27,7 @@ const Messages = () => {
 	}, []);
 
 	const handlerClickAdd = async () => {
+		setIsLoadingAdd(true);
 		setData({
 			itens: await addItem<Mensagem>(
 				{
@@ -37,6 +39,7 @@ const Messages = () => {
 				data,
 			),
 		});
+		setIsLoadingAdd(false);
 	};
 
 	return (
@@ -75,6 +78,7 @@ const Messages = () => {
 							<Button
 								type="button"
 								theme="purple-dark"
+								isLoading={isLoadingAdd}
 								className="hover:bg-purple-800 min-w-36 flex items-center justify-center"
 								onClick={handlerClickAdd}
 								icon={<Plus size={18} color="#fff" />}
@@ -93,6 +97,7 @@ const Messages = () => {
 							<Button
 								type="button"
 								theme="purple-dark"
+								isLoading={isLoadingAdd}
 								className="min-w-36 flex items-center justify-center"
 								onClick={handlerClickAdd}
 								icon={<Plus size={18} color="#fff" />}

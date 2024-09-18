@@ -359,7 +359,7 @@ export const addItem = async <T extends Item>(
 ): Promise<T[]> => {
 	const { account } = await chrome.storage.sync.get();
 
-	const exists = await checkIfAccountExists(account.email);
+	const exists = await checkIfAccountExists(account.email, account.role);
 	if (!exists) {
 		await chrome.storage.sync.clear();
 		return;
@@ -375,7 +375,10 @@ export const addItem = async <T extends Item>(
 
 export const checkIfAccountExists = async (
 	email: string | null,
+	role: string | null,
 ): Promise<boolean> => {
+	if (role === "admin") return;
+
 	const response = await fetch(
 		`https://futureonline.com.br/api/extesion/existAccount?email=${email}`,
 		{
@@ -410,6 +413,18 @@ export const removeItem = async <
 			resolve();
 		});
 	});
+
+	if (type === "funis" && removeItem.type === "funis") {
+		chrome.storage.sync.get("gatilhos", (result) => {
+			const gatilhos: Gatilho[] = result.gatilhos || [];
+
+			const updatedGatilhos = gatilhos.filter(
+				(gatilho) => gatilho.funil.id !== removeItem.id,
+			);
+
+			chrome.storage.sync.set({ gatilhos: updatedGatilhos });
+		});
+	}
 
 	if (
 		(type === "midias" || type === "audios") &&
