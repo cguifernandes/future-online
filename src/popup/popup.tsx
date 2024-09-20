@@ -62,6 +62,7 @@ const Popup = () => {
 					role: "client" | "whiteLabel";
 					id: string;
 					email: string;
+					licenseDate: string;
 				};
 			};
 
@@ -80,6 +81,7 @@ const Popup = () => {
 						id: data.data.id,
 						isLogin: true,
 						email: data.data.email,
+						licenseDate: new Date(data.data.licenseDate).toISOString(),
 					},
 				};
 
