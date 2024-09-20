@@ -531,6 +531,7 @@ window.addEventListener("loadWpp", async () => {
 	waitForElement("div#main", () => {
 		const observer = new MutationObserver(async () => {
 			const data = (await chrome.storage.sync.get()) as StorageData;
+
 			debouncedValidateData(data);
 		});
 

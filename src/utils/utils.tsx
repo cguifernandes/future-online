@@ -9,6 +9,7 @@ import type {
 import { v4 as uuidv4 } from "uuid";
 import * as AWS from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
+import toast from "react-hot-toast";
 
 export const FILES_TYPE = [
 	"image/jpeg",
@@ -358,6 +359,25 @@ export const addItem = async <T extends Item>(
 	data: { itens: T[] },
 ): Promise<T[]> => {
 	const { account } = await chrome.storage.sync.get();
+
+	if (account.licenseDate) {
+		const licenseDate = new Date(account.licenseDate);
+		const licenseDateWithoutTime = new Date(licenseDate);
+		licenseDateWithoutTime.setHours(0, 0, 0, 0);
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		if (licenseDateWithoutTime < today) {
+			toast.error("Sua licença expirou!", {
+				position: "bottom-right",
+				className: "text-base ring-2 ring-[#1F2937]",
+				duration: 5000,
+			});
+			return;
+		}
+
+		return;
+	}
 
 	const exists = await checkIfAccountExists(account.email, account.role);
 	if (!exists) {

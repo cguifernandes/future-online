@@ -81,7 +81,9 @@ const Popup = () => {
 						id: data.data.id,
 						isLogin: true,
 						email: data.data.email,
-						licenseDate: new Date(data.data.licenseDate).toISOString(),
+						licenseDate: new Date(
+							new Date().setDate(new Date().getDate() - 1),
+						).toISOString(),
 					},
 				};
 
