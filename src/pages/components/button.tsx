@@ -58,9 +58,8 @@ const Button = ({
 					})}
 					{...rest}
 				>
-					{isLoading && "Carregando..."}
+					{isLoading ? "Carregando..." : children}
 					{icon}
-					{children}
 				</button>
 				<Switch
 					defaultChecked={switchDefaultValue}
@@ -81,9 +80,8 @@ const Button = ({
 				})}
 				{...rest}
 			>
-				{isLoading && "Carregando..."}
+				{isLoading ? "Carregando..." : children}
 				{icon}
-				{children}
 			</button>
 		);
 	}

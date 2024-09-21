@@ -360,6 +360,12 @@ export const addItem = async <T extends Item>(
 ): Promise<T[]> => {
 	const { account } = await chrome.storage.sync.get();
 
+	const exists = await checkIfAccountExists(account.email, account.role);
+	if (!exists) {
+		await chrome.storage.sync.clear();
+		return;
+	}
+
 	if (account.licenseDate) {
 		const licenseDate = new Date(account.licenseDate);
 		const licenseDateWithoutTime = new Date(licenseDate);
@@ -375,14 +381,6 @@ export const addItem = async <T extends Item>(
 			});
 			return;
 		}
-
-		return;
-	}
-
-	const exists = await checkIfAccountExists(account.email, account.role);
-	if (!exists) {
-		await chrome.storage.sync.clear();
-		return;
 	}
 
 	const newItemWithId = { ...newItem, id: uuidv4() };
